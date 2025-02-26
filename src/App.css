@@ -33,7 +33,7 @@ body {
   font-family: var(--font-family);
   background: var(--body-background-color);
 }
-h1{
+/* h1{
   font-size: 30px;
   font-weight: 600;
   color: rgba(0, 0, 0, 1);
@@ -55,10 +55,10 @@ label{
 p{
   font-size: 14px;
   font-weight: 400;
-}
+} */
 
 
-button {
+/* button {
   background-color: var(--button-bg-color);
   color: var(--button-text-color);
   border: none;
@@ -68,4 +68,4 @@ button {
 
 button:hover {
   background-color: var(--primary-color);
-}
+} */

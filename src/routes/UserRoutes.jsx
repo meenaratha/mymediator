@@ -1,9 +1,9 @@
 import { Route } from "react-router-dom";
-import Header from "../components/common/Header";
+import HomePage from "../Pages/UserFlow/HomePage";
 const UserRoutes = () => {
   return (
     <>
-      <Route path="/" element={<Header />} />
+      <Route path="/" element={<HomePage />} />
     </>
   );
 };

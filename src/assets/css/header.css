@@ -1,40 +1,339 @@
+/* Custom scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Notification icon animation */
+@keyframes shake {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(-10deg); }
+  50% { transform: rotate(10deg); }
+  75% { transform: rotate(-10deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.notification-shake {
+  animation: shake 1s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
 /* header start */
 .mymediator__header {
   box-shadow: 0px 1px 2.3px 0px rgba(152, 152, 152, 0.25);
+  border-bottom: 1px solid rgba(225, 225, 225, 1);
 }
 
 /* sell button */
 .mymediator__sell_button {
-  padding: 5px 10px;
+  padding: 8px 16px;
   color: black;
   font-weight: 600;
   background-color: white;
   border-radius: 20px;
-  border: 2px solid transparent;
-  background-clip: padding-box;
-  position: relative;
   width: 100px;
-}
-
-.mymediator__sell_button::before {
-  content: "";
-  position: absolute;
-  top: -5px;
-  left: -5px;
-  right: -5px;
-  bottom: -5px;
-  background: linear-gradient(270deg, #bd00ff 0%, #db00ff 38.5%, #01b3ff 100%);
-  z-index: -1;
-  border-radius: 20px;
+  cursor: pointer;
+  border: double 4px transparent;
+  background-image: linear-gradient(white, white), 
+                    linear-gradient(270deg, #bd00ff 0%, #db00ff 38.5%, #01b3ff 100%);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
 }
 
 .mymediator__sell_button:hover {
   background-color: #f9f9f9;
 }
 
+/* Header menu styles */
+.mymediator__header nav a,
+.mymediator__header nav span {
+  font-size: 15px;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.mymediator__header nav a:hover {
+  color: #2563eb;
+}
+
+/* Location selector */
+.mymediator__location {
+  color: #333;
+}
+
+/* Categories dropdown */
+.mymediator__categories {
+  font-weight: 500;
+}
+
+/* Mega menu styles */
+.mega-menu-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(2px);
+  z-index: 40;
+}
+
+.mega-menu {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.mega-menu-category {
+  transition: all 0.2s ease;
+}
+
+.mega-menu-category:hover {
+  background-color: #f8f9fa;
+  transform: translateX(4px);
+}
+
+/* Location dropdown styles */
+.location-dropdown {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.location-item {
+  transition: all 0.2s ease;
+}
+
+.location-item:hover {
+  background-color: #f8f9fa;
+}
+
+.location-section-title {
+  color: #666;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+/* Location sections */
+.location-section {
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.location-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
 /* header end  */
 
+/* Search styles */
+.search-container {
+  position: relative;
+}
+
+.search-placeholder {
+  position: absolute;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+
+
+.placeholder-animation {
+  overflow: hidden;
+  display: inline-block;
+}
+
+/* Search overlay styles */
+.search-overlay {
+  background: #fff;
+}
+
+.search-input-container {
+  position: relative;
+}
+
+
+.search-placeholder {
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Mobile header styles */
+.mobile-header {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.mobile-search-overlay {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.mobile-menu::-webkit-scrollbar {
+  width: 4px;
+}
+
+.mobile-menu::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.mobile-menu::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.mobile-menu::-webkit-scrollbar-thumb:hover {
+  background: #666;
+}
+
+/* Location overlay styles */
+.location-overlay {
+  background: #fff;
+}
+
+.location-search-input {
+  background: #f2f3f5;
+  border: none;
+  height: 48px;
+}
+
+.location-search-input:focus {
+  background: #fff;
+  border: 1px solid #23e5db;
+  box-shadow: 0 0 0 3px rgba(35, 229, 219, 0.1);
+}
+
+.location-item {
+  transition: background-color 0.2s;
+}
+
+.location-item:hover {
+  background-color: #f2f3f5;
+}
+
+/* Menu styles */
+.menu-category {
+  transition: all 0.3s ease;
+}
+
+.menu-category:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.menu-arrow {
+  transition: transform 0.2s ease;
+}
+
+.menu-arrow.active {
+  transform: rotate(90deg);
+}
+
+.submenu {
+  background: #f8f9fa;
+  overflow: hidden;
+}
+
+.submenu-item {
+  transition: background-color 0.2s ease;
+}
+
+.submenu-item:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
 /* media query start */
+
+/* Mobile responsive styles */
+@media screen and (max-width: 768px) {
+  .mymediator__header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    z-index: 50;
+    padding: 8px 16px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .mobile-search {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    z-index: 100;
+    padding: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transform: translateY(-100%);
+    transition: transform 0.3s ease;
+  }
+
+  .mobile-search.active {
+    transform: translateY(0);
+  }
+
+  .mobile-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 280px;
+    background: white;
+    z-index: 100;
+    overflow-y: auto;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+  }
+
+  .mobile-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 90;
+  }
+
+  /* Mobile menu scrollbar */
+  .mobile-menu::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .mobile-menu::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+  .mobile-menu::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+  }
+
+  /* Adjust main content for fixed header */
+  body {
+    padding-top: 56px;
+  }
+}
 
 /* media query end  */
 
