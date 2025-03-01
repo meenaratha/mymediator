@@ -1,0 +1,25 @@
+/* In your HomePage.css file */
+
+/* Custom scrollbar specifically for the filter container */
+.mymediator__filterContainer::-webkit-scrollbar {
+  width: 6px;
+}
+
+.mymediator__filterContainer::-webkit-scrollbar-track {
+  background: #f7fafc;
+  border-radius: 20px;
+}
+
+.mymediator__filterContainer::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 20px;
+}
+
+.mymediator__filterContainer::-webkit-scrollbar-button {
+  display: none !important;
+}
+
+/* Additional styles for the filter container if needed */
+.mymediator__filter-container {
+  /* You can add any additional styles here */
+}

@@ -33,6 +33,22 @@ body {
   font-family: var(--font-family);
   background: var(--body-background-color);
 }
+
+/* src/index.css */
+.swiper-pagination-bullet {
+  background-color: #fff; /* Pagination bullet color */
+}
+
+.swiper-pagination-bullet-active {
+  background-color: #0070f3; /* Active pagination bullet color */
+}
+
+.swiper-button-next,
+.swiper-button-prev {
+  color: #0070f3; /* Navigation arrow color */
+}
+
+
 /* h1{
   font-size: 30px;
   font-weight: 600;

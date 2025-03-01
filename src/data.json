@@ -1,0 +1,34 @@
+{
+    "property": {
+      "id": 1,
+      "type": "Individual House",
+      "facing": "North facing",
+      "totalFloors": 3,
+      "bathrooms": 2,
+      "carParking": "Yes",
+      "ageOfBuilding": "Built on 2022",
+      "builder": "ABC Builders",
+      "floorNo": 2,
+      "carpetArea": 900,
+      "superBuiltupArea": 600,
+      "maintenanceFees": 1500,
+      "description": "A spacious and modern individual house located in a prime area. Perfect for families looking for a comfortable living space.",
+      "location": {
+        "latitude": 51.505,
+        "longitude": -0.09,
+        "address": "123 Main Street, Cityville, USA"
+      },
+      "amenities": [
+        "Swimming Pool",
+        "Gym",
+        "Park",
+        "24/7 Security",
+        "Play Area"
+      ],
+      "images": [
+        "https://via.placeholder.com/800x600?text=House+Front",
+        "https://via.placeholder.com/800x600?text=Living+Room",
+        "https://via.placeholder.com/800x600?text=Kitchen"
+      ]
+    }
+  }

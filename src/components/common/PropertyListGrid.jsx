@@ -1,9 +1,16 @@
-import React from "react";
 import { Card, CardContent } from "@mui/material";
+import IMAGES from "@/utils/images.js";
+import { useMediaQuery } from "react-responsive"; // For detecting mobile devices
 
 const PropertyCard = ({ property }) => {
+  // Detect mobile devices
+  const isMobile = useMediaQuery({ maxWidth: 767 });
   return (
-    <Card className="max-w-[235px] w-full rounded-lg shadow-md overflow-hidden hover:shadow-lg mx-auto">
+    <Card
+      className={`${
+        isMobile ? " max-w-[300px]" : ""
+      }  max-w-[275px]  w-full rounded-lg shadow-md overflow-hidden hover:shadow-lg mx-auto`}
+    >
       <div className="relative">
         <img
           src={property.image}
@@ -67,7 +74,7 @@ const PropertyListingGrid = () => {
     {
       id: 1,
       name: "Minsod House",
-      image: "/api/placeholder/235/150",
+      image: IMAGES.mac1,
       size: "25 sqm",
       year: 2022,
       bedrooms: 2,
@@ -78,7 +85,7 @@ const PropertyListingGrid = () => {
     {
       id: 2,
       name: "Soujaiy House",
-      image: "/api/placeholder/235/150",
+      image: IMAGES.mac2,
       size: "24 sqm",
       year: 2022,
       bedrooms: 2,
@@ -89,7 +96,7 @@ const PropertyListingGrid = () => {
     {
       id: 3,
       name: "Xandite House",
-      image: "/api/placeholder/235/150",
+      image: IMAGES.mac3,
       size: "26 sqm",
       year: 2022,
       bedrooms: 2,
@@ -100,7 +107,7 @@ const PropertyListingGrid = () => {
     {
       id: 4,
       name: "Kaltet House",
-      image: "/api/placeholder/235/150",
+      image: IMAGES.mac4,
       size: "25 sqm",
       year: 2022,
       bedrooms: 2,
@@ -111,7 +118,7 @@ const PropertyListingGrid = () => {
     {
       id: 5,
       name: "KanetXo House",
-      image: "/api/placeholder/235/150",
+      image: IMAGES.mac5,
       size: "28 sqm",
       year: 2022,
       bedrooms: 2,
@@ -122,7 +129,7 @@ const PropertyListingGrid = () => {
     {
       id: 6,
       name: "Gloselt House",
-      image: "/api/placeholder/235/150",
+      image: IMAGES.mac6,
       size: "24 sqm",
       year: 2022,
       bedrooms: 2,
@@ -133,7 +140,7 @@ const PropertyListingGrid = () => {
     {
       id: 7,
       name: "Minzal House",
-      image: "/api/placeholder/235/150",
+      image: IMAGES.mac7,
       size: "26 sqm",
       year: 2022,
       bedrooms: 2,
@@ -144,7 +151,7 @@ const PropertyListingGrid = () => {
     {
       id: 8,
       name: "Soujaiy House",
-      image: "/api/placeholder/235/150",
+      image: IMAGES.mac8,
       size: "25 sqm",
       year: 2022,
       bedrooms: 2,
@@ -199,8 +206,8 @@ const PropertyListingGrid = () => {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 justify-items-center">
+    <div className="container mx-auto px-4 py-8 pt-[10px]">
+      <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 justify-items-center">
         {properties.map((property) => (
           <PropertyCard key={property.id} property={property} />
         ))}

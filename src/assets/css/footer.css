@@ -1,6 +1,6 @@
 /* App Download Section */
 .app-download-section {
-  background-color: #FDF7F2;
+  background-color: #fdf7f2;
   max-width: 1190px;
   margin: 40px auto;
   padding: 35px 40px;
@@ -96,7 +96,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  background-image: url('../images/common/phonemodel.png');
+  background-image: url("../images/common/phonemodel.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -153,7 +153,7 @@
     top: 50px;
     transform: rotate(36deg);
     width: 220px;
-        height: auto;
+    height: auto;
     margin-top: 20px;
   }
 
@@ -201,8 +201,14 @@
 /* Existing Footer Styles */
 
 .footer-container {
-  background-color: #00507C;
-  background: linear-gradient(180.97deg, #095387 0.83%, #035182 35.25%, #0E6595 79.01%, #1983BA 99.17%);
+  background-color: #00507c;
+  background: linear-gradient(
+    180.97deg,
+    #095387 0.83%,
+    #035182 35.25%,
+    #0e6595 79.01%,
+    #1983ba 99.17%
+  );
   color: #ffffff;
   padding: 60px 20px;
   width: 100%;
@@ -354,9 +360,17 @@
     grid-template-columns: 1fr;
     gap: 40px;
   }
+  .footer-contact {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .footer-contact li a {
+    text-align: left;
+  }
 
   .footer-section {
-    text-align: center;
+    text-align: left;
   }
 
   .contact-link {
@@ -366,10 +380,20 @@
   .address {
     text-align: center;
   }
+  .address span {
+    text-align: left;
+  }
+  .app-stores {
+    justify-content: flex-start;
+  }
+  .footer-description {
+    text-align: left;
+  }
 }
 
 /* Font Awesome Icons */
-.fas, .far {
+.fas,
+.far {
   width: 20px;
   text-align: center;
 }

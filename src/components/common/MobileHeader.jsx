@@ -1,57 +1,77 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import Logo from "../../assets/images/common/logo.png";
 import SearchIcon from "@mui/icons-material/Search";
-import LocationOnIcon from '@mui/icons-material/LocationOn';
+import LocationOnIcon from "@mui/icons-material/LocationOn";
 import NotificationsIcon from "@mui/icons-material/Notifications";
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import Badge from "@mui/material/Badge";
-import MenuIcon from '@mui/icons-material/Menu';
-import CloseIcon from '@mui/icons-material/Close';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import GpsFixedIcon from '@mui/icons-material/GpsFixed';
-import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import MenuIcon from "@mui/icons-material/Menu";
+import CloseIcon from "@mui/icons-material/Close";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import GpsFixedIcon from "@mui/icons-material/GpsFixed";
+import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 
-const MobileHeader = () => {
+const MobileHeader = ({ isFixed }) => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLocationOpen, setIsLocationOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [locationQuery, setLocationQuery] = useState("");
-  const [selectedLocation, setSelectedLocation] = useState("Chennai, Tamil Nadu");
+  const [selectedLocation, setSelectedLocation] = useState(
+    "Chennai, Tamil Nadu"
+  );
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [activeCategory, setActiveCategory] = useState(null);
 
   const categories = {
     Property: {
       icon: "",
-      subCategories: ["For Sale: Houses & Apartments", "For Rent: Houses & Apartments", "Lands & Plots", "Commercial", "PG & Guest Houses"]
+      subCategories: [
+        "For Sale: Houses & Apartments",
+        "For Rent: Houses & Apartments",
+        "Lands & Plots",
+        "Commercial",
+        "PG & Guest Houses",
+      ],
     },
     Car: {
       icon: "",
-      subCategories: ["Cars", "Commercial Vehicles", "Spare Parts", "Other Vehicles"]
+      subCategories: [
+        "Cars",
+        "Commercial Vehicles",
+        "Spare Parts",
+        "Other Vehicles",
+      ],
     },
     Electronics: {
       icon: "",
-      subCategories: ["Mobile Phones", "Laptops", "TVs", "Cameras", "Games & Entertainment"]
+      subCategories: [
+        "Mobile Phones",
+        "Laptops",
+        "TVs",
+        "Cameras",
+        "Games & Entertainment",
+      ],
     },
     Bike: {
       icon: "",
-      subCategories: ["Motorcycles", "Scooters", "Spare Parts", "Bicycles"]
+      subCategories: ["Motorcycles", "Scooters", "Spare Parts", "Bicycles"],
     },
     Jobs: {
       icon: "",
-      subCategories: ["Data Entry", "Sales & Marketing", "BPO & Telecaller", "Driver", "Office Assistant"]
-    }
+      subCategories: [
+        "Data Entry",
+        "Sales & Marketing",
+        "BPO & Telecaller",
+        "Driver",
+        "Office Assistant",
+      ],
+    },
   };
 
-  const popularLocations = [
-    "Kerala",
-    "Tamil Nadu",
-    "Punjab",
-    "Maharashtra"
-  ];
+  const popularLocations = ["Kerala", "Tamil Nadu", "Punjab", "Maharashtra"];
 
   const handleLocationSelect = (location) => {
     setSelectedLocation(location);
@@ -70,7 +90,7 @@ const MobileHeader = () => {
   useEffect(() => {
     if (isSearchOpen) {
       const interval = setInterval(() => {
-        setPlaceholderIndex((prevIndex) => 
+        setPlaceholderIndex((prevIndex) =>
           prevIndex === Object.keys(categories).length - 1 ? 0 : prevIndex + 1
         );
       }, 2000);
@@ -82,7 +102,11 @@ const MobileHeader = () => {
   return (
     <>
       {/* Main Header */}
-      <header className="fixed top-0 left-0 right-0 bg-white shadow-sm z-50">
+      <header
+        className={`${
+          isFixed ? "fixed" : "relative"
+        } top-0 left-0 right-0 bg-white shadow-sm z-50`}
+      >
         <div className="flex items-center justify-between px-4 py-2">
           {/* Menu and Logo */}
           <div className="flex items-center gap-4">
@@ -95,7 +119,7 @@ const MobileHeader = () => {
           </div>
 
           {/* Location */}
-          <div 
+          <div
             className="flex items-center gap-1 text-sm cursor-pointer"
             onClick={() => setIsLocationOpen(true)}
           >
@@ -145,7 +169,7 @@ const MobileHeader = () => {
                     <div className="relative flex-1">
                       <AnimatePresence>
                         {!searchQuery && (
-                          <motion.div 
+                          <motion.div
                             className="absolute inset-y-0 left-0 flex items-center pl-10 pointer-events-none"
                             initial={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
@@ -174,7 +198,7 @@ const MobileHeader = () => {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 bg-[#f2f3f5] focus:bg-white"
-                        style={{ boxShadow: 'none' }}
+                        style={{ boxShadow: "none" }}
                       />
                     </div>
                   </div>
@@ -184,7 +208,9 @@ const MobileHeader = () => {
               {/* Recent Searches */}
               {!searchQuery && (
                 <div className="p-4">
-                  <h3 className="text-sm text-gray-500 mb-3">RECENT SEARCHES</h3>
+                  <h3 className="text-sm text-gray-500 mb-3">
+                    RECENT SEARCHES
+                  </h3>
                   <div className="space-y-3">
                     {Object.keys(categories).map((category) => (
                       <div
@@ -242,7 +268,9 @@ const MobileHeader = () => {
                   <GpsFixedIcon />
                   <div>
                     <div className="font-medium">Use current location</div>
-                    <div className="text-sm text-gray-500">Location blocked. Check browser/phone settings.</div>
+                    <div className="text-sm text-gray-500">
+                      Location blocked. Check browser/phone settings.
+                    </div>
                   </div>
                 </div>
               </div>
@@ -250,7 +278,9 @@ const MobileHeader = () => {
               {/* Popular Locations */}
               <div className="flex-1 overflow-auto">
                 <div className="p-4">
-                  <h3 className="text-sm text-gray-500 mb-3">POPULAR LOCATIONS</h3>
+                  <h3 className="text-sm text-gray-500 mb-3">
+                    POPULAR LOCATIONS
+                  </h3>
                   <div className="space-y-4">
                     {popularLocations.map((location) => (
                       <div
@@ -297,7 +327,7 @@ const MobileHeader = () => {
                 </div>
 
                 {/* Location Selector */}
-                <div 
+                <div
                   className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer mb-4"
                   onClick={() => {
                     setIsLocationOpen(true);
@@ -307,53 +337,59 @@ const MobileHeader = () => {
                   <LocationOnIcon className="text-gray-600" />
                   <div>
                     <div className="text-sm font-medium">Location</div>
-                    <div className="text-sm text-gray-500">{selectedLocation}</div>
+                    <div className="text-sm text-gray-500">
+                      {selectedLocation}
+                    </div>
                   </div>
                   <KeyboardArrowRightIcon className="text-gray-600 ml-auto" />
                 </div>
 
                 {/* Categories */}
                 <div className="border-t border-gray-200 pt-4">
-                  <div className="text-sm text-gray-500 mb-2 px-3">CATEGORIES</div>
+                  <div className="text-sm text-gray-500 mb-2 px-3">
+                    CATEGORIES
+                  </div>
                   <div className="space-y-1">
-                    {Object.entries(categories).map(([category, { icon, subCategories }]) => (
-                      <div key={category}>
-                        <div
-                          className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer"
-                          onClick={() => handleCategoryClick(category)}
-                        >
-                          <span className="text-xl">{icon}</span>
-                          <span className="text-gray-700">{category}</span>
-                          <KeyboardArrowRightIcon 
-                            className={`text-gray-600 ml-auto transform transition-transform ${
-                              activeCategory === category ? 'rotate-90' : ''
-                            }`}
-                          />
+                    {Object.entries(categories).map(
+                      ([category, { icon, subCategories }]) => (
+                        <div key={category}>
+                          <div
+                            className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer"
+                            onClick={() => handleCategoryClick(category)}
+                          >
+                            <span className="text-xl">{icon}</span>
+                            <span className="text-gray-700">{category}</span>
+                            <KeyboardArrowRightIcon
+                              className={`text-gray-600 ml-auto transform transition-transform ${
+                                activeCategory === category ? "rotate-90" : ""
+                              }`}
+                            />
+                          </div>
+
+                          {/* Submenu */}
+                          <AnimatePresence>
+                            {activeCategory === category && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className="overflow-hidden bg-gray-50"
+                              >
+                                {subCategories.map((subCategory) => (
+                                  <div
+                                    key={subCategory}
+                                    className="px-11 py-3 text-sm text-gray-600 hover:bg-gray-100 cursor-pointer"
+                                  >
+                                    {subCategory}
+                                  </div>
+                                ))}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </div>
-                        
-                        {/* Submenu */}
-                        <AnimatePresence>
-                          {activeCategory === category && (
-                            <motion.div
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: "auto", opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              transition={{ duration: 0.2 }}
-                              className="overflow-hidden bg-gray-50"
-                            >
-                              {subCategories.map((subCategory) => (
-                                <div
-                                  key={subCategory}
-                                  className="px-11 py-3 text-sm text-gray-600 hover:bg-gray-100 cursor-pointer"
-                                >
-                                  {subCategory}
-                                </div>
-                              ))}
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    ))}
+                      )
+                    )}
                   </div>
                 </div>
               </div>

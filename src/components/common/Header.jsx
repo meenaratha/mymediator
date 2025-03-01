@@ -7,13 +7,13 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import Avatar from "@mui/material/Avatar";
 import { deepPurple } from "@mui/material/colors";
 import Feedback from "./Feedback";
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import GpsFixedIcon from '@mui/icons-material/GpsFixed';
-import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect } from 'react';
-import MobileHeader from './MobileHeader';
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import GpsFixedIcon from "@mui/icons-material/GpsFixed";
+import { Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
+import MobileHeader from "./MobileHeader";
 import Footer from "./Footer";
 
 const megaMenuData = {
@@ -24,8 +24,8 @@ const megaMenuData = {
       "For Rent: Houses & Apartments",
       "Lands & Plots",
       "For Rent: Shops & Offices",
-      "For Sale: Shops & Offices"
-    ]
+      "For Sale: Shops & Offices",
+    ],
   },
   Electronics: {
     title: "Electronics",
@@ -35,50 +35,58 @@ const megaMenuData = {
       "Computers & Laptops",
       "Fridges",
       "ACs",
-      "Washing Machines"
-    ]
+      "Washing Machines",
+    ],
   },
   Bike: {
     title: "Bike",
-    items: [
-      "Motorcycles",
-      "Scooters",
-      "Spare Parts",
-      "Bicycles"
-    ]
+    items: ["Motorcycles", "Scooters", "Spare Parts", "Bicycles"],
   },
   Car: {
     title: "Car",
-    items: [
-      "Cars",
-      "Commercial Vehicles",
-      "Spare Parts",
-      "Other Vehicles"
-    ]
-  }
+    items: ["Cars", "Commercial Vehicles", "Spare Parts", "Other Vehicles"],
+  },
 };
 
 const Header = () => {
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
   const [isLocationOpen, setIsLocationOpen] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState("Chennai, Tamil Nadu");
+  const [selectedLocation, setSelectedLocation] = useState(
+    "Chennai, Tamil Nadu"
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isNotificationShaking, setIsNotificationShaking] = useState(true);
+  const [isFixed, setIsFixed] = useState(false);
+
+  // Add scroll event listener to check scroll position
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 150) {
+        setIsFixed(true);
+      } else {
+        setIsFixed(false);
+      }
+    };
+
+    // Add event listener
+    window.addEventListener("scroll", handleScroll);
+
+    // Clean up event listener
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
   const categories = ["Property", "Car", "Electronics", "Bike"];
 
   const locations = {
     recentLocation: [
       { title: "Use Current location", icon: "location_on" },
-      { title: "Tamil Nadu", icon: "location_on" }
+      { title: "Tamil Nadu", icon: "location_on" },
     ],
-    popularLocation: [
-      "Chennai, Tamil Nadu",
-      "Ambattur",
-     
-      
-    ]
+    popularLocation: ["Chennai, Tamil Nadu", "Ambattur"],
   };
 
   const handleLocationSelect = (location) => {
@@ -96,7 +104,8 @@ const Header = () => {
               `https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}`
             );
             const data = await response.json();
-            const location = data.address.city || data.address.town || data.address.state;
+            const location =
+              data.address.city || data.address.town || data.address.state;
             setSelectedLocation(location + ", " + data.address.state);
             setIsLoading(false);
             setIsLocationOpen(false);
@@ -122,38 +131,42 @@ const Header = () => {
 
   const menuVariants = {
     hidden: { opacity: 0, y: -10 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
       transition: {
         duration: 0.3,
         ease: "easeOut",
-        staggerChildren: 0.05
-      }
-    }
+        staggerChildren: 0.05,
+      },
+    },
   };
 
   const itemVariants = {
     hidden: { opacity: 0, y: -10 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
       transition: {
         duration: 0.2,
-        ease: "easeOut"
-      }
-    }
+        ease: "easeOut",
+      },
+    },
   };
 
   return (
     <>
       {/* Mobile Header */}
-      <div className="md:hidden fixed z-[999]">
-        <MobileHeader />
+      <div className="md:hidden relative z-[999]">
+        <MobileHeader isFixed={isFixed} />
       </div>
 
       {/* Desktop Header */}
-      <section className="fixed w-full h-[140px] hidden md:block z-[999]">
+      <section
+        className={`${
+          isFixed ? "fixed" : "relative"
+        } top-0 w-full h-[140px] hidden md:block z-[999]`}
+      >
         {/* top bar */}
         <div className="w-full h-[70px] bg-[rgba(246,246,246,1)] border-b-[1px] border-b-solid border-b-[rgba(225,225,225,1)]">
           <div className="flex max-w-[1200px] mx-auto px-2.5 mymediator__container">
@@ -162,7 +175,7 @@ const Header = () => {
             </div>
             <div className="w-[100%]  h-[70px] flex items-center gap-5 px-3 justify-between">
               {/* search box */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
@@ -172,7 +185,7 @@ const Header = () => {
                 <div className="w-full relative">
                   <AnimatePresence>
                     {!searchQuery && (
-                      <motion.div 
+                      <motion.div
                         className="search-placeholder"
                         initial={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -206,15 +219,17 @@ const Header = () => {
               </motion.div>
 
               {/* notification box */}
-              <div 
-                className="flex gap-10 items-center"
-              >
+              <div className="flex gap-10 items-center">
                 <motion.div
-                  animate={isNotificationShaking ? {
-                    rotate: [0, -10, 10, -10, 10, 0],
-                  } : {
-                    rotate: 0
-                  }}
+                  animate={
+                    isNotificationShaking
+                      ? {
+                          rotate: [0, -10, 10, -10, 10, 0],
+                        }
+                      : {
+                          rotate: 0,
+                        }
+                  }
                   transition={{
                     duration: 1,
                     repeat: isNotificationShaking ? Infinity : 0,
@@ -238,7 +253,7 @@ const Header = () => {
                 </motion.div>
 
                 {/* sell button */}
-                <motion.button 
+                <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   transition={{ duration: 0.2 }}
@@ -259,16 +274,15 @@ const Header = () => {
         {/* header start */}
         <div className="w-full h-[70px] bg-white mymediator__header">
           <div className="flex max-w-[1200px] mx-auto px-2.5 mymediator__container">
-            <div className="w-[150px] bg-gray-200 h-[70px]">
-            </div>
+            <div className="w-[150px] bg-gray-200 h-[70px]"></div>
             <div className="w-[100%] h-[70px] flex items-center pl-6">
-              <motion.nav 
+              <motion.nav
                 variants={menuVariants}
                 initial="hidden"
                 animate="visible"
                 className="flex items-center gap-10 text-[15px] font-medium"
               >
-                <motion.div 
+                <motion.div
                   variants={itemVariants}
                   whileHover={{ scale: 1.02 }}
                   transition={{ duration: 0.2 }}
@@ -287,63 +301,89 @@ const Header = () => {
                       <KeyboardArrowDownIcon className="w-5 h-5 text-gray-700" />
                     </motion.div>
                   </motion.div>
-                  
+
                   <AnimatePresence>
                     {isMegaMenuOpen && (
                       <motion.div
                         initial={{ opacity: 0, y: 20, height: 0 }}
-                        animate={{ opacity: 1, y: 0, height: 'auto' }}
+                        animate={{ opacity: 1, y: 0, height: "auto" }}
                         exit={{ opacity: 0, y: 20, height: 0 }}
                         transition={{ duration: 0.3, ease: "easeOut" }}
                         className="absolute top-full left-0 mt-2 w-[800px] bg-white rounded-lg shadow-lg p-6 z-50"
                       >
                         <div className="grid grid-cols-4 gap-8">
-                          {Object.entries(megaMenuData).map(([category, data]) => (
-                            <motion.div
-                              key={category}
-                              initial={{ opacity: 0, y: 20 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ duration: 0.3, delay: 0.1 }}
-                              className="space-y-4"
-                            >
-                              <h3 className="text-lg font-semibold text-gray-800">{data.title}</h3>
-                              <ul className="space-y-2">
-                                {data.items.map((item, index) => (
-                                  <motion.li
-                                    key={item}
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ duration: 0.3, delay: index * 0.05 }}
-                                  >
-                                    <Link
-                                      to={`/${category.toLowerCase()}/${item.toLowerCase().replace(/\s+/g, '-')}`}
-                                      className="text-gray-600 hover:text-blue-600 text-sm block py-1"
+                          {Object.entries(megaMenuData).map(
+                            ([category, data]) => (
+                              <motion.div
+                                key={category}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.3, delay: 0.1 }}
+                                className="space-y-4"
+                              >
+                                <h3 className="text-lg font-semibold text-gray-800">
+                                  {data.title}
+                                </h3>
+                                <ul className="space-y-2">
+                                  {data.items.map((item, index) => (
+                                    <motion.li
+                                      key={item}
+                                      initial={{ opacity: 0, x: -20 }}
+                                      animate={{ opacity: 1, x: 0 }}
+                                      transition={{
+                                        duration: 0.3,
+                                        delay: index * 0.05,
+                                      }}
                                     >
-                                      {item}
-                                    </Link>
-                                  </motion.li>
-                                ))}
-                              </ul>
-                            </motion.div>
-                          ))}
+                                      <Link
+                                        to={`/${category.toLowerCase()}/${item
+                                          .toLowerCase()
+                                          .replace(/\s+/g, "-")}`}
+                                        className="text-gray-600 hover:text-blue-600 text-sm block py-1"
+                                      >
+                                        {item}
+                                      </Link>
+                                    </motion.li>
+                                  ))}
+                                </ul>
+                              </motion.div>
+                            )
+                          )}
                         </div>
                       </motion.div>
                     )}
                   </AnimatePresence>
                 </motion.div>
                 <motion.div variants={itemVariants}>
-                  <Link to="/property" className="text-gray-700 hover:text-blue-600">Property</Link>
+                  <Link
+                    to="/property"
+                    className="text-gray-700 hover:text-blue-600"
+                  >
+                    Property
+                  </Link>
                 </motion.div>
                 <motion.div variants={itemVariants}>
-                  <Link to="/electronics" className="text-gray-700 hover:text-blue-600">Electronics</Link>
+                  <Link
+                    to="/electronics"
+                    className="text-gray-700 hover:text-blue-600"
+                  >
+                    Electronics
+                  </Link>
                 </motion.div>
                 <motion.div variants={itemVariants}>
-                  <Link to="/car" className="text-gray-700 hover:text-blue-600">Car</Link>
+                  <Link to="/car" className="text-gray-700 hover:text-blue-600">
+                    Car
+                  </Link>
                 </motion.div>
                 <motion.div variants={itemVariants}>
-                  <Link to="/bike" className="text-gray-700 hover:text-blue-600">Bike</Link>
+                  <Link
+                    to="/bike"
+                    className="text-gray-700 hover:text-blue-600"
+                  >
+                    Bike
+                  </Link>
                 </motion.div>
-                <motion.div 
+                <motion.div
                   variants={itemVariants}
                   whileHover={{ scale: 1.02 }}
                   transition={{ duration: 0.2 }}
@@ -363,7 +403,7 @@ const Header = () => {
                     {isLocationOpen && (
                       <motion.div
                         initial={{ opacity: 0, y: 20, height: 0 }}
-                        animate={{ opacity: 1, y: 0, height: 'auto' }}
+                        animate={{ opacity: 1, y: 0, height: "auto" }}
                         exit={{ opacity: 0, y: 20, height: 0 }}
                         transition={{ duration: 0.3, ease: "easeOut" }}
                         className="absolute top-full right-0 mt-2 w-[280px] bg-white rounded-lg shadow-lg z-50"
@@ -383,44 +423,62 @@ const Header = () => {
                               <GpsFixedIcon className="w-5 h-5 text-blue-500" />
                             )}
                             <span className="text-blue-500 font-medium">
-                              {isLoading ? "Getting location..." : "Use Current Location"}
+                              {isLoading
+                                ? "Getting location..."
+                                : "Use Current Location"}
                             </span>
                           </motion.div>
 
                           {/* Recent Location */}
                           <div className="mb-3 border-b border-gray-200 pb-3">
-                            <h3 className="text-sm text-gray-500 mb-2">Recent Location</h3>
+                            <h3 className="text-sm text-gray-500 mb-2">
+                              Recent Location
+                            </h3>
                             {locations.recentLocation.map((item, index) => (
                               <motion.div
                                 key={item.title}
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                transition={{ duration: 0.2, delay: index * 0.05 }}
+                                transition={{
+                                  duration: 0.2,
+                                  delay: index * 0.05,
+                                }}
                                 className="flex items-center gap-3 py-2 px-3 hover:bg-gray-50 rounded-md cursor-pointer"
                                 onClick={() => handleLocationSelect(item.title)}
                               >
                                 <LocationOnIcon className="w-5 h-5 text-gray-600" />
-                                <span className="text-gray-700">{item.title}</span>
+                                <span className="text-gray-700">
+                                  {item.title}
+                                </span>
                               </motion.div>
                             ))}
                           </div>
 
                           {/* Popular Location */}
                           <div>
-                            <h3 className="text-sm text-gray-500 mb-2">Popular Location</h3>
-                            {locations.popularLocation.map((location, index) => (
-                              <motion.div
-                                key={location}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ duration: 0.2, delay: (index + 2) * 0.05 }}
-                                className="flex items-center gap-3 py-2 px-3 hover:bg-gray-50 rounded-md cursor-pointer"
-                                onClick={() => handleLocationSelect(location)}
-                              >
-                                <LocationOnIcon className="w-5 h-5 text-gray-600" />
-                                <span className="text-gray-700">{location}</span>
-                              </motion.div>
-                            ))}
+                            <h3 className="text-sm text-gray-500 mb-2">
+                              Popular Location
+                            </h3>
+                            {locations.popularLocation.map(
+                              (location, index) => (
+                                <motion.div
+                                  key={location}
+                                  initial={{ opacity: 0, x: -20 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{
+                                    duration: 0.2,
+                                    delay: (index + 2) * 0.05,
+                                  }}
+                                  className="flex items-center gap-3 py-2 px-3 hover:bg-gray-50 rounded-md cursor-pointer"
+                                  onClick={() => handleLocationSelect(location)}
+                                >
+                                  <LocationOnIcon className="w-5 h-5 text-gray-600" />
+                                  <span className="text-gray-700">
+                                    {location}
+                                  </span>
+                                </motion.div>
+                              )
+                            )}
                           </div>
                         </div>
                       </motion.div>
@@ -432,7 +490,6 @@ const Header = () => {
           </div>
         </div>
       </section>
-    
     </>
   );
 };
