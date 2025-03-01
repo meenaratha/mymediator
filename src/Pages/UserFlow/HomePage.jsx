@@ -24,8 +24,9 @@ const HomePage = () => {
     <>
       <Header />
       <HeroSection />
-      <PropertyDescription />
+
       <div className="max-w-screen-xl max-w-[1200px] mx-auto px-4">
+        <PropertyDescription />
         <BannerSlider />
 
         {/* space div */}

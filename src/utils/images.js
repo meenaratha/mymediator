@@ -30,6 +30,11 @@ const IMAGES = {
     import.meta.url
   ).href,
 
+  propertydetails: new URL(
+    "../assets/images/property/propertydetails.jpeg",
+    import.meta.url
+  ).href,
+
   // Electronics
   mac1: new URL("../assets/images/electronics/mac1.png", import.meta.url).href,
   mac2: new URL("../assets/images/electronics/mac2.png", import.meta.url).href,
