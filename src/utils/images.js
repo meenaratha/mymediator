@@ -61,6 +61,58 @@ const IMAGES = {
     .href,
   mac16: new URL("../assets/images/electronics/mac16.png", import.meta.url)
     .href,
+
+  // property
+  property1: new URL("@/assets/images/property/property1.png", import.meta.url)
+    .href,
+  property2: new URL("@/assets/images/property/property2.jpeg", import.meta.url)
+    .href,
+  property3: new URL("@/assets/images/property/property3.jpeg", import.meta.url)
+    .href,
+  property4: new URL("@/assets/images/property/property4.jpeg", import.meta.url)
+    .href,
+  property5: new URL("@/assets/images/property/property5.png", import.meta.url)
+    .href,
+  property6: new URL("@/assets/images/property/property6.png", import.meta.url)
+    .href,
+  property7: new URL("@/assets/images/property/property7.jpeg", import.meta.url)
+    .href,
+
+  // cars
+
+  car1: new URL("@/assets/images/cars/car1.png", import.meta.url).href,
+  car2: new URL("@/assets/images/cars/car2.jpeg", import.meta.url).href,
+  car3: new URL("@/assets/images/cars/car3.jpeg", import.meta.url).href,
+  car4: new URL("@/assets/images/cars/car4.jpeg", import.meta.url).href,
+  car5: new URL("@/assets/images/cars/car5.jpeg", import.meta.url).href,
+  car6: new URL("@/assets/images/cars/car6.jpeg", import.meta.url).href,
+  car7: new URL("@/assets/images/cars/car7.png", import.meta.url).href,
+  car8: new URL("@/assets/images/cars/car8.png", import.meta.url).href,
+  hondaLogo: new URL("@/assets/images/cars/honda-logo.png", import.meta.url)
+    .href,
+  hyndaiLogo: new URL("@/assets/images/cars/hyundai-logo.png", import.meta.url)
+    .href,
+  mahendraLogo: new URL(
+    "@/assets/images/cars/mahendralogo.png",
+    import.meta.url
+  ).href,
+  maruthiLogo: new URL("@/assets/images/cars/maruthilogo.png", import.meta.url)
+    .href,
+  tataLogo: new URL("@/assets/images/cars/tatalogo.png", import.meta.url).href,
+
+  // bikes
+
+  bike1: new URL("@/assets/images/bikes/bike1.png", import.meta.url).href,
+  bike2: new URL("@/assets/images/bikes/bike2.png", import.meta.url).href,
+  bike3: new URL("@/assets/images/bikes/bike3.jpeg", import.meta.url).href,
+  bike4: new URL("@/assets/images/bikes/bike4.png", import.meta.url).href,
+  bike5: new URL("@/assets/images/bikes/bike5.jpeg", import.meta.url).href,
+  bike6: new URL("@/assets/images/bikes/bike6.png", import.meta.url).href,
+  bike7: new URL("@/assets/images/bikes/bike7.png", import.meta.url).href,
+  bike8: new URL("@/assets/images/bikes/bike8.png", import.meta.url).href,
+  bike9: new URL("@/assets/images/bikes/bike9.png", import.meta.url).href,
+  bike10: new URL("@/assets/images/bikes/bike10.png", import.meta.url).href,
+  bike11: new URL("@/assets/images/bikes/bike11.jpeg", import.meta.url).href,
 };
 
 export default IMAGES;

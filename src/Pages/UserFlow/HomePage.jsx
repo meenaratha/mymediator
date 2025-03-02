@@ -1,8 +1,11 @@
 import React, { useState } from "react";
-import { BannerSlider, HeroSection, OTPVerificationModal } from "@/components";
+import {
+  BannerSlider,
+  LoadMoreButton,
+  FreashRecommendationProducts,
+} from "@/components";
 import { useMediaQuery } from "react-responsive"; // For detecting mobile devices
 import IMAGES from "@/utils/images.js";
-import FilterIcon from "@mui/icons-material/FilterList";
 const HomePage = () => {
   const isMobile = useMediaQuery({ maxWidth: 767 });
   const images = [
@@ -14,10 +17,15 @@ const HomePage = () => {
 
   return (
     <>
-      <HeroSection />
       <div className="max-w-screen-xl max-w-[1200px] mx-auto px-4">
         <BannerSlider images={images} />
-        <OTPVerificationModal />
+        {/* space div */}
+        <div className="h-[10px]"></div>
+        <h1 className="text-left text-black text-[24px] font-semibold px-3 py-2">
+          Fresh recommendations
+        </h1>
+        <FreashRecommendationProducts />
+        <LoadMoreButton />
       </div>
     </>
   );
