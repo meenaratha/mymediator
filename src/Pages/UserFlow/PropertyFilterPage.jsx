@@ -29,7 +29,7 @@ const PropertyFilterPage = () => {
 
   return (
     <>
-      <HeroSection />
+      <HeroSection tittle="Property List" />
 
       <div className="max-w-screen-xl max-w-[1200px] mx-auto px-4">
         <BannerSlider images={images} />

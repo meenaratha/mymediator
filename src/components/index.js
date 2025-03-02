@@ -15,4 +15,11 @@ export { default as PropertyFilterPage } from "@/Pages/UserFlow/PropertyFilterPa
 export { default as OTPVerificationModal } from "@/components/common/OTPVerificationModal";
 export { default as FreashRecommendationProducts } from "@/components/common/FreashRecommendationProducts";
 
+// property
+export { default as ProductDetailPage } from "@/Pages/UserFlow/ProductDetailPage";
+export { default as RecommendedProperty } from "./property/RecommendedProperty";
+export { default as PropertyDetails } from "./property/PropertyDetails";
+export { default as ProductCategory } from "@/Pages/UserFlow/ProductCategory";
+export { default as Sell } from "@/components/common/Sell";
+
 // Add more exports as needed

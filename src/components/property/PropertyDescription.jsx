@@ -52,7 +52,7 @@ const PropertyDescription = () => {
   }
   return (
     <>
-      <PropertyDetails />
+      <PropertyDetails property={property} />
 
       <div className=" p-4">
         {/* Container for the two-column layout */}

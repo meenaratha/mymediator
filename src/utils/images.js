@@ -36,6 +36,22 @@ const IMAGES = {
   ).href,
   otpbanner: new URL("../assets/images/common/otpbanner.png", import.meta.url)
     .href,
+  propertycategory: new URL(
+    "../assets/images/common/propertycategory.png",
+    import.meta.url
+  ).href,
+  electronicscategory: new URL(
+    "../assets/images/common/electronicscategory.png",
+    import.meta.url
+  ).href,
+  carcategory: new URL(
+    "../assets/images/common/carcategory.png",
+    import.meta.url
+  ).href,
+  bikecategory: new URL(
+    "../assets/images/common/bikecategroy.jpeg",
+    import.meta.url
+  ).href,
 
   // Electronics
   mac1: new URL("../assets/images/electronics/mac1.png", import.meta.url).href,
