@@ -6,13 +6,8 @@ import "swiper/css/navigation";
 import IMAGES from "@/utils/images.js";
 import { useMediaQuery } from "react-responsive"; // For detecting mobile devices
 
-const BannerSlider = () => {
-  const images = [
-    IMAGES.propertybanner1,
-    IMAGES.propertybanner2,
-    IMAGES.propertybanner3,
-    IMAGES.propertybanner1,
-  ];
+const BannerSlider = ({images}) => {
+ 
   return (
     <>
       <div className="max-w-[1200px] mx-auto my-8">

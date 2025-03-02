@@ -1,9 +1,12 @@
 import { Route } from "react-router-dom";
-import HomePage from "../Pages/UserFlow/HomePage";
+import { HomePage, MasterLayout, PropertyFilterPage } from "@/components";
 const UserRoutes = () => {
   return (
     <>
-      <Route path="/" element={<HomePage />} />
+      <Route element={<MasterLayout />}>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/property-filter" element={<PropertyFilterPage />} />
+      </Route>
     </>
   );
 };

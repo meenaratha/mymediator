@@ -34,6 +34,8 @@ const IMAGES = {
     "../assets/images/property/propertydetails.jpeg",
     import.meta.url
   ).href,
+  otpbanner: new URL("../assets/images/common/otpbanner.png", import.meta.url)
+    .href,
 
   // Electronics
   mac1: new URL("../assets/images/electronics/mac1.png", import.meta.url).href,

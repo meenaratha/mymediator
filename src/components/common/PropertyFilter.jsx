@@ -152,24 +152,24 @@ const PropertyFilter = ({ isFilterOpen, isMobile }) => {
                 expandedSections.price ? "max-h-80 py-2" : "max-h-0"
               }`}
             >
-              <div className="grid grid-cols-2 gap-2 mb-2">
-                <div className="bg-gray-100 rounded p-2 text-sm">
+              <div className="grid grid-cols-1 gap-2 mb-2">
+                <div className="bg-gray-100 rounded text-sm p-4  flex justify-between gap-[15px]">
                   <div className="font-medium">Below 1 Lac</div>
                   <div className="text-gray-500 text-xs">310+ items</div>
                 </div>
-                <div className="bg-gray-100 rounded p-2 text-sm">
+                <div className="bg-gray-100 rounded p-4  flex justify-between gap-[15px] text-sm">
                   <div className="font-medium">1 Lac - 2 Lac</div>
                   <div className="text-gray-500 text-xs">1000+ items</div>
                 </div>
-                <div className="bg-gray-100 rounded p-2 text-sm">
+                <div className="bg-gray-100 rounded p-4  flex justify-between gap-[15px] text-sm">
                   <div className="font-medium">2 Lac - 3 Lac</div>
                   <div className="text-gray-500 text-xs">1400+ items</div>
                 </div>
-                <div className="bg-gray-100 rounded p-2 text-sm">
+                <div className="bg-gray-100 roundedp-4 p-4 flex justify-between gap-[15px] text-sm">
                   <div className="font-medium">3 Lac - 5 Lac</div>
                   <div className="text-gray-500 text-xs">3100+ items</div>
                 </div>
-                <div className="bg-gray-100 rounded p-2 text-sm">
+                <div className="bg-gray-100 rounded p-4  flex justify-between gap-[15px] text-sm">
                   <div className="font-medium">5 Lac and Above</div>
                   <div className="text-gray-500 text-xs">8700+ items</div>
                 </div>
@@ -220,12 +220,9 @@ const PropertyFilter = ({ isFilterOpen, isMobile }) => {
             <h2 className="font-medium text-gray-800 py-2 border-b">
               Bedrooms
             </h2>
-            <div
-              className="grid grid-cols-2 gap-2 py-2 overflow-auto custom-scrollbar"
-              style={{ maxHeight: "150px" }}
-            >
+            <div className="grid grid-cols-1 gap-2 py-2 ">
               <div
-                className={`border rounded-md p-2 text-center text-sm cursor-pointer transition-colors ${
+                className={`border rounded-md p-2 text-left text-sm cursor-pointer transition-colors ${
                   selectedBedrooms === "1+"
                     ? "border-blue-500 bg-blue-50"
                     : "hover:border-blue-500"
@@ -235,7 +232,7 @@ const PropertyFilter = ({ isFilterOpen, isMobile }) => {
                 1+ Bedrooms
               </div>
               <div
-                className={`border rounded-md p-2 text-center text-sm cursor-pointer transition-colors ${
+                className={`border rounded-md p-2 text-left text-sm cursor-pointer transition-colors ${
                   selectedBedrooms === "2+"
                     ? "border-blue-500 bg-blue-50"
                     : "hover:border-blue-500"
@@ -245,7 +242,7 @@ const PropertyFilter = ({ isFilterOpen, isMobile }) => {
                 2+ Bedrooms
               </div>
               <div
-                className={`border rounded-md p-2 text-center text-sm cursor-pointer transition-colors ${
+                className={`border rounded-md p-2 text-left text-sm cursor-pointer transition-colors ${
                   selectedBedrooms === "3+"
                     ? "border-blue-500 bg-blue-50"
                     : "hover:border-blue-500"
@@ -255,7 +252,7 @@ const PropertyFilter = ({ isFilterOpen, isMobile }) => {
                 3+ Bedrooms
               </div>
               <div
-                className={`border rounded-md p-2 text-center text-sm cursor-pointer transition-colors ${
+                className={`border rounded-md p-2 text-left text-sm cursor-pointer transition-colors ${
                   selectedBedrooms === "4+"
                     ? "border-blue-500 bg-blue-50"
                     : "hover:border-blue-500"
@@ -298,7 +295,7 @@ const PropertyFilter = ({ isFilterOpen, isMobile }) => {
             >
               <div className="grid grid-cols-1 gap-2">
                 <div
-                  className={`border rounded-md p-2 text-center text-sm cursor-pointer transition-colors ${
+                  className={`border rounded-md p-2 text-left text-sm cursor-pointer transition-colors ${
                     selectedFurnishing === "furnished"
                       ? "border-blue-500 bg-blue-50"
                       : "hover:border-blue-500"
@@ -308,7 +305,7 @@ const PropertyFilter = ({ isFilterOpen, isMobile }) => {
                   Furnishing
                 </div>
                 <div
-                  className={`border rounded-md p-2 text-center text-sm cursor-pointer transition-colors ${
+                  className={`border rounded-md p-2 text-left text-sm cursor-pointer transition-colors ${
                     selectedFurnishing === "unfurnished"
                       ? "border-blue-500 bg-blue-50"
                       : "hover:border-blue-500"
@@ -318,7 +315,7 @@ const PropertyFilter = ({ isFilterOpen, isMobile }) => {
                   Unfurnishing
                 </div>
                 <div
-                  className={`border rounded-md p-2 text-center text-sm cursor-pointer transition-colors ${
+                  className={`border rounded-md p-2 text-left text-sm cursor-pointer transition-colors ${
                     selectedFurnishing === "semi"
                       ? "border-blue-500 bg-blue-50"
                       : "hover:border-blue-500"
