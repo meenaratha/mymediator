@@ -22,4 +22,6 @@ export { default as PropertyDetails } from "./property/PropertyDetails";
 export { default as ProductCategory } from "@/Pages/UserFlow/ProductCategory";
 export { default as Sell } from "@/components/common/Sell";
 
+export { default as HousingApartmentFormPage } from "@/features/HouseRentForm";
+
 // Add more exports as needed

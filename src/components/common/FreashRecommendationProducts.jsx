@@ -7,9 +7,13 @@ import { useMediaQuery } from "react-responsive";
 import { useState, useEffect } from "react";
 import axiosInstance from "../../services/axiosInstance.js";
 import IMAGES from "../../utils/images";
-
+import { Navigate, useNavigate } from "react-router-dom";
 const PropertyCard = ({ item, category }) => {
   const isMobile = useMediaQuery({ maxWidth: 767 });
+  const navigate = useNavigate();
+  const handlePropertyClick = () => {
+    navigate("/property-details");
+  };
 
   return (
     <>
@@ -17,7 +21,8 @@ const PropertyCard = ({ item, category }) => {
         <Card
           className={`${
             isMobile ? " max-w-[300px]" : ""
-          }  max-w-[275px]  w-full rounded-lg shadow-md overflow-hidden hover:shadow-lg mx-auto`}
+          }  max-w-[275px]  w-full rounded-lg shadow-md overflow-hidden hover:shadow-lg mx-auto cursor-pointer`}
+          onClick={handlePropertyClick}
         >
           <div className="relative">
             <img

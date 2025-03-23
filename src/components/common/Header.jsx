@@ -10,11 +10,12 @@ import Feedback from "./Feedback";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import GpsFixedIcon from "@mui/icons-material/GpsFixed";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import MobileHeader from "./MobileHeader";
 import Footer from "./Footer";
+import OTPVerificationModal from "./OTPVerificationModal";
 
 const megaMenuData = {
   Property: {
@@ -49,6 +50,7 @@ const megaMenuData = {
 };
 
 const Header = () => {
+  const navigate = useNavigate();
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
   const [isLocationOpen, setIsLocationOpen] = useState(false);
@@ -154,6 +156,20 @@ const Header = () => {
     },
   };
 
+  const handleSellBtnClick = () => {
+    navigate("/sell");
+  };
+
+  const [isLoginPopupVisible, setIsLoginPopupVisible] = useState(false);
+
+  const handleLoginClick = () => {
+    setIsLoginPopupVisible(true);
+  };
+
+  const handleLoginClose = () => {
+    setIsLoginPopupVisible(false);
+  };
+
   return (
     <>
       {/* Mobile Header */}
@@ -251,6 +267,17 @@ const Header = () => {
                     <NotificationsIcon style={{ color: "black" }} />
                   </Badge>
                 </motion.div>
+                {/* login button */}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ duration: 0.2 }}
+                  className="mymediator__sell_button "
+                  onClick={handleLoginClick}
+                  style={{ width: "100%" }}
+                >
+                  Login / Sign up
+                </motion.button>
 
                 {/* sell button */}
                 <motion.button
@@ -258,6 +285,7 @@ const Header = () => {
                   whileTap={{ scale: 0.98 }}
                   transition={{ duration: 0.2 }}
                   className="mymediator__sell_button"
+                  onClick={handleSellBtnClick}
                 >
                   Sell
                 </motion.button>
@@ -490,6 +518,11 @@ const Header = () => {
           </div>
         </div>
       </section>
+
+      {/* login popup */}
+      {isLoginPopupVisible && (
+        <OTPVerificationModal onClose={handleLoginClose} />
+      )}
     </>
   );
 };
