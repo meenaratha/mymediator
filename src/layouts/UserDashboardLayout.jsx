@@ -77,6 +77,7 @@ const UserDashboardLayout = () => {
       {/* Header with fixed height */}
       <Header />
       {!isMobile && <HeroSection tittle="Dinesh Kumar" />}
+
       <div className="flex flex-col min-h-screen max-w-[1200px] mx-auto">
         <div className="flex flex-1">
           {/* Overlay for mobile */}
@@ -192,7 +193,7 @@ const UserDashboardLayout = () => {
             </header>
 
             {/* Page Content */}
-            <main className="flex-1 overflow-y-auto   border-l-2 border-l-solid border-l-gray-300">
+            <main className="flex-1 overflow-y-auto p-4   border-l-2 border-l-solid border-l-gray-300">
               <Outlet />
             </main>
           </div>

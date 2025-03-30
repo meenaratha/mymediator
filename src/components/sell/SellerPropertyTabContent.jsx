@@ -5,8 +5,11 @@ import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import DeleteIcon from "@mui/icons-material/Delete";
 import IMAGES from "../../utils/images.js";
+import { useMediaQuery } from "react-responsive";
 
 const SellerPropertyTabContent = () => {
+  const isMobile = useMediaQuery({ maxWidth: 767 });
+
   // Customer inquiry data
   const customerDetails = {
     name: "Kesavan kumar",
@@ -31,7 +34,7 @@ const SellerPropertyTabContent = () => {
     },
     {
       id: 2,
-      title: "Dinesh House",
+      title: "Din House",
       location: "Anna Nagar",
       type: "Individual",
       bhk: "2BHK",
@@ -116,7 +119,7 @@ const SellerPropertyTabContent = () => {
         </div>
 
         {/* Property Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-2">
+        <div className="grid grid-cols-1 lg:grid-cols-2 md:grid-cols-1 gap-4 px-2">
           {properties.map((property) => (
             <div key={property.id} className="rounded-lg  overflow-hidden ">
               <div
@@ -137,8 +140,24 @@ const SellerPropertyTabContent = () => {
                   </div>
                   <div className="ml-3 flex-1">
                     <div className="flex items-center justify-between pb-[10px]">
-                      <h3 className="font-bold w-1/2">{property.title}</h3>
-                      <div className="flex items-center  justify-end  overflow-hidden w-1/2">
+                      <h3
+                        className="font-bold w-1/2 overflow-hidden truncate"
+                        style={{
+                          maxWidth: isMobile ? "100px" : "",
+                          minWidth: isMobile ? "80px" : "",
+                          width: "100%",
+                        }}
+                      >
+                        {property.title}
+                      </h3>
+                      <div
+                        className="flex items-center  justify-end  overflow-hidden w-1/2 "
+                        style={{
+                          maxWidth: isMobile ? "100px" : "",
+                          minWidth: isMobile ? "90px" : "",
+                          width: "100%",
+                        }}
+                      >
                         <LocationOnIcon
                           style={{ fontSize: 16 }}
                           className="mr-1 text-red-500"
