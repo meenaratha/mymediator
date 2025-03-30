@@ -14,7 +14,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import MobileHeader from "./MobileHeader";
-import Footer from "./Footer";
 import OTPVerificationModal from "./OTPVerificationModal";
 
 const megaMenuData = {

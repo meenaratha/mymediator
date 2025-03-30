@@ -10,7 +10,6 @@ import path from "path";
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: "/mymediator/",
   plugins: [
     react(),
     tailwindcss(), // TailwindCSS configuration

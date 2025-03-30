@@ -1,11 +1,13 @@
 import { Outlet } from "react-router-dom";
-import { Header, Footer } from "@/components";
+import { Header, Footer, AppFooter } from "@/components";
 
 const MasterLayout = () => {
   return (
     <>
       <Header />
       <Outlet />
+      {/* Mobile App Download Section */}
+      <AppFooter />
       <Footer />
     </>
   );

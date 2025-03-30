@@ -36,6 +36,10 @@ const IMAGES = {
   ).href,
   otpbanner: new URL("../assets/images/common/otpbanner.png", import.meta.url)
     .href,
+  sellerproperty: new URL(
+    "../assets/images/common/property.png",
+    import.meta.url
+  ).href,
   propertycategory: new URL(
     "../assets/images/common/propertycategory.png",
     import.meta.url
@@ -52,6 +56,7 @@ const IMAGES = {
     "../assets/images/common/bikecategroy.jpeg",
     import.meta.url
   ).href,
+  sellerbike: new URL("../assets/images/common/bike.png", import.meta.url).href,
 
   // Electronics
   mac1: new URL("../assets/images/electronics/mac1.png", import.meta.url).href,
@@ -129,6 +134,9 @@ const IMAGES = {
   bike9: new URL("@/assets/images/bikes/bike9.png", import.meta.url).href,
   bike10: new URL("@/assets/images/bikes/bike10.png", import.meta.url).href,
   bike11: new URL("@/assets/images/bikes/bike11.jpeg", import.meta.url).href,
+
+  // seller
+  userImg: new URL("@/assets/images/seller/userimg.png", import.meta.url).href,
 };
 
 export default IMAGES;

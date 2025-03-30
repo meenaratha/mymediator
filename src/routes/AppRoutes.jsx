@@ -1,10 +1,11 @@
 import { Routes } from "react-router-dom";
-import UserRoutes from "./UserRoutes";
+import { UserRoutes, SellerRoutes } from "@/components";
 
 const AppRoutes = () => {
   return (
     <>
       <Routes>{UserRoutes()}</Routes>
+      <Routes>{SellerRoutes()}</Routes>
     </>
   );
 };
