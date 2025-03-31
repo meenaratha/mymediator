@@ -5,7 +5,11 @@ import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import DeleteIcon from "@mui/icons-material/Delete";
 import IMAGES from "../../utils/images.js";
+import { useMediaQuery } from "react-responsive";
+
 const SellerElectronicsTabContent = () => {
+  const isMobile = useMediaQuery({ maxWidth: 767 });
+
   // Customer inquiry data
   const customerDetails = {
     name: "Kesavan kumar",
@@ -106,7 +110,7 @@ const SellerElectronicsTabContent = () => {
       <div className="mymediator-seller-tab-content">
         {/* Action Buttons - Centered */}
         <div className="flex justify-center gap-4 mb-6 flex-wrap">
-          <button className="bg-blue-800 text-white py-2 px-4 rounded-md font-medium">
+          <button className="bg-[#0b1645] text-white py-2 px-4 rounded-md font-medium">
             Post enquiry
           </button>
           <button className="bg-white text-gray-700 py-2 px-4 rounded-md border border-gray-300 font-medium">
@@ -115,7 +119,7 @@ const SellerElectronicsTabContent = () => {
         </div>
 
         {/* Property Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-2">
+        <div className="grid grid-cols-1 lg:grid-cols-2 md:grid-cols-1  gap-4 px-2">
           {properties.map((property) => (
             <div key={property.id} className="rounded-lg  overflow-hidden ">
               <div
@@ -136,8 +140,26 @@ const SellerElectronicsTabContent = () => {
                   </div>
                   <div className="ml-3 flex-1">
                     <div className="flex items-center justify-between pb-[10px]">
-                      <h3 className="font-bold w-1/2">{property.title}</h3>
-                      <div className="flex items-center  justify-end  overflow-hidden w-1/2">
+                      <h3
+                        className="font-bold w-1/2"
+                        style={{
+                          maxWidth: isMobile ? "100px" : "150px",
+                          minWidth: isMobile ? "90px" : "100px",
+                          width: "100%",
+                        }}
+                        title={property.title}
+                      >
+                        {property.title}
+                      </h3>
+                      <div
+                        className="flex items-center  justify-end  overflow-hidden w-1/2"
+                        style={{
+                          maxWidth: isMobile ? "100px" : "150px",
+                          minWidth: isMobile ? "90px" : "100px",
+                          width: "100%",
+                        }}
+                        title={property.location}
+                      >
                         <LocationOnIcon
                           style={{ fontSize: 16 }}
                           className="mr-1 text-red-500"

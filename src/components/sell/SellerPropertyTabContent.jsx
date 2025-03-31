@@ -110,7 +110,7 @@ const SellerPropertyTabContent = () => {
       <div className="mymediator-seller-tab-content">
         {/* Action Buttons - Centered */}
         <div className="flex justify-center gap-4 mb-6 flex-wrap">
-          <button className="bg-blue-800 text-white py-2 px-4 rounded-md font-medium">
+          <button className="bg-[#0b1645] text-white py-2 px-4 rounded-md font-medium">
             Post enquiry
           </button>
           <button className="bg-white text-gray-700 py-2 px-4 rounded-md border border-gray-300 font-medium">
@@ -143,8 +143,8 @@ const SellerPropertyTabContent = () => {
                       <h3
                         className="font-bold w-1/2 overflow-hidden truncate"
                         style={{
-                          maxWidth: isMobile ? "100px" : "",
-                          minWidth: isMobile ? "80px" : "",
+                          maxWidth: isMobile ? "100px" : "100px",
+                          minWidth: isMobile ? "80px" : "100px",
                           width: "100%",
                         }}
                       >
@@ -153,10 +153,11 @@ const SellerPropertyTabContent = () => {
                       <div
                         className="flex items-center  justify-end  overflow-hidden w-1/2 "
                         style={{
-                          maxWidth: isMobile ? "100px" : "",
-                          minWidth: isMobile ? "90px" : "",
+                          maxWidth: isMobile ? "100px" : "150px",
+                          minWidth: isMobile ? "90px" : "100px",
                           width: "100%",
                         }}
+                        title={property.location}
                       >
                         <LocationOnIcon
                           style={{ fontSize: 16 }}

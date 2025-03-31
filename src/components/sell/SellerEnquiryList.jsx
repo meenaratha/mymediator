@@ -87,7 +87,7 @@ const SellerEnquiryList = () => {
       <div className=" min-h-screen pb-6 w-full">
         <div className="max-w-[100%] ">
           {/* Page Title */}
-          <h1 className="text-2xl font-bold text-center text-blue-800 mb-6 pt-4">
+          <h1 className="text-2xl font-bold text-center text-[#0b1645] mb-6 pt-4">
             Enquiry list
           </h1>
 

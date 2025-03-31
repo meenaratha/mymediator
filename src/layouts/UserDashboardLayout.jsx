@@ -130,8 +130,8 @@ const UserDashboardLayout = () => {
                       to={item.path}
                       className={`flex items-center p-3 rounded-md transition-colors duration-200 ${
                         location.pathname === item.path
-                          ? "bg-blue-600 text-white"
-                          : "text-gray-700 hover:bg-gray-100 hover:text-blue-700"
+                          ? "bg-[#0b1645] text-white"
+                          : "text-gray-700 hover:bg-gray-100 hover:text-[#0b1645]"
                       }`}
                       onClick={closeSidebarOnMobile}
                     >

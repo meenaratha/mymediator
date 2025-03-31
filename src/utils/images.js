@@ -137,6 +137,20 @@ const IMAGES = {
 
   // seller
   userImg: new URL("@/assets/images/seller/userimg.png", import.meta.url).href,
+
+  // subscriptiom
+  basicSubscription: new URL(
+    "@/assets/images/common/basicsubscriptionimg.png",
+    import.meta.url
+  ).href,
+  premiumSubscription: new URL(
+    "@/assets/images/common/premiumsubscription.png",
+    import.meta.url
+  ).href,
+  propremiumimg: new URL(
+    "@/assets/images/common/propremiumimg.png",
+    import.meta.url
+  ).href,
 };
 
 export default IMAGES;

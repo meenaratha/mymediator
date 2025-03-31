@@ -36,6 +36,8 @@ export { default as ProductCategory } from "@/Pages/UserFlow/ProductCategory";
 export { default as SellerEnquiryList } from "@/components/sell/SellerEnquiryList";
 export { default as SellerPropertyTabContent } from "@/components/sell/SellerPropertyTabContent";
 export { default as SellerElectronicsTabContent } from "@/components/sell/SellerElectronicsTabContent";
+export { default as SubscriptionHistory } from "@/components/sell/SubscriptionHistory";
+export { default as PostDetails } from "@/components/sell/PostDetails";
 
 // pages
 export { default as HomePage } from "@/Pages/UserFlow/HomePage";
@@ -48,5 +50,7 @@ export { default as HousingApartmentFormPage } from "@/features/HouseRentForm";
 
 // seller
 export { default as SellerEnquiryListPage } from "@/Pages/SellerFlow/SellerEnquiryListPage";
+export { default as SubscriptionHistoryPlanPage } from "@/Pages/SellerFlow/SubscriptionHistoryPlanPage";
+export { default as SellerPostDetailsPage } from "@/Pages/SellerFlow/SellerPostDetailsPage";
 
 // Add more exports as needed
