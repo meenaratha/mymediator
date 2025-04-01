@@ -3,10 +3,10 @@ import { UserRoutes, SellerRoutes } from "@/components";
 
 const AppRoutes = () => {
   return (
-    <>
-      <Routes>{UserRoutes()}</Routes>
-      <Routes>{SellerRoutes()}</Routes>
-    </>
+    <Routes>
+      {UserRoutes()}
+      {SellerRoutes()}
+    </Routes>
   );
 };
 

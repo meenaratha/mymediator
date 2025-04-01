@@ -5,6 +5,7 @@ import {
   SubscriptionHistoryPlanPage,
   SellerPostDetailsPage,
 } from "@/components";
+
 const SellerRoutes = () => {
   return (
     <>
@@ -13,7 +14,6 @@ const SellerRoutes = () => {
           path="/seller-enquiry-list"
           element={<SellerEnquiryListPage />}
         />
-
         <Route
           path="/seller-subscription-history-plan"
           element={<SubscriptionHistoryPlanPage />}

@@ -6,6 +6,7 @@ import {
   ProductDetailPage,
   ProductCategory,
 } from "@/components";
+
 const UserRoutes = () => {
   return (
     <>

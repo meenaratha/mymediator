@@ -37,12 +37,12 @@ const UserDashboardLayout = () => {
     {
       icon: <FaHistory className="w-5 h-5" />,
       title: "Subscription History",
-      path: "/subscription-history",
+      path: "/seller-subscription-history-plan",
     },
     {
       icon: <FaClipboardList className="w-5 h-5" />,
       title: "My Post details",
-      path: "/my-post-details",
+      path: "/seller-post-details",
     },
     {
       icon: <FaFileContract className="w-5 h-5" />,
