@@ -1,0 +1,77 @@
+.PhoneInput {
+  display: flex;
+  align-items: center;
+  padding: 6px 3px;
+  border-radius: 5px;
+  border: 1px solid #cccbcb;
+  box-shadow: 0px 0.84px 3.36px 0px #c6c6c640;
+  background: #fcfcfc;
+}
+/* .PhoneInput:focus {
+  border-color: rgb(44, 154, 245);
+} */
+
+.PhoneInputInput {
+  flex: 1 1;
+  min-width: 0;
+  height: 35px;
+  background: transparent;
+  outline: none;
+  border: none;
+}
+
+.PhoneInputCountrySelectArrow {
+  color: #000000 !important;
+  padding-left: 5px;
+}
+
+.mobile-input {
+  padding: 0px 10px;
+}
+
+.PhoneInputCountryIcon {
+  width: 30px;
+  height: 30px;
+}
+
+.PhoneInputCountrySelect:focus {
+  background-color: transparent;
+  box-shadow: none;
+  border: none;
+}
+.PhoneInputCountryIcon:focus-visible {
+  outline: none;
+  box-shadow: none;
+  border: none;
+}
+.PhoneInputCountryIcon--border {
+  background-color: transparent;
+  box-shadow: none;
+  border: none;
+}
+
+.PhoneInputCountryIcon--border:focus {
+  background-color: transparent !important;
+  box-shadow: none;
+  border: none;
+  outline: none;
+}
+.PhoneInputCountrySelect:focus + .PhoneInputCountryIcon--border {
+  box-shadow: none !important;
+}
+.PhoneInputCountrySelectArrow {
+  width: 15px !important;
+  height: 15px !important;
+  background-image: url("../assets/images/common/spin.png") !important;
+  /* Replace with your image URL */
+  background-size: cover !important;
+  /* Ensure the image covers the entire area */
+  background-repeat: no-repeat !important;
+  /* Prevent the image from repeating */
+  background-position: center !important;
+  /* Center the image inside the element */
+  margin: 0px 5px;
+  border: none;
+  transform: rotate(0deg) !important;
+  border: 0px !important;
+}

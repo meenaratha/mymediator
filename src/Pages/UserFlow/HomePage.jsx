@@ -3,6 +3,8 @@ import {
   BannerSlider,
   LoadMoreButton,
   FreashRecommendationProducts,
+  LoginFormModel,
+  SignupFormModel,
 } from "@/components";
 import { useMediaQuery } from "react-responsive"; // For detecting mobile devices
 import IMAGES from "@/utils/images.js";

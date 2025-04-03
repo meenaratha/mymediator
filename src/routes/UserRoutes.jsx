@@ -15,6 +15,10 @@ const UserRoutes = () => {
         <Route path="/property" element={<PropertyFilterPage />} />
         <Route path="/property-details" element={<ProductDetailPage />} />
         <Route path="/sell" element={<ProductCategory />} />
+
+        {/* Authendication Routes */}
+
+
       </Route>
     </>
   );

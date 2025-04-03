@@ -36,6 +36,10 @@ const IMAGES = {
   ).href,
   otpbanner: new URL("../assets/images/common/otpbanner.png", import.meta.url)
     .href,
+  loginbanner: new URL("../assets/images/common/login.png", import.meta.url)
+    .href,
+  signupbanner: new URL("../assets/images/common/signup.png", import.meta.url)
+    .href,
   sellerproperty: new URL(
     "../assets/images/common/property.png",
     import.meta.url

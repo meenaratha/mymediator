@@ -23,6 +23,12 @@ export { default as FreashRecommendationProducts } from "@/components/common/Fre
 // models
 export { default as Feedback } from "./common/Feedback";
 export { default as OTPVerificationModal } from "@/components/common/OTPVerificationModal";
+export { default as LoginFormModel } from "@/components/common/LoginFormModel";
+export { default as PasswordResetModel } from "@/components/common/PasswordResetModel";
+export { default as SignupFormModel } from "@/components/common/SignupFormModel";
+export { default as ForgotPassword } from "@/components/common/ForgotPassword";
+
+// login / registration
 
 // forms
 export { default as HouseRentForm } from "@/features/HouseRentForm";

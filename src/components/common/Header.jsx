@@ -14,7 +14,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import MobileHeader from "./MobileHeader";
-import OTPVerificationModal from "./OTPVerificationModal";
+import LoginFormModel from "./LoginFormModel";
 
 const megaMenuData = {
   Property: {
@@ -520,7 +520,14 @@ const Header = () => {
 
       {/* login popup */}
       {isLoginPopupVisible && (
-        <OTPVerificationModal onClose={handleLoginClose} />
+        <>
+          <LoginFormModel onClose={handleLoginClose} />
+          {/* <OTPVerificationModal
+          onClose={handleLoginClose}
+          onVerify={(otp) => console.log("Verified OTP:", otp)} // Add this line
+          onResend={() => console.log("Resend OTP")} // Optional: handle resend OTP
+        /> */}
+        </>
       )}
     </>
   );
