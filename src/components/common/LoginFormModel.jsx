@@ -10,7 +10,11 @@ import "../../styles/Login.css";
 import ForgotPassword from "./ForgotPassword";
 import SignupFormModel from "./SignupFormModel";
 
-const LoginFormModel = ({ onClose }) => {
+const LoginFormModel = ({
+  setSignupFormModel,
+  setLoginFormModel,
+  setForgotPasswordModal,
+}) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     mobileNumber: "",
@@ -119,37 +123,10 @@ const LoginFormModel = ({ onClose }) => {
     // Clear any errors
     setErrors({});
 
-    // Close the modal if needed
-    if (onClose) {
-      onClose();
-    }
+    setLoginFormModel(false);
 
     // Navigate to profile page
-    navigate("/profile");
-  };
-
-  const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
-  const [signupFormModel, setSignupFormModel] = useState(false);
-
-  const handleForgotClick = () => {
-    setForgotPasswordModal(true);
-  };
-
-  const handleForgotClose = () => {
-    setForgotPasswordModal(false);
-    // Close the modal if needed
-    if (onClose) {
-      onClose();
-    }
-  };
-
-  const handleSignupClick = () => {
-    setSignupFormModel(true);
-  };
-
-  const handleSignupClose = () => {
-    setSignupFormModel(false);
-   
+    navigate("/seller-enquiry-list");
   };
 
   return (
@@ -160,12 +137,14 @@ const LoginFormModel = ({ onClose }) => {
       >
         <div
           className={`bg-white rounded-xl overflow-hidden shadow-lg max-w-4xl mx-auto w-full md:flex relative ${
-            isMobile ? "top-[19%]" : "top-[16%]"
+            isMobile
+              ? "fixed top-[2%] left-1/2 -translate-x-1/2"
+              : "relative md:top-[16%]"
           }`}
         >
           {/* Close Button */}
           <button
-            onClick={onClose}
+            onClick={() => setLoginFormModel(false)}
             className="absolute top-3 right-3 text-gray-600 hover:text-black transition-colors cursor-pointer"
           >
             <CloseIcon />
@@ -181,7 +160,7 @@ const LoginFormModel = ({ onClose }) => {
               {/* Phone Input Field using react-phone-input-2 */}
               <div className="mb-4" ref={phoneInputRef}>
                 <PhoneInput
-                //   international
+                  //   international
                   defaultCountry="IN"
                   value={formData.mobileNumber}
                   onChange={handlePhoneChange}
@@ -231,7 +210,10 @@ const LoginFormModel = ({ onClose }) => {
               <div className="flex justify-end mb-6">
                 <div
                   className="text-red-500 text-sm"
-                  onClick={handleForgotClick}
+                  onClick={() => {
+                    setForgotPasswordModal(true);
+                    setLoginFormModel(false);
+                  }}
                 >
                   Forgot Password ?
                 </div>
@@ -253,7 +235,10 @@ const LoginFormModel = ({ onClose }) => {
                 </span>
                 <p
                   className="text-[#000000] text-sm font-medium"
-                  onClick={handleSignupClick}
+                  onClick={() => {
+                    setSignupFormModel(true);
+                    setLoginFormModel(false);
+                  }}
                 >
                   Sign up
                 </p>
@@ -273,11 +258,6 @@ const LoginFormModel = ({ onClose }) => {
           </div>
         </div>
       </div>
-
-      {/* Forgot Password Modal */}
-
-      {forgotPasswordModal && <ForgotPassword onClose={handleForgotClose} />}
-      {signupFormModel && <SignupFormModel onClose={handleSignupClose} />}
     </>
   );
 };

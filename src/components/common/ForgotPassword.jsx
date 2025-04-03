@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate,  } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import CloseIcon from "@mui/icons-material/Close";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
@@ -7,8 +7,11 @@ import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import IMAGES from "@/utils/images.js";
 import "../../styles/Login.css";
-import OTPVerificationModal from "./OTPVerificationModal";
-const ForgotPassword = ({ onClose }) => {
+const ForgotPassword = ({
+  setForgotPasswordModal,
+  setLoginFormModel,
+  setOtpVerificationModal,
+}) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     mobileNumber: "",
@@ -74,12 +77,6 @@ const ForgotPassword = ({ onClose }) => {
     setErrors((prev) => ({ ...prev, mobileNumber: error }));
   };
 
-  const [showOTPModel, setShowOTPModel] = useState(false);
-
-  const handleCloseOTPModel = () => {
-    setShowOTPModel(false);
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validateForm()) {
@@ -109,10 +106,8 @@ const ForgotPassword = ({ onClose }) => {
 
     // Clear any errors
     setErrors({});
-
-    // Close the modal if needed
-
-    setShowOTPModel(true);
+    setForgotPasswordModal(false);
+    setOtpVerificationModal(true);
   };
   return (
     <>
@@ -122,12 +117,16 @@ const ForgotPassword = ({ onClose }) => {
       >
         <div
           className={`bg-white rounded-xl overflow-hidden shadow-lg max-w-4xl mx-auto w-full md:flex relative ${
-            isMobile ? "top-[19%]" : "top-[16%]"
+            isMobile
+              ? "fixed top-[2%] left-1/2 -translate-x-1/2"
+              : "relative md:top-[16%]"
           }`}
         >
           {/* Close Button */}
           <button
-            onClick={onClose}
+            onClick={()=>{
+              setForgotPasswordModal(false);
+            }}
             className="absolute top-3 right-3 text-gray-600 hover:text-black transition-colors cursor-pointer"
           >
             <CloseIcon />
@@ -191,13 +190,6 @@ const ForgotPassword = ({ onClose }) => {
           </div>
         </div>
       </div>
-
-      {showOTPModel && (
-        <OTPVerificationModal
-          onClose={handleCloseOTPModel}
-          mobileNumber={formData.mobileNumber}
-        />
-      )}
     </>
   );
 };

@@ -7,8 +7,7 @@ import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import IMAGES from "@/utils/images.js";
 import "../../styles/Login.css";
-import LoginFormModel from "./LoginFormModel";
-const SignupFormModel = ({ onClose }) => {
+const SignupFormModel = ({ setLoginFormModel ,setSignupFormModel }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
@@ -126,11 +125,8 @@ const SignupFormModel = ({ onClose }) => {
 
     // Clear any errors
     setErrors({});
-
-    // Close the modal if needed
-    if (onClose) {
-      onClose();
-    }
+    setSignupFormModel(false);
+    setLoginFormModel(true);
   };
   return (
     <>
@@ -140,12 +136,16 @@ const SignupFormModel = ({ onClose }) => {
       >
         <div
           className={`bg-white rounded-xl overflow-hidden shadow-lg max-w-4xl mx-auto w-full md:flex relative ${
-            isMobile ? "top-[19%]" : "top-[16%]"
+            isMobile
+              ? "fixed top-[2%] left-1/2 -translate-x-1/2"
+              : "relative md:top-[16%]"
           }`}
         >
           {/* Close Button */}
           <button
-            onClick={onClose}
+            onClick={()=>{
+              setSignupFormModel(false);
+            }}
             className="absolute top-3 right-3 text-gray-600 hover:text-black transition-colors cursor-pointer"
           >
             <CloseIcon />

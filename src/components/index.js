@@ -38,6 +38,10 @@ export { default as RecommendedProperty } from "./property/RecommendedProperty";
 export { default as PropertyDetails } from "./property/PropertyDetails";
 export { default as ProductCategory } from "@/Pages/UserFlow/ProductCategory";
 
+// electronics
+
+
+
 // seller
 export { default as SellerEnquiryList } from "@/components/sell/SellerEnquiryList";
 export { default as SellerPropertyTabContent } from "@/components/sell/SellerPropertyTabContent";
@@ -50,6 +54,16 @@ export { default as HomePage } from "@/Pages/UserFlow/HomePage";
 export { default as PropertyFilterPage } from "@/Pages/UserFlow/PropertyFilterPage";
 export { default as ProductDetailPage } from "@/Pages/UserFlow/ProductDetailPage";
 export { default as Sell } from "@/components/common/Sell";
+
+// electronics
+export { default as ElectronicsPage } from "@/Pages/UserFlow/ElectronicsPage";
+export { default as ElectronicsFilterPage } from "@/Pages/UserFlow/ElectronicsFilterPage";
+// cars
+export { default as CarsPage } from "@/Pages/UserFlow/CarsPage";
+export { default as CarsFilterPage } from "@/Pages/UserFlow/CarsFilterPage";
+// bikes
+export { default as BikesPage } from "@/Pages/UserFlow/BikesPage";
+export { default as BikesFilterPage } from "@/Pages/UserFlow/BikesFilterPage";
 
 // form pages
 export { default as HousingApartmentFormPage } from "@/features/HouseRentForm";

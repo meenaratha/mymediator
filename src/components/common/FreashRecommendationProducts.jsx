@@ -14,7 +14,9 @@ const PropertyCard = ({ item, category }) => {
   const handlePropertyClick = () => {
     navigate("/property-details");
   };
-
+  const handleBikeClick = () => {
+    navigate("/bike-details");
+  };
   return (
     <>
       {category === "properties" && (
@@ -126,6 +128,7 @@ const PropertyCard = ({ item, category }) => {
           className={`${
             isMobile ? " max-w-[300px]" : ""
           }  max-w-[275px]  w-full rounded-lg shadow-md overflow-hidden hover:shadow-lg mx-auto`}
+          onClick={handleBikeClick}
         >
           <div className="relative">
             <img

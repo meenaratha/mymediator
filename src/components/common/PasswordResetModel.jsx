@@ -7,8 +7,11 @@ import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import IMAGES from "@/utils/images.js";
 import "../../styles/Login.css";
-import LoginFormModel from "./LoginFormModel";
-const PasswordResetModel = ({ onClose }) => {
+const PasswordResetModel = ({
+  setOtpVerificationModal,
+  setPasswordResetModel,
+  setLoginFormModel,
+}) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     password: "",
@@ -107,30 +110,28 @@ const PasswordResetModel = ({ onClose }) => {
 
     // Clear any errors
     setErrors({});
-    // Close the modal if needed
-    if (onClose) {
-      onClose();
-    }
-    navigate("/");
+    setPasswordResetModel(false);
+    setLoginFormModel(true);
   };
 
   return (
     <>
-      {showLoginModal && (
-        <LoginFormModel onClose={() => setShowLoginModal(false)} />
-      )}
       <div
         className="fixed inset-0 flex items-center overflow-y-auto justify-center z-50 bg-[#000000a8] bg-opacity-50 p-4"
         style={{ backdropFilter: "blur(10px)", scrollbarWidth: "none" }}
       >
         <div
           className={`bg-white rounded-xl overflow-hidden shadow-lg max-w-4xl mx-auto w-full md:flex relative ${
-            isMobile ? "top-[19%]" : "top-[16%]"
+            isMobile
+              ? "fixed top-[2%] left-1/2 -translate-x-1/2"
+              : "relative md:top-[16%]"
           }`}
         >
           {/* Close Button */}
           <button
-            onClick={onClose}
+            onClick={() => {
+              setPasswordResetModel(false);
+            }}
             className="absolute top-3 right-3 text-gray-600 hover:text-black transition-colors cursor-pointer"
           >
             <CloseIcon />

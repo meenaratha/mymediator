@@ -15,6 +15,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import MobileHeader from "./MobileHeader";
 import LoginFormModel from "./LoginFormModel";
+import SignupFormModel from "./SignupFormModel";
+import ForgotPassword from "./ForgotPassword";
+import OTPVerificationModal from "./OTPVerificationModal";
+import PasswordResetModel from "./PasswordResetModel";
 
 const megaMenuData = {
   Property: {
@@ -159,16 +163,19 @@ const Header = () => {
     navigate("/sell");
   };
 
-  const [isLoginPopupVisible, setIsLoginPopupVisible] = useState(false);
+  const [loginFormModel, setLoginFormModel] = useState(false);
+  const [signupFormModel, setSignupFormModel] = useState(false);
+  const [otpVerificationModal, setOtpVerificationModal] = useState(false);
+  const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
+  const [passwordResetModel, setPasswordResetModel] = useState(false);
 
   const handleLoginClick = () => {
-    setIsLoginPopupVisible(true);
+    setLoginFormModel(true);
   };
 
-  const handleLoginClose = () => {
-    setIsLoginPopupVisible(false);
+  const handleProfileClick = () => {
+    navigate("/seller-enquiry-list");
   };
-
   return (
     <>
       {/* Mobile Header */}
@@ -293,6 +300,8 @@ const Header = () => {
                   sx={{ bgcolor: deepPurple[500] }}
                   alt="Remy Sharp"
                   src={Profile}
+                  onClick={handleProfileClick}
+                  style={{ cursor: "pointer" }}
                 />
               </div>
             </div>
@@ -362,10 +371,17 @@ const Header = () => {
                                         delay: index * 0.05,
                                       }}
                                     >
-                                      <Link
+                                      {/* <Link
                                         to={`/${category.toLowerCase()}/${item
                                           .toLowerCase()
                                           .replace(/\s+/g, "-")}`}
+                                        className="text-gray-600 hover:text-blue-600 text-sm block py-1"
+                                      >
+                                        {item}
+                                      </Link> */}
+
+                                      <Link
+                                        to={`/${category.toLowerCase()}`}
                                         className="text-gray-600 hover:text-blue-600 text-sm block py-1"
                                       >
                                         {item}
@@ -518,16 +534,43 @@ const Header = () => {
         </div>
       </section>
 
-      {/* login popup */}
-      {isLoginPopupVisible && (
-        <>
-          <LoginFormModel onClose={handleLoginClose} />
-          {/* <OTPVerificationModal
-          onClose={handleLoginClose}
-          onVerify={(otp) => console.log("Verified OTP:", otp)} // Add this line
-          onResend={() => console.log("Resend OTP")} // Optional: handle resend OTP
-        /> */}
-        </>
+      {loginFormModel && (
+        <LoginFormModel
+          setLoginFormModel={setLoginFormModel}
+          setSignupFormModel={setSignupFormModel}
+          setForgotPasswordModal={setForgotPasswordModal}
+        />
+      )}
+
+      {signupFormModel && (
+        <SignupFormModel
+          setLoginFormModel={setLoginFormModel}
+          setSignupFormModel={setSignupFormModel}
+        />
+      )}
+
+      {forgotPasswordModal && (
+        <ForgotPassword
+          setForgotPasswordModal={setForgotPasswordModal}
+          setLoginFormModel={setLoginFormModel}
+          setOtpVerificationModal={setOtpVerificationModal}
+        />
+      )}
+
+      {otpVerificationModal && (
+        <OTPVerificationModal
+          setOtpVerificationModal={setOtpVerificationModal}
+          setForgotPasswordModal={setForgotPasswordModal}
+          setPasswordResetModel={setPasswordResetModel}
+        />
+      )}
+
+      {passwordResetModel && (
+        <PasswordResetModel
+          setOtpVerificationModal={setOtpVerificationModal}
+          setPasswordResetModel={setPasswordResetModel}
+          setLoginFormModel={setLoginFormModel}
+        />
       )}
     </>
   );

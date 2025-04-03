@@ -87,6 +87,20 @@ const IMAGES = {
   mac16: new URL("../assets/images/electronics/mac16.png", import.meta.url)
     .href,
 
+  hplogo: new URL("../assets/images/common/hplogo.png", import.meta.url).href,
+  delllogo: new URL("../assets/images/common/delllogo.png", import.meta.url)
+    .href,
+  acerlogo: new URL("../assets/images/common/acerlogo.png", import.meta.url)
+    .href,
+  applelogo: new URL("../assets/images/common/applelogo.png", import.meta.url)
+    .href,
+  lenovalogo: new URL("../assets/images/common/lenovalogo.png", import.meta.url)
+    .href,
+  thinkpadlogo: new URL(
+    "../assets/images/common/thinkpadlogo.png",
+    import.meta.url
+  ).href,
+
   // property
   property1: new URL("@/assets/images/property/property1.png", import.meta.url)
     .href,
@@ -113,18 +127,19 @@ const IMAGES = {
   car6: new URL("@/assets/images/cars/car6.jpeg", import.meta.url).href,
   car7: new URL("@/assets/images/cars/car7.png", import.meta.url).href,
   car8: new URL("@/assets/images/cars/car8.png", import.meta.url).href,
-  hondaLogo: new URL("@/assets/images/cars/honda-logo.png", import.meta.url)
+  hondaLogo: new URL("@/assets/images/cars/hondalogo.png", import.meta.url)
     .href,
-  hyndaiLogo: new URL("@/assets/images/cars/hyundai-logo.png", import.meta.url)
+  hyndaiLogo: new URL("@/assets/images/cars/hyundailogo.png", import.meta.url)
     .href,
   mahendraLogo: new URL(
     "@/assets/images/cars/mahendralogo.png",
     import.meta.url
   ).href,
-  maruthiLogo: new URL("@/assets/images/cars/maruthilogo.png", import.meta.url)
+  maruthiLogo: new URL("@/assets/images/cars/marutilogo.png", import.meta.url)
     .href,
   tataLogo: new URL("@/assets/images/cars/tatalogo.png", import.meta.url).href,
-
+  toyotoLogo: new URL("@/assets/images/cars/toyatologo.png", import.meta.url)
+    .href,
   // bikes
 
   bike1: new URL("@/assets/images/bikes/bike1.png", import.meta.url).href,

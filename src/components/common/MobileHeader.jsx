@@ -12,7 +12,11 @@ import CloseIcon from "@mui/icons-material/Close";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import GpsFixedIcon from "@mui/icons-material/GpsFixed";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
-
+import LoginFormModel from "./LoginFormModel";
+import SignupFormModel from "./SignupFormModel";
+import ForgotPassword from "./ForgotPassword";
+import OTPVerificationModal from "./OTPVerificationModal";
+import PasswordResetModel from "./PasswordResetModel";
 const MobileHeader = ({ isFixed }) => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -98,6 +102,16 @@ const MobileHeader = ({ isFixed }) => {
       return () => clearInterval(interval);
     }
   }, [isSearchOpen, Object.keys(categories).length]);
+
+  const [loginFormModel, setLoginFormModel] = useState(false);
+  const [signupFormModel, setSignupFormModel] = useState(false);
+  const [otpVerificationModal, setOtpVerificationModal] = useState(false);
+  const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
+  const [passwordResetModel, setPasswordResetModel] = useState(false);
+
+  const handleLoginClick = () => {
+    setLoginFormModel(true);
+  };
 
   return (
     <>
@@ -346,6 +360,12 @@ const MobileHeader = ({ isFixed }) => {
 
                 {/* Categories */}
                 <div className="border-t border-gray-200 pt-4">
+                  <div
+                    className="text-sm text-gray-500 mb-2 px-3"
+                    onClick={handleLoginClick}
+                  >
+                    LOGIN / REGISTRATION
+                  </div>
                   <div className="text-sm text-gray-500 mb-2 px-3">
                     CATEGORIES
                   </div>
@@ -397,6 +417,45 @@ const MobileHeader = ({ isFixed }) => {
           </>
         )}
       </AnimatePresence>
+
+      {loginFormModel && (
+        <LoginFormModel
+          setLoginFormModel={setLoginFormModel}
+          setSignupFormModel={setSignupFormModel}
+          setForgotPasswordModal={setForgotPasswordModal}
+        />
+      )}
+
+      {signupFormModel && (
+        <SignupFormModel
+          setLoginFormModel={setLoginFormModel}
+          setSignupFormModel={setSignupFormModel}
+        />
+      )}
+
+      {forgotPasswordModal && (
+        <ForgotPassword
+          setForgotPasswordModal={setForgotPasswordModal}
+          setLoginFormModel={setLoginFormModel}
+          setOtpVerificationModal={setOtpVerificationModal}
+        />
+      )}
+
+      {otpVerificationModal && (
+        <OTPVerificationModal
+          setOtpVerificationModal={setOtpVerificationModal}
+          setForgotPasswordModal={setForgotPasswordModal}
+          setPasswordResetModel={setPasswordResetModel}
+        />
+      )}
+
+      {passwordResetModel && (
+        <PasswordResetModel
+          setOtpVerificationModal={setOtpVerificationModal}
+          setPasswordResetModel={setPasswordResetModel}
+          setLoginFormModel={setLoginFormModel}
+        />
+      )}
     </>
   );
 };

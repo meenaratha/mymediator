@@ -5,8 +5,12 @@ import { useMediaQuery } from "react-responsive"; // For detecting mobile device
 import CloseIcon from "@mui/icons-material/Close";
 import PasswordResetModel from "./PasswordResetModel";
 
-const OTPVerificationModal = ({ mobileNumber, onResend, onClose }) => {
-  console.log("Mobile Number:", mobileNumber);
+const OTPVerificationModal = ({
+  setOtpVerificationModal,
+  onResend,
+  setForgotPasswordModal,
+  setPasswordResetModel,
+}) => {
   const [otp, setOtp] = useState(["", "", "", ""]);
   const [activeInput, setActiveInput] = useState(0);
   const inputRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
@@ -86,14 +90,15 @@ const OTPVerificationModal = ({ mobileNumber, onResend, onClose }) => {
 
       // Simulate API call
       setTimeout(() => {
-        console.log("Submitted OTP:", otpCode, mobileNumber); // Log OTP to console
+        console.log("Submitted OTP:", otpCode); // Log OTP to console
         // onVerify(otpCode);
 
         // Reset the OTP input fields
         setOtp(["", "", "", ""]);
         setActiveInput(0);
         setIsSubmitting(false);
-        setconfirmPasswordModel(true);
+        setOtpVerificationModal(false);
+        setPasswordResetModel(true);
       }, 1500);
     }
   };
@@ -131,12 +136,16 @@ const OTPVerificationModal = ({ mobileNumber, onResend, onClose }) => {
       >
         <div
           className={`bg-white rounded-xl overflow-hidden shadow-lg max-w-4xl mx-auto w-full md:flex relative ${
-            isMobile ? "top-[19%]" : "top-[16%]"
+            isMobile
+              ? "fixed top-[2%] left-1/2 -translate-x-1/2"
+              : "relative md:top-[16%]"
           }`}
         >
           {/* Close Button */}
           <button
-            onClick={onClose}
+            onClick={() => {
+              setOtpVerificationModal(false);
+            }}
             className="absolute top-3 right-3 text-gray-600 hover:text-black transition-colors cursor-pointer"
           >
             <CloseIcon />
@@ -209,7 +218,7 @@ const OTPVerificationModal = ({ mobileNumber, onResend, onClose }) => {
           </div>
 
           {/* Right side - Illustration */}
-          <div className="md:block md:w-1/2 bg-white">
+          <div className="hidden md:block md:w-1/2 bg-white">
             <div className="h-full p-8 flex items-center justify-center">
               <img
                 src={IMAGES.otpbanner}
@@ -220,11 +229,6 @@ const OTPVerificationModal = ({ mobileNumber, onResend, onClose }) => {
           </div>
         </div>
       </div>
-
-      {/* Confirm Password Modal */}
-      {confirmPasswordModel && (
-        <PasswordResetModel onClose={handlePasswordClose} />
-      )}
     </>
   );
 };
