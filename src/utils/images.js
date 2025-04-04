@@ -15,6 +15,10 @@ const IMAGES = {
     .href,
   heroBanner: new URL("../assets/images/common/tittlebg.jpg", import.meta.url)
     .href,
+  doublearrow: new URL(
+    "../assets/images/common/doublearrow.png",
+    import.meta.url
+  ).href,
 
   // property banner images
   propertybanner1: new URL(

@@ -93,7 +93,7 @@ const HouseRentForm = () => {
 
   return (
     <div className="bg-gray-50 p-6 rounded-3xl w-full max-w-6xl mx-auto border border-[#b9b9b9] bg-[#f6f6f6] ">
-      <h1 className="text-center text-xl font-medium text-blue-800 mb-8">
+      <h1 className="text-center text-xl font-medium text-[#02487C] mb-8">
         Rent ( Houses & Apartment )
       </h1>
 

@@ -5,9 +5,12 @@ const MasterLayout = () => {
   return (
     <>
       <Header />
-      <Outlet />
-      {/* Mobile App Download Section */}
-      <AppFooter />
+     
+        <Outlet />
+
+        {/* Mobile App Download Section */}
+        <AppFooter />
+     
       <Footer />
     </>
   );

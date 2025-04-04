@@ -7,6 +7,7 @@ export { default as SellerRoutes } from "@/routes/SellerRoutes";
 // layouts
 export { default as MasterLayout } from "@/layouts/MasterLayout";
 export { default as UserDashboardLayout } from "@/layouts/UserDashboardLayout";
+export { default as FormLayout } from "@/layouts/FormLayout";
 
 // common layout components
 export { default as Header } from "./common/Header";
@@ -66,7 +67,7 @@ export { default as BikesPage } from "@/Pages/UserFlow/BikesPage";
 export { default as BikesFilterPage } from "@/Pages/UserFlow/BikesFilterPage";
 
 // form pages
-export { default as HousingApartmentFormPage } from "@/features/HouseRentForm";
+export { default as HouseSaleFormPage } from "@/Pages/UserFlow/HouseSaleFormPage";
 
 // seller
 export { default as SellerEnquiryListPage } from "@/Pages/SellerFlow/SellerEnquiryListPage";
