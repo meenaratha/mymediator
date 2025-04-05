@@ -12,6 +12,7 @@ import {
   BikesPage,
   BikesFilterPage,
   HouseSaleFormPage,
+  HouseRentFormPage,
   FormLayout,
 } from "@/components";
 import BikeDetailPage from "../Pages/UserFlow/BikeDetailPage";
@@ -33,6 +34,7 @@ const UserRoutes = () => {
       <Route element={<FormLayout />}>
         <Route path="/sell" element={<ProductCategory />} />
         <Route path="/sale-house-apartment" element={<HouseSaleFormPage />} />
+        <Route path="/rent-house-apartment" element={<HouseRentFormPage />} />
       </Route>
     </>
   );

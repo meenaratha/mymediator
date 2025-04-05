@@ -34,14 +34,21 @@ const Sell = () => {
             <div className="grid grid-cols-2 gap-4">
               {/* Property Category */}
               <div className="flex flex-col items-center">
-                <div 
+                <div
                   onClick={() => handleCategoryClick("property")}
-                  className={`${activeCategory === "property" ? "bg-[#012D49]" : "bg-[#FFFFFF] border border-[#E6E6E6]"} rounded-lg w-full aspect-square flex flex-col gap-2 items-center justify-center mb-2 relative overflow-hidden cursor-pointer`}
+                  className={`${
+                    activeCategory === "property"
+                      ? "bg-[#012D49]"
+                      : "bg-[#FFFFFF] border border-[#E6E6E6]"
+                  } rounded-lg w-full aspect-square flex flex-col gap-2 items-center justify-center mb-2 relative overflow-hidden cursor-pointer`}
                 >
                   <div
                     className="absolute bottom-0 w-full h-1/3 border border-[#A5BBC9]"
                     style={{
-                      background: activeCategory === "property" ? "#02487C" : "linear-gradient(90deg, rgba(200, 214, 224, 0.61) 0%, rgba(176, 213, 234, 0.61) 100%)",
+                      background:
+                        activeCategory === "property"
+                          ? "#02487C"
+                          : "linear-gradient(90deg, rgba(200, 214, 224, 0.61) 0%, rgba(176, 213, 234, 0.61) 100%)",
                     }}
                   ></div>
                   <img
@@ -49,7 +56,13 @@ const Sell = () => {
                     alt=""
                     className="w-16 h-16"
                   />
-                  <span className={`text-sm font-medium text-center pt-8 ${activeCategory === "property" ? "text-white" : "text-black"} relative z-[10]`}>
+                  <span
+                    className={`text-sm font-medium text-center pt-8 ${
+                      activeCategory === "property"
+                        ? "text-white"
+                        : "text-black"
+                    } relative z-[10]`}
+                  >
                     Property
                   </span>
                 </div>
@@ -57,14 +70,21 @@ const Sell = () => {
 
               {/* Electronics Category */}
               <div className="flex flex-col items-center">
-                <div 
+                <div
                   onClick={() => handleCategoryClick("electronics")}
-                  className={`${activeCategory === "electronics" ? "bg-[#012D49]" : "bg-[#FFFFFF] border border-[#E6E6E6]"} rounded-lg w-full aspect-square flex flex-col gap-2 items-center justify-center mb-2 relative overflow-hidden cursor-pointer`}
+                  className={`${
+                    activeCategory === "electronics"
+                      ? "bg-[#012D49]"
+                      : "bg-[#FFFFFF] border border-[#E6E6E6]"
+                  } rounded-lg w-full aspect-square flex flex-col gap-2 items-center justify-center mb-2 relative overflow-hidden cursor-pointer`}
                 >
                   <div
                     className="absolute bottom-0 w-full h-1/3 border border-[#A5BBC9]"
                     style={{
-                      background: activeCategory === "electronics" ? "#02487C" : "linear-gradient(90deg, rgba(200, 214, 224, 0.61) 0%, rgba(176, 213, 234, 0.61) 100%)",
+                      background:
+                        activeCategory === "electronics"
+                          ? "#02487C"
+                          : "linear-gradient(90deg, rgba(200, 214, 224, 0.61) 0%, rgba(176, 213, 234, 0.61) 100%)",
                     }}
                   ></div>
                   <img
@@ -72,7 +92,13 @@ const Sell = () => {
                     alt=""
                     className="w-16 h-16"
                   />
-                  <span className={`text-sm font-medium text-center pt-8 ${activeCategory === "electronics" ? "text-white" : "text-black"} relative z-[10]`}>
+                  <span
+                    className={`text-sm font-medium text-center pt-8 ${
+                      activeCategory === "electronics"
+                        ? "text-white"
+                        : "text-black"
+                    } relative z-[10]`}
+                  >
                     Electronics
                   </span>
                 </div>
@@ -80,18 +106,29 @@ const Sell = () => {
 
               {/* Cars Category */}
               <div className="flex flex-col items-center">
-                <div 
+                <div
                   onClick={() => handleCategoryClick("cars")}
-                  className={`${activeCategory === "cars" ? "bg-[#012D49]" : "bg-[#FFFFFF] border border-[#E6E6E6]"} rounded-lg w-full aspect-square flex flex-col gap-2 items-center justify-center mb-2 relative overflow-hidden cursor-pointer`}
+                  className={`${
+                    activeCategory === "cars"
+                      ? "bg-[#012D49]"
+                      : "bg-[#FFFFFF] border border-[#E6E6E6]"
+                  } rounded-lg w-full aspect-square flex flex-col gap-2 items-center justify-center mb-2 relative overflow-hidden cursor-pointer`}
                 >
                   <div
                     className="absolute bottom-0 w-full h-1/3 border border-[#A5BBC9]"
                     style={{
-                      background: activeCategory === "cars" ? "#02487C" : "linear-gradient(90deg, rgba(200, 214, 224, 0.61) 0%, rgba(176, 213, 234, 0.61) 100%)",
+                      background:
+                        activeCategory === "cars"
+                          ? "#02487C"
+                          : "linear-gradient(90deg, rgba(200, 214, 224, 0.61) 0%, rgba(176, 213, 234, 0.61) 100%)",
                     }}
                   ></div>
                   <img src={IMAGES.carcategory} alt="" className="w-16 h-16" />
-                  <span className={`text-sm font-medium text-center pt-8 ${activeCategory === "cars" ? "text-white" : "text-black"} relative z-[10]`}>
+                  <span
+                    className={`text-sm font-medium text-center pt-8 ${
+                      activeCategory === "cars" ? "text-white" : "text-black"
+                    } relative z-[10]`}
+                  >
                     Cars
                   </span>
                 </div>
@@ -99,18 +136,29 @@ const Sell = () => {
 
               {/* Bikes Category */}
               <div className="flex flex-col items-center">
-                <div 
+                <div
                   onClick={() => handleCategoryClick("bikes")}
-                  className={`${activeCategory === "bikes" ? "bg-[#012D49]" : "bg-[#FFFFFF] border border-[#E6E6E6]"} rounded-lg w-full aspect-square flex flex-col gap-2 items-center justify-center mb-2 relative overflow-hidden cursor-pointer`}
+                  className={`${
+                    activeCategory === "bikes"
+                      ? "bg-[#012D49]"
+                      : "bg-[#FFFFFF] border border-[#E6E6E6]"
+                  } rounded-lg w-full aspect-square flex flex-col gap-2 items-center justify-center mb-2 relative overflow-hidden cursor-pointer`}
                 >
                   <div
                     className="absolute bottom-0 w-full h-1/3 border border-[#A5BBC9]"
                     style={{
-                      background: activeCategory === "bikes" ? "#02487C" : "linear-gradient(90deg, rgba(200, 214, 224, 0.61) 0%, rgba(176, 213, 234, 0.61) 100%)",
+                      background:
+                        activeCategory === "bikes"
+                          ? "#02487C"
+                          : "linear-gradient(90deg, rgba(200, 214, 224, 0.61) 0%, rgba(176, 213, 234, 0.61) 100%)",
                     }}
                   ></div>
                   <img src={IMAGES.bikecategory} alt="" className="w-16 h-16" />
-                  <span className={`text-sm font-medium text-center pt-8 ${activeCategory === "bikes" ? "text-white" : "text-black"} relative z-[10]`}>
+                  <span
+                    className={`text-sm font-medium text-center pt-8 ${
+                      activeCategory === "bikes" ? "text-white" : "text-black"
+                    } relative z-[10]`}
+                  >
                     Bikes
                   </span>
                 </div>
@@ -127,7 +175,9 @@ const Sell = () => {
                 to="/sale-house-apartment"
                 className="bg-white rounded-lg shadow-sm p-4 flex justify-between items-center cursor-pointer"
               >
-                <span className="font-medium">For Sale : Houses & Apartment</span>
+                <span className="font-medium">
+                  For Sale : Houses & Apartment
+                </span>
                 <img
                   src={IMAGES.doublearrow}
                   alt=""
@@ -137,10 +187,12 @@ const Sell = () => {
 
               {/* For Rent: Houses & Apartment */}
               <Link
-                to=""
+                to="/rent-house-apartment"
                 className="bg-white rounded-lg shadow-sm p-4 flex justify-between items-center cursor-pointer"
               >
-                <span className="font-medium">For Rent : Houses & Apartment</span>
+                <span className="font-medium">
+                  For Rent : Houses & Apartment
+                </span>
                 <img
                   src={IMAGES.doublearrow}
                   alt=""
@@ -323,7 +375,6 @@ const Sell = () => {
                   className="w-[30px] h-[30px]"
                 />
               </Link>
-             
             </div>
           )}
 

@@ -91,3 +91,9 @@ button:hover {
 } */
 
 
+/* Chrome/Edge Only */
+select option:hover {
+  background-color: #0f1c5e;
+  color: white;
+  border-radius: 10px;
+}

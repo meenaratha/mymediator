@@ -32,6 +32,8 @@ export { default as ForgotPassword } from "@/components/common/ForgotPassword";
 // login / registration
 
 // forms
+export { default as DynamicInputs } from "@/utils/DynamicInputs";
+export { default as HouseSaleForm } from "@/features/HouseSaleForm";
 export { default as HouseRentForm } from "@/features/HouseRentForm";
 
 // property
@@ -40,8 +42,6 @@ export { default as PropertyDetails } from "./property/PropertyDetails";
 export { default as ProductCategory } from "@/Pages/UserFlow/ProductCategory";
 
 // electronics
-
-
 
 // seller
 export { default as SellerEnquiryList } from "@/components/sell/SellerEnquiryList";
@@ -68,6 +68,7 @@ export { default as BikesFilterPage } from "@/Pages/UserFlow/BikesFilterPage";
 
 // form pages
 export { default as HouseSaleFormPage } from "@/Pages/UserFlow/HouseSaleFormPage";
+export { default as HouseRentFormPage } from "@/Pages/UserFlow/HouseRentFormPage";
 
 // seller
 export { default as SellerEnquiryListPage } from "@/Pages/SellerFlow/SellerEnquiryListPage";

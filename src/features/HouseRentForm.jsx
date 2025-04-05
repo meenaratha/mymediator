@@ -92,8 +92,12 @@ const HouseRentForm = () => {
   };
 
   return (
-    <div className="bg-gray-50 p-6 rounded-3xl w-full max-w-6xl mx-auto border border-[#b9b9b9] bg-[#f6f6f6] ">
-      <h1 className="text-center text-xl font-medium text-[#02487C] mb-8">
+    <div
+      className="bg-gray-50 p-6 rounded-3xl w-full max-w-6xl
+    shadow-[0_0_10px_rgba(176,_176,_176,_0.25)]
+     mx-auto border border-[#b9b9b9] bg-[#f6f6f6] "
+    >
+      <h1 className="text-center text-xl font-medium text-[#02487C] mb-8 ">
         Rent ( Houses & Apartment )
       </h1>
 
@@ -101,7 +105,7 @@ const HouseRentForm = () => {
         {/* Row 1 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div>
-            <label className="block text-gray-800 font-medium mb-2">
+            <label className="block text-gray-800 font-medium mb-2 px-4">
               Property Name
             </label>
             <input
@@ -115,7 +119,7 @@ const HouseRentForm = () => {
           </div>
 
           <div>
-            <label className="block text-gray-800 font-medium mb-2">
+            <label className="block text-gray-800 font-medium mb-2 px-4">
               Mobile number
             </label>
             <input
@@ -129,13 +133,15 @@ const HouseRentForm = () => {
           </div>
 
           <div>
-            <label className="block text-gray-800 font-medium mb-2">
+            <label className="block text-gray-800 font-medium mb-2 px-4">
               Property Type
             </label>
             <div className="relative">
               <select
                 name="propertyType"
-                className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="appearance-none w-full max-w-sm 
+                px-4 py-3 rounded-full border border-[#bfbfbf] 
+                bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                 value={formData.propertyType}
                 onChange={handleInputChange}
               >
@@ -156,7 +162,7 @@ const HouseRentForm = () => {
         {/* Row 2 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div>
-            <label className="block text-gray-800 font-medium mb-2">
+            <label className="block text-gray-800 font-medium mb-2 px-4">
               Property Method
             </label>
             <div className="relative">
@@ -179,7 +185,7 @@ const HouseRentForm = () => {
           </div>
 
           <div>
-            <label className="block text-gray-800 font-medium mb-2">
+            <label className="block text-gray-800 font-medium mb-2 px-4">
               Bedrooms
             </label>
             <div className="relative">
@@ -204,7 +210,7 @@ const HouseRentForm = () => {
           </div>
 
           <div>
-            <label className="block text-gray-800 font-medium mb-2">
+            <label className="block text-gray-800 font-medium mb-2 px-4">
               Bathrooms
             </label>
             <div className="relative">
@@ -232,7 +238,7 @@ const HouseRentForm = () => {
         {/* Row 3 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div>
-            <label className="block text-gray-800 font-medium mb-2">
+            <label className="block text-gray-800 font-medium mb-2 px-4">
               Furnished
             </label>
             <div className="relative">
@@ -256,7 +262,7 @@ const HouseRentForm = () => {
           </div>
 
           <div>
-            <label className="block text-gray-800 font-medium mb-2">
+            <label className="block text-gray-800 font-medium mb-2 px-4">
               Construction Status
             </label>
             <div className="relative">
@@ -279,7 +285,7 @@ const HouseRentForm = () => {
           </div>
 
           <div>
-            <label className="block text-gray-800 font-medium mb-2">
+            <label className="block text-gray-800 font-medium mb-2 px-4">
               Listed by
             </label>
             <div className="relative">
@@ -306,7 +312,7 @@ const HouseRentForm = () => {
         {/* Row 4 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div>
-            <label className="block text-gray-800 font-medium mb-2">
+            <label className="block text-gray-800 font-medium mb-2 px-4">
               Super Buildup area ( SQ.FT )
             </label>
             <div className="relative">
@@ -331,7 +337,7 @@ const HouseRentForm = () => {
           </div>
 
           <div>
-            <label className="block text-gray-800 font-medium mb-2">
+            <label className="block text-gray-800 font-medium mb-2 px-4">
               Carpet area SQ . FT
             </label>
             <div className="relative">
@@ -356,7 +362,7 @@ const HouseRentForm = () => {
           </div>
 
           <div>
-            <label className="block text-gray-800 font-medium mb-2">
+            <label className="block text-gray-800 font-medium mb-2 px-4">
               Maintenance ( monthly )
             </label>
             <input
@@ -373,7 +379,7 @@ const HouseRentForm = () => {
         {/* Row 5 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div>
-            <label className="block text-gray-800 font-medium mb-2">
+            <label className="block text-gray-800 font-medium mb-2 px-4">
               Total Floors
             </label>
             <input
@@ -387,7 +393,7 @@ const HouseRentForm = () => {
           </div>
 
           <div>
-            <label className="block text-gray-800 font-medium mb-2">
+            <label className="block text-gray-800 font-medium mb-2 px-4">
               Car parking
             </label>
             <input
@@ -401,7 +407,7 @@ const HouseRentForm = () => {
           </div>
 
           <div>
-            <label className="block text-gray-800 font-medium mb-2">
+            <label className="block text-gray-800 font-medium mb-2 px-4">
               Building Direction
             </label>
             <input
@@ -418,7 +424,7 @@ const HouseRentForm = () => {
         {/* Row 6 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div>
-            <label className="block text-gray-800 font-medium mb-2">
+            <label className="block text-gray-800 font-medium mb-2 px-4">
               Enter Address
             </label>
             <input
@@ -432,7 +438,7 @@ const HouseRentForm = () => {
           </div>
 
           <div>
-            <label className="block text-gray-800 font-medium mb-2">
+            <label className="block text-gray-800 font-medium mb-2 px-4">
               Enter State
             </label>
             <input
@@ -446,7 +452,7 @@ const HouseRentForm = () => {
           </div>
 
           <div>
-            <label className="block text-gray-800 font-medium mb-2">
+            <label className="block text-gray-800 font-medium mb-2 px-4">
               Enter District
             </label>
             <input
@@ -462,7 +468,7 @@ const HouseRentForm = () => {
 
         {/* Description */}
         <div className="mb-6">
-          <label className="block text-gray-800 font-medium mb-2">
+          <label className="block text-gray-800 font-medium mb-2 px-4">
             Description
           </label>
           <textarea
@@ -477,7 +483,7 @@ const HouseRentForm = () => {
         {/* Row 7 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div>
-            <label className="block text-gray-800 font-medium mb-2">
+            <label className="block text-gray-800 font-medium mb-2 px-4">
               Amount
             </label>
             <input
@@ -492,7 +498,7 @@ const HouseRentForm = () => {
 
           {/* Image Upload */}
           <div>
-            <label className="block text-gray-800 font-medium mb-2">
+            <label className="block text-gray-800 font-medium mb-2 ">
               Image Upload
             </label>
             <div
