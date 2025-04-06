@@ -16,6 +16,7 @@ import {
   FormLayout,
 } from "@/components";
 import BikeDetailPage from "../Pages/UserFlow/BikeDetailPage";
+import SellerProfile from "../components/sell/sellerProfile";
 
 const UserRoutes = () => {
   return (
@@ -33,6 +34,8 @@ const UserRoutes = () => {
 
       <Route element={<FormLayout />}>
         <Route path="/sell" element={<ProductCategory />} />
+        <Route path="/seller-profile" element={<SellerProfile />} />
+
         <Route path="/sale-house-apartment" element={<HouseSaleFormPage />} />
         <Route path="/rent-house-apartment" element={<HouseRentFormPage />} />
       </Route>
