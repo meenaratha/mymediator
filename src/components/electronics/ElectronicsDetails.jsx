@@ -1,5 +1,4 @@
 import React, { useState, useRef } from "react";
-import { Link } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation, Pagination, Thumbs } from "swiper/modules";
 import "swiper/css";
@@ -15,16 +14,16 @@ import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import CloseIcon from "@mui/icons-material/Close";
-import TwoWheelerIcon from "@mui/icons-material/TwoWheeler";
-import SpeedIcon from "@mui/icons-material/Speed";
+import LaptopIcon from "@mui/icons-material/Laptop";
+import MemoryIcon from "@mui/icons-material/Memory";
+import StorageIcon from "@mui/icons-material/Storage";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import LocalGasStationIcon from "@mui/icons-material/LocalGasStation";
 import IMAGES from "../../utils/images.js";
 import { useMediaQuery } from "react-responsive";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
-const BikeDetails = ({ bike }) => {
+const LaptopDetails = ({ laptop }) => {
   const isMobile = useMediaQuery({ maxWidth: 767 });
   const [isFavorite, setIsFavorite] = useState(false);
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
@@ -39,13 +38,13 @@ const BikeDetails = ({ bike }) => {
   // For touch support on mobile devices
   const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
 
-  // Image arrays - replace with your bike images
+  // Image arrays - replace with your laptop images
   const images = [
-    IMAGES.bike1,
-    IMAGES.bike2,
-    IMAGES.bike3,
-    IMAGES.bike4,
-    IMAGES.bike5,
+    IMAGES.laptop1,
+    IMAGES.laptop2,
+    IMAGES.laptop3,
+    IMAGES.laptop4,
+    IMAGES.laptop5,
   ];
 
   // Handle touch events for mobile zoom
@@ -186,7 +185,7 @@ const BikeDetails = ({ bike }) => {
                       <div className="relative">
                         <img
                           src={image}
-                          alt={`Bike view ${index + 1}`}
+                          alt={`Laptop view ${index + 1}`}
                           className="w-full h-[300px] object-cover"
                         />
                         <div className="absolute top-2 right-2 flex space-x-2">
@@ -229,13 +228,13 @@ const BikeDetails = ({ bike }) => {
                   />
                 </div>
                 <div className="ml-3">
-                  <h3 className="font-semibold text-lg">Jayalakshmi</h3>
+                  <h3 className="font-semibold text-lg">Jessamyn</h3>
                   <p className="text-sm text-gray-500">Seller</p>
                 </div>
                 <div className="ml-auto">
-                  <Link to="/seller-profile" className="text-blue-600 text-sm font-medium cursor-pointer">
+                  <button className="text-blue-600 text-sm font-medium cursor-pointer">
                     See Profile
-                  </Link>
+                  </button>
                 </div>
               </div>
 
@@ -254,8 +253,8 @@ const BikeDetails = ({ bike }) => {
                     <div className="w-[150px] h-[150px] rounded-lg overflow-hidden">
                       <MapContainer
                         center={[
-                          bike.location.latitude,
-                          bike.location.longitude,
+                          laptop.location.latitude,
+                          laptop.location.longitude,
                         ]}
                         zoom={13}
                         scrollWheelZoom={false}
@@ -266,12 +265,12 @@ const BikeDetails = ({ bike }) => {
                         />
                         <Marker
                           position={[
-                            bike.location.latitude,
-                            bike.location.longitude,
+                            laptop.location.latitude,
+                            laptop.location.longitude,
                           ]}
                         >
                           <Popup>
-                            {bike.brand} {bike.model}
+                            {laptop.brand} {laptop.model}
                           </Popup>
                         </Marker>
                       </MapContainer>
@@ -289,7 +288,7 @@ const BikeDetails = ({ bike }) => {
             <div className="w-full md:w-1/2">
               <div className="flex items-center py-2">
                 <h2 className="md:text-2xl text-[20px] font-bold">
-                  TVS RIDERS
+                  MICROSOFT SURFACE
                 </h2>
                 <div className="w-[fit-content] ml-4 bg-blue-100 text-blue-800 px-2 py-1 rounded-md flex items-center text-xs">
                   <VerifiedIcon fontSize="small" className="mr-1" />
@@ -298,10 +297,10 @@ const BikeDetails = ({ bike }) => {
               </div>
 
               <div className="flex items-center mt-2 mb-2">
-                <p className="mr-4">2017 - 15,000 km</p>
+                <p className="mr-4">Surface Pro 8</p>
                 <div className="flex items-center">
                   <StarIcon className="text-orange-500" />
-                  <span className="ml-1">4.8</span>
+                  <span className="ml-1">4.5</span>
                 </div>
               </div>
 
@@ -313,7 +312,7 @@ const BikeDetails = ({ bike }) => {
             <div className="w-full md:w-1/2 flex flex-col md:items-center md:mt-[10px]">
               <div className="mt-1 md:mt-0">
                 <h3 className="md:text-2xl text-[20px] font-bold md:text-center">
-                  ₹ 1,50,000
+                  ₹ 80,000
                 </h3>
                 <div className="flex mt-4 space-x-4 justify-center">
                   <button className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] cursor-pointer flex items-center justify-center flex-1">
@@ -333,7 +332,7 @@ const BikeDetails = ({ bike }) => {
 
       {/* Zoom Modal */}
       {showZoom && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 z-999 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
           <div className="relative w-full max-w-4xl h-[80vh] bg-white rounded-lg overflow-hidden">
             <button 
               onClick={handleZoomOut}
@@ -349,7 +348,7 @@ const BikeDetails = ({ bike }) => {
             >
               <img
                 src={zoomedImageSrc}
-                alt="Zoomed bike view"
+                alt="Zoomed laptop view"
                 className={`w-full h-full ${isMobile ? "object-contain" : "object-cover"}`}
                 style={{
                   transform: `scale(${zoomLevel})`,
@@ -394,4 +393,4 @@ const BikeDetails = ({ bike }) => {
   );
 };
 
-export default BikeDetails;
+export default LaptopDetails;

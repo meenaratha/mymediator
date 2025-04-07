@@ -1,63 +1,62 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import IMAGES from "@/utils/images.js";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import {
-  TwoWheelerOutlined,
-  SpeedOutlined,
-  LocalGasStationOutlined,
+  LaptopMacOutlined,
+  MemoryOutlined,
+  StorageOutlined,
+  BatteryFullOutlined,
   CalendarTodayOutlined,
-  BuildOutlined,
-  ColorLensOutlined,
   PersonOutlined,
   LocationOnOutlined,
   ReportProblemOutlined,
-  CheckCircleOutline,
+  ScreenRotationOutlined
 } from "@mui/icons-material";
 import axios from "axios";
-import BikeDetails from "./BikeDetails";
+import LaptopDetails from "../electronics/ElectronicsDetails";
 
-const BikeDescription = () => {
-  const [bike, setBike] = useState(null);
+const LaptopDescription = () => {
+  const [laptop, setLaptop] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Replace with your bike data API endpoint
+        // Replace with your laptop data API endpoint
         const response = await axios.get(
-          "https://raw.githubusercontent.com/yourusername/bikes-data/main/bikes.json"
+          "https://raw.githubusercontent.com/yourusername/laptops-data/main/laptops.json"
         );
         const data = response.data;
-        setBike(data.bike);
+        setLaptop(data.laptop);
         setIsLoading(false);
       } catch (error) {
         // If API fails, use fallback data
         console.log("Using fallback data due to API error:", error);
-        setBike({
-          id: "B12345",
-          brand: "TVS",
-          model: "Riders",
-          year: 2017,
-          kilometers: 15000,
-          fuelType: "Petrol",
-          engineCapacity: "160 cc",
-          maxPower: "15 bhp",
-          maxTorque: "12 Nm",
-          mileage: "45 kmpl", 
-          transmission: "Manual",
-          color: "Black",
-          condition: "Good",
-          ownerNumber: 1,
-          price: 150000,
+        setLaptop({
+          id: "L12345",
+          brand: "Microsoft",
+          model: "Surface Pro 8",
+          processor: "Intel Core i5-1135G7",
+          ram: "8 GB",
+          storage: "256 GB SSD",
+          displaySize: "13.0 inches",
+          displayResolution: "2880 x 1920",
+          graphicsCard: "Intel Iris Xe Graphics",
+          batteryLife: "Up to 16 hours",
+          operatingSystem: "Windows 11",
+          weight: "1.96 lbs",
+          condition: "Excellent",
+          purchaseYear: 2022,
+          warranty: "4 months remaining",
+          price: 80000,
+          additionalFeatures: ["Touchscreen", "Detachable Keyboard", "Surface Pen Compatible", "USB-C ports"],
           location: {
-            address: "T. Nagar, Chennai",
+            address: "West Mambalam, Chennai",
             latitude: 13.0419,
             longitude: 80.2338
-          },
-          features: ["Disc Brake", "LED Lights", "Digital Speedometer", "Electric Start"]
+          }
         });
         setIsLoading(false);
       }
@@ -75,7 +74,7 @@ const BikeDescription = () => {
 
   return (
     <>
-      <BikeDetails bike={bike} />
+      <LaptopDetails laptop={laptop} />
 
       <div className="p-4">
         {/* Container for the two-column layout */}
@@ -83,59 +82,80 @@ const BikeDescription = () => {
           {/* Left Column (65%) */}
           <div className="md:w-2/3 w-full md:pr-4 mb-4 md:mb-0">
             <div className="bg-white p-6 shadow-lg rounded-lg h-full border border-gray-200">
-              {/* Upper section with icons and details */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 border-b border-[#E1E1E1] pb-4">
+              {/* Description Section */}
+              <div className="mb-4">
+                <h3 className="text-lg font-bold mb-2">Description</h3>
+                <p className="text-gray-700 text-sm">
+                  Microsoft Surface Laptop Pro 8 used 8 month old in perfect condition-256GB SSD, 8GB RAM, 
+                  Intel Core i5 11th Gen, 13-inch PixelSense Flow display with 120Hz refresh rate. The device 
+                  comes with the Surface Pro Type Cover (keyboard), charger, and Surface Pen. Battery life is 
+                  still excellent with up to 16 hours of use. Perfect for students or professionals on the go. 
+                  Original Microsoft warranty valid until June 24.
+                </p>
+              </div>
+
+              {/* Key Specs in Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4 border-b border-[#E1E1E1]">
                 <div className="flex items-center space-x-2">
-                  <TwoWheelerOutlined className="text-gray-500" />
-                  <span className="text-sm font-medium text-gray-600">
-                    {bike.engineCapacity}
-                  </span>
+                  <LaptopMacOutlined className="text-gray-500" />
+                  <div className="text-sm">
+                    <span className="font-medium text-gray-600">Processor:</span>
+                    <div className="text-gray-700">{laptop.processor}</div>
+                  </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <SpeedOutlined className="text-gray-500" />
-                  <span className="text-sm font-medium text-gray-600">
-                    {bike.kilometers} km
-                  </span>
+                  <MemoryOutlined className="text-gray-500" />
+                  <div className="text-sm">
+                    <span className="font-medium text-gray-600">Memory:</span>
+                    <div className="text-gray-700">{laptop.ram}</div>
+                  </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <LocalGasStationOutlined className="text-gray-500" />
-                  <span className="text-sm font-medium text-gray-600">
-                    {bike.fuelType}
-                  </span>
+                  <StorageOutlined className="text-gray-500" />
+                  <div className="text-sm">
+                    <span className="font-medium text-gray-600">Storage:</span>
+                    <div className="text-gray-700">{laptop.storage}</div>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <ScreenRotationOutlined className="text-gray-500" />
+                  <div className="text-sm">
+                    <span className="font-medium text-gray-600">Display:</span>
+                    <div className="text-gray-700">{laptop.displaySize}</div>
+                  </div>
                 </div>
               </div>
 
-              {/* Middle section with owner, location, and date */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 py-4 border-b border-[#E1E1E1]">
+              {/* Ownership and Purchase Information */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4 border-b border-[#E1E1E1]">
                 <div className="flex items-center space-x-2">
                   <PersonOutlined className="text-gray-500" />
-                  <span className="text-sm font-medium text-gray-600">
-                    Owner {bike.ownerNumber}
-                  </span>
+                  <div className="text-sm">
+                    <span className="font-medium text-gray-600">Condition:</span>
+                    <div className="text-gray-700">{laptop.condition}</div>
+                  </div>
                 </div>
                 <div className="flex items-center space-x-2">
                   <LocationOnOutlined className="text-gray-500" />
-                  <span className="text-sm font-medium text-gray-600">
-                    {bike.location.address}
-                  </span>
+                  <div className="text-sm">
+                    <span className="font-medium text-gray-600">Location:</span>
+                    <div className="text-gray-700">{laptop.location.address}</div>
+                  </div>
                 </div>
                 <div className="flex items-center space-x-2">
                   <CalendarTodayOutlined className="text-gray-500" />
-                  <span className="text-sm font-medium text-gray-600">
-                    {bike.year}
-                  </span>
+                  <div className="text-sm">
+                    <span className="font-medium text-gray-600">Purchase Year:</span>
+                    <div className="text-gray-700">{laptop.purchaseYear}</div>
+                  </div>
                 </div>
-              </div>
-
-              {/* Description Section */}
-              <div className="pt-4">
-                <h3 className="text-lg font-bold mb-2">Description</h3>
-                <p className="text-gray-700 text-sm">
-                  This is a well-maintained {bike.year} {bike.brand} {bike.model} with only {bike.kilometers} km on the odometer. 
-                  The bike is in excellent condition and has been regularly serviced. It offers great mileage of {bike.mileage} and 
-                  has a powerful {bike.engineCapacity} engine with {bike.maxPower} of maximum power. The bike comes with features like 
-                  {bike.features.join(', ')}. This is a perfect ride for daily commuters and weekend warriors alike.
-                </p>
+                <div className="flex items-center space-x-2">
+                  <BatteryFullOutlined className="text-gray-500" />
+                  <div className="text-sm">
+                    <span className="font-medium text-gray-600">Battery Life:</span>
+                    <div className="text-gray-700">{laptop.batteryLife}</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -152,13 +172,13 @@ const BikeDescription = () => {
                     alt="Profile"
                   />
                   <div className="ml-3">
-                    <h2 className="text-lg font-semibold">Jayalakshmi</h2>
+                    <h2 className="text-lg font-semibold">Jessamyn</h2>
                     <p className="text-sm text-gray-500">Seller</p>
                   </div>
                 </div>
-                <Link to="/seller-profile" className="text-blue-600 font-semibold text-sm">
+                <a href="#" className="text-blue-600 font-semibold text-sm">
                   See Profile
-                </Link>
+                </a>
               </div>
 
               {/* Location Section */}
@@ -166,8 +186,8 @@ const BikeDescription = () => {
                 <div className="flex flex-col justify-center items-center max-w-sm mx-auto gap-[10px]">
                   <MapContainer
                     center={[
-                      bike.location.latitude,
-                      bike.location.longitude,
+                      laptop.location.latitude,
+                      laptop.location.longitude,
                     ]}
                     zoom={13}
                     scrollWheelZoom={false}
@@ -178,12 +198,12 @@ const BikeDescription = () => {
                     />
                     <Marker
                       position={[
-                        bike.location.latitude,
-                        bike.location.longitude,
+                        laptop.location.latitude,
+                        laptop.location.longitude,
                       ]}
                     >
                       <Popup>
-                        {bike.brand} {bike.model} <br /> {bike.year}
+                        {laptop.brand} {laptop.model} <br /> {laptop.purchaseYear}
                       </Popup>
                     </Marker>
                   </MapContainer>
@@ -191,7 +211,7 @@ const BikeDescription = () => {
                   <div className="flex items-center space-x-2">
                     <LocationOnOutlined className="text-gray-500" />
                     <span className="text-sm font-medium text-gray-600">
-                      {bike.location.address}
+                      {laptop.location.address}
                     </span>
                   </div>
                 </div>
@@ -200,7 +220,7 @@ const BikeDescription = () => {
               {/* Ad ID and Report Section */}
               <div className="flex justify-between items-center text-gray-600 pt-4 border-t">
                 <div className="text-sm">
-                  <span className="font-semibold">ADS ID :</span> {bike.id}
+                  <span className="font-semibold">ADS ID :</span> {laptop.id}
                 </div>
                 <div className="flex items-center text-blue-600 cursor-pointer" aria-label="report">
                   <ReportProblemOutlined fontSize="small" />
@@ -212,70 +232,71 @@ const BikeDescription = () => {
         </div>
       </div>
 
+      {/* Detailed Specifications Table */}
       <div className="p-4 rounded-xl shadow-lg bg-white w-full mb-6">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm sm:text-base">
           <div className="grid grid-cols-2">
             <div className="flex gap-[15px] justify-between">
-              <span>Brand </span>
+              <span>Processor Type </span>
               <span>:</span>
             </div>
-            <span className="px-[10px]">{bike.brand}</span>
+            <span className="px-[10px]">Core i5</span>
           </div>
           <div className="grid grid-cols-2">
             <div className="flex gap-[15px] justify-between">
-              <span>Model </span>
+              <span>Processor Gen </span>
               <span>:</span>
             </div>
-            <span className="px-[10px]">{bike.model}</span>
+            <span className="px-[10px]">11th</span>
           </div>
           <div className="grid grid-cols-2">
             <div className="flex gap-[15px] justify-between">
-              <span>Year </span>
+              <span>RAM </span>
               <span>:</span>
             </div>
-            <span className="px-[10px]">{bike.year}</span>
+            <span className="px-[10px]">8 GB</span>
           </div>
           <div className="grid grid-cols-2">
             <div className="flex gap-[15px] justify-between">
-              <span>Engine </span>
+              <span>Storage Type </span>
               <span>:</span>
             </div>
-            <span className="px-[10px]">{bike.engineCapacity}</span>
+            <span className="px-[10px]">SSD</span>
           </div>
           <div className="grid grid-cols-2">
             <div className="flex gap-[15px] justify-between">
-              <span>Mileage </span>
+              <span>Storage Size </span>
               <span>:</span>
             </div>
-            <span className="px-[10px]">{bike.mileage}</span>
+            <span className="px-[10px]">256 GB</span>
           </div>
           <div className="grid grid-cols-2">
             <div className="flex gap-[15px] justify-between">
-              <span>Fuel Type </span>
+              <span>Graphics Card </span>
               <span>:</span>
             </div>
-            <span className="px-[10px]">{bike.fuelType}</span>
+            <span className="px-[10px]">Intel Iris Xe</span>
           </div>
           <div className="grid grid-cols-2">
             <div className="flex gap-[15px] justify-between">
-              <span>Condition </span>
+              <span>Display Size </span>
               <span>:</span>
             </div>
-            <span className="px-[10px]">{bike.condition}</span>
+            <span className="px-[10px]">13.0"</span>
           </div>
           <div className="grid grid-cols-2">
             <div className="flex gap-[15px] justify-between">
-              <span>Kilometers </span>
+              <span>Operating System </span>
               <span>:</span>
             </div>
-            <span className="px-[10px]">{bike.kilometers} km</span>
+            <span className="px-[10px]">{laptop.operatingSystem}</span>
           </div>
           <div className="grid grid-cols-2">
             <div className="flex gap-[15px] justify-between">
-              <span>Color</span>
+              <span>Warranty</span>
               <span>:</span>
             </div>
-            <span className="px-[10px]">{bike.color}</span>
+            <span className="px-[10px]">{laptop.warranty}</span>
           </div>
         </div>
       </div>
@@ -283,4 +304,4 @@ const BikeDescription = () => {
   );
 };
 
-export default BikeDescription;
+export default LaptopDescription;

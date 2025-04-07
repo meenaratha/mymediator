@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useParams , Link } from "react-router-dom";
 import IMAGES from "@/utils/images.js";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import {
@@ -133,9 +134,9 @@ const PropertyDescription = () => {
                     <p className="text-sm text-gray-500">Owner</p>
                   </div>
                 </div>
-                <a href="#" className="text-blue-600 font-semibold text-sm">
+                <Link to="/seller-profile" className="text-blue-600 font-semibold text-sm">
                   See Profile
-                </a>
+                </Link>
               </div>
 
               {/* Location Section */}

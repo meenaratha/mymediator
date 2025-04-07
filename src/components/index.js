@@ -42,6 +42,9 @@ export { default as PropertyDetails } from "./property/PropertyDetails";
 export { default as ProductCategory } from "@/Pages/UserFlow/ProductCategory";
 
 // electronics
+export { default as RecommendedElectronics } from "./electronics/RecommendedElectronics";
+export { default as ElectronicsDetails } from "./electronics/ElectronicsDetails";
+export { default as ElectronicsDescription } from "./electronics/ElectronicsDescription";
 
 // seller
 export { default as SellerEnquiryList } from "@/components/sell/SellerEnquiryList";
@@ -59,6 +62,7 @@ export { default as Sell } from "@/components/common/Sell";
 // electronics
 export { default as ElectronicsPage } from "@/Pages/UserFlow/ElectronicsPage";
 export { default as ElectronicsFilterPage } from "@/Pages/UserFlow/ElectronicsFilterPage";
+export { default as LaptopDetailPage } from "@/Pages/UserFlow/ElectronicsDetailsPage";
 // cars
 export { default as CarsPage } from "@/Pages/UserFlow/CarsPage";
 export { default as CarsFilterPage } from "@/Pages/UserFlow/CarsFilterPage";

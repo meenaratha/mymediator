@@ -115,9 +115,9 @@ const SellerProfile = () => {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 bg-gray-50">
+    <div className="max-w-[1200px] w-[100%] mx-auto px-4 py-6 ">
       {/* Seller Info Section - Responsive layout with stacked buttons on mobile */}
-      <div className="flex flex-col items-center text-center md:items-start md:text-left mb-6">
+      <div className="flex flex-col items-center text-center md:items-start md:text-left mb-6 gap-[25px]">
         <div className="flex flex-col md:flex-row items-center gap-4">
           <div className="relative w-20 h-20 overflow-hidden rounded-full">
             <img 
@@ -130,7 +130,7 @@ const SellerProfile = () => {
         </div>
         
         {/* Buttons below name on mobile, side-by-side on larger screens */}
-        <div className="flex gap-3 mt-4 md:mt-0 md:ml-auto">
+        <div className="flex gap-3 mt-4 md:mt-0 md:ml-[10px]">
           <button className="flex items-center gap-2 bg-blue-900 text-white px-4 py-2 rounded-md">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-chat-dots-fill" viewBox="0 0 16 16">
               <path d="M16 8c0 3.866-3.582 7-8 7a9 9 0 0 1-2.347-.306c-.584.296-1.925.864-4.181 1.234-.2.032-.352-.176-.273-.362.354-.836.674-1.95.77-2.966C.744 11.37 0 9.76 0 8c0-3.866 3.582-7 8-7s8 3.134 8 7M5 8a1 1 0 1 0-2 0 1 1 0 0 0 2 0m4 0a1 1 0 1 0-2 0 1 1 0 0 0 2 0m3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2"/>

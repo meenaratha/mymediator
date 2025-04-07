@@ -17,6 +17,7 @@ import {
 } from "@/components";
 import BikeDetailPage from "../Pages/UserFlow/BikeDetailPage";
 import SellerProfile from "../components/sell/sellerProfile";
+import  LaptopDetailPage  from "../Pages/UserFlow/ElectronicsDetailsPage";
 
 const UserRoutes = () => {
   return (
@@ -29,6 +30,7 @@ const UserRoutes = () => {
         <Route path="/car" element={<CarsPage />} />
         <Route path="/bike" element={<BikesPage />} />
         <Route path="/bike-details" element={<BikeDetailPage />} />
+        <Route path="/electronics-details" element={<LaptopDetailPage />} />
         {/* Authendication Routes */}
       </Route>
 
