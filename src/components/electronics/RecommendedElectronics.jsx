@@ -58,7 +58,7 @@ const RecommendedLaptops = () => {
       price: 79000,
       rating: 4.8,
       location: "Anna Nagar, Chennai",
-      image: IMAGES.macbook,
+      image: IMAGES.mac1,
     },
     {
       id: 2,
@@ -69,7 +69,7 @@ const RecommendedLaptops = () => {
       price: 65000,
       rating: 4.7,
       location: "Adyar, Chennai",
-      image: IMAGES.acer,
+      image: IMAGES.mac2,
     },
     {
       id: 3,
@@ -80,7 +80,7 @@ const RecommendedLaptops = () => {
       price: 115000,
       rating: 4.9,
       location: "T. Nagar, Chennai",
-      image: IMAGES.asus,
+      image: IMAGES.mac3,
     },
     {
       id: 4,
@@ -91,7 +91,7 @@ const RecommendedLaptops = () => {
       price: 82000,
       rating: 4.6,
       location: "Velachery, Chennai",
-      image: IMAGES.surface,
+      image: IMAGES.mac4,
     },
     {
       id: 5,
@@ -102,7 +102,7 @@ const RecommendedLaptops = () => {
       price: 45000,
       rating: 4.5,
       location: "Porur, Chennai",
-      image: IMAGES.vivobook,
+      image: IMAGES.mac5,
     },
   ];
 
@@ -121,7 +121,7 @@ const RecommendedLaptops = () => {
         >
           {recommendedLaptops.map((laptop) => (
             <SwiperSlide key={laptop.id}>
-              <Link to={`/laptops/${laptop.id}`}>
+              <Link to="/electronics-details">
                 <LaptopCard laptop={laptop} />
               </Link>
             </SwiperSlide>
@@ -131,7 +131,7 @@ const RecommendedLaptops = () => {
         /* Desktop Grid */
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {recommendedLaptops.map((laptop) => (
-            <Link key={laptop.id} to={`/laptops/${laptop.id}`}>
+            <Link key={laptop.id} to="/electronics-details">
               <LaptopCard laptop={laptop} />
             </Link>
           ))}

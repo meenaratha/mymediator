@@ -40,11 +40,11 @@ const LaptopDetails = ({ laptop }) => {
 
   // Image arrays - replace with your laptop images
   const images = [
-    IMAGES.laptop1,
-    IMAGES.laptop2,
-    IMAGES.laptop3,
-    IMAGES.laptop4,
-    IMAGES.laptop5,
+    IMAGES.mac1,
+    IMAGES.mac2,
+    IMAGES.mac3,
+    IMAGES.mac4,
+    IMAGES.mac5,
   ];
 
   // Handle touch events for mobile zoom
