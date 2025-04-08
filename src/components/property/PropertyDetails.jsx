@@ -20,6 +20,7 @@ import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import CloseIcon from "@mui/icons-material/Close";
+import EnquiryForm from "../../features/EnquiryForm.jsx";
 const PropertyDetails = ({ property }) => {
   const isMobile = useMediaQuery({ maxWidth: 767 });
   const [isFavorite, setIsFavorite] = useState(false);
@@ -111,8 +112,18 @@ const PropertyDetails = ({ property }) => {
   const handleImageLeave = () => {
     setIsZooming(false);
   };
+
+const [showEnquiryPopup , setShowEnquiryPopup ] = useState(false);
+
   return (
     <>
+{/* enquiry model */}
+
+{showEnquiryPopup && (
+  <EnquiryForm onClose ={() =>{setShowEnquiryPopup(false)}}/>
+)}
+
+
       <div className="">
         <div className="flex flex-col md:flex-row py-10">
           {/* Left Section - Images */}
@@ -310,8 +321,8 @@ const PropertyDetails = ({ property }) => {
                   ₹ 9,90,000
                 </h3>
                 <div className="flex mt-4 space-x-4 justify-center">
-                  <button className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] cursor-pointer flex items-center justify-center flex-1">
-                    <QuestionAnswerIcon fontSize="small" className="mr-2" />
+                  <button onClick={()=>setShowEnquiryPopup(true)} className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] cursor-pointer flex items-center justify-center flex-1">
+                    <QuestionAnswerIcon fontSize="small" className="mr-2"  />
                     Enquiry
                   </button>
                   <button className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] cursor-pointer flex items-center justify-center flex-1">

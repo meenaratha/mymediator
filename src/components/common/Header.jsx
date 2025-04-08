@@ -10,7 +10,7 @@ import Feedback from "./Feedback";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import GpsFixedIcon from "@mui/icons-material/GpsFixed";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate  } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import MobileHeader from "./MobileHeader";
@@ -176,6 +176,10 @@ const Header = () => {
   const handleProfileClick = () => {
     navigate("/seller-enquiry-list");
   };
+
+  const handleNotificationClick = ()=>{
+    navigate("/notification");
+  }
   return (
     <>
       {/* Mobile Header */}
@@ -269,8 +273,9 @@ const Header = () => {
                         color: "white",
                       },
                     }}
+
                   >
-                    <NotificationsIcon style={{ color: "black" }} />
+                    <NotificationsIcon style={{ color: "black" }}  onClick={handleNotificationClick}/>
                   </Badge>
                 </motion.div>
                 {/* login button */}

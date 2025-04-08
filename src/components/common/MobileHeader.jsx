@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link ,useNavigate} from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "../../assets/images/common/logo.png";
 import SearchIcon from "@mui/icons-material/Search";
@@ -18,6 +18,7 @@ import ForgotPassword from "./ForgotPassword";
 import OTPVerificationModal from "./OTPVerificationModal";
 import PasswordResetModel from "./PasswordResetModel";
 const MobileHeader = ({ isFixed }) => {
+   const navigate = useNavigate();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLocationOpen, setIsLocationOpen] = useState(false);
@@ -112,7 +113,9 @@ const MobileHeader = ({ isFixed }) => {
   const handleLoginClick = () => {
     setLoginFormModel(true);
   };
-
+  const handleNotificationClick = ()=>{
+    navigate("/notification");
+  }
   return (
     <>
       {/* Main Header */}
@@ -156,7 +159,7 @@ const MobileHeader = ({ isFixed }) => {
                 },
               }}
             >
-              <NotificationsIcon style={{ color: "black" }} />
+              <NotificationsIcon style={{ color: "black" }} onClick={handleNotificationClick} />
             </Badge>
           </div>
         </div>

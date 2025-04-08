@@ -21,6 +21,7 @@
     "@reduxjs/toolkit": "^2.6.0",
     "@tailwindcss/vite": "^4.0.8",
     "axios": "^1.7.9",
+    "formik": "^2.4.6",
     "framer-motion": "^12.4.7",
     "leaflet": "^1.9.4",
     "libphonenumber-js": "^1.12.6",

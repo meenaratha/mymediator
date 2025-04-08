@@ -18,6 +18,7 @@ import {
 import BikeDetailPage from "../Pages/UserFlow/BikeDetailPage";
 import SellerProfile from "../components/sell/sellerProfile";
 import  LaptopDetailPage  from "../Pages/UserFlow/ElectronicsDetailsPage";
+import ChatInterface from "../components/common/ChatInterFace";
 
 const UserRoutes = () => {
   return (
@@ -31,6 +32,7 @@ const UserRoutes = () => {
         <Route path="/bike" element={<BikesPage />} />
         <Route path="/bike-details" element={<BikeDetailPage />} />
         <Route path="/electronics-details" element={<LaptopDetailPage />} />
+        <Route path="/car-details" element={<BikeDetailPage />} />
         {/* Authendication Routes */}
       </Route>
 
@@ -40,6 +42,7 @@ const UserRoutes = () => {
 
         <Route path="/sale-house-apartment" element={<HouseSaleFormPage />} />
         <Route path="/rent-house-apartment" element={<HouseRentFormPage />} />
+        <Route path="/notification" element={<ChatInterface/>} />
       </Route>
     </>
   );

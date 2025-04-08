@@ -42,9 +42,9 @@ export { default as PropertyDetails } from "./property/PropertyDetails";
 export { default as ProductCategory } from "@/Pages/UserFlow/ProductCategory";
 
 // electronics
-export { default as RecommendedElectronics } from "./electronics/RecommendedElectronics";
-export { default as ElectronicsDetails } from "./electronics/ElectronicsDetails";
-export { default as ElectronicsDescription } from "./electronics/ElectronicsDescription";
+export { default as RecommendedLaptops } from "./electronics/RecommendedElectronics";
+export { default as LaptopDetails } from "./electronics/ElectronicsDetails";
+export { default as LaptopDescription } from "./electronics/ElectronicsDescription";
 
 // seller
 export { default as SellerEnquiryList } from "@/components/sell/SellerEnquiryList";

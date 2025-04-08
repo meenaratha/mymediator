@@ -17,6 +17,12 @@ const PropertyCard = ({ item, category }) => {
   const handleBikeClick = () => {
     navigate("/bike-details");
   };
+  const handleCarClick = ()=>{
+    navigate("/car-details");
+  }
+  const handleElectronicsClick = ()=>{
+    navigate("/electronics-details");
+  }
   return (
     <>
       {category === "properties" && (
@@ -66,7 +72,8 @@ const PropertyCard = ({ item, category }) => {
         <Card
           className={`${
             isMobile ? " max-w-[300px]" : ""
-          }  max-w-[275px]  w-full rounded-lg shadow-md overflow-hidden hover:shadow-lg mx-auto`}
+          }  max-w-[275px]  w-full rounded-lg shadow-md overflow-hidden hover:shadow-lg mx-auto cursor-pointer`}
+        onClick={handleElectronicsClick}
         >
           <div className="relative">
             <img
@@ -96,8 +103,9 @@ const PropertyCard = ({ item, category }) => {
         <Card
           className={`${
             isMobile ? " max-w-[300px]" : ""
-          }  max-w-[275px]  w-full rounded-lg shadow-md overflow-hidden hover:shadow-lg mx-auto`}
-        >
+          }  max-w-[275px]  w-full rounded-lg shadow-md overflow-hidden hover:shadow-lg mx-auto cursor-pointer`}
+       onClick={handleCarClick}
+       >
           <div className="relative">
             <img
               src={item.image}
@@ -127,7 +135,7 @@ const PropertyCard = ({ item, category }) => {
         <Card
           className={`${
             isMobile ? " max-w-[300px]" : ""
-          }  max-w-[275px]  w-full rounded-lg shadow-md overflow-hidden hover:shadow-lg mx-auto`}
+          }  max-w-[275px]  w-full rounded-lg shadow-md overflow-hidden hover:shadow-lg mx-auto cursor-pointer`}
           onClick={handleBikeClick}
         >
           <div className="relative">

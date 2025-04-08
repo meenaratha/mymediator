@@ -2,10 +2,9 @@ import React from "react";
 import {
   LaptopDescription,
   HeroSection,
-  RecommendedLaptops
 } from "@/components";
 import { useMediaQuery } from "react-responsive";
-
+import { RecommendedLaptops } from "../../components";
 const LaptopDetailPage = () => {
   const isMobile = useMediaQuery({ maxWidth: 767 });
   
