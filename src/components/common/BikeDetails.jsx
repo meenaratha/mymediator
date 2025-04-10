@@ -1,5 +1,5 @@
-import React, { useState, useRef } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useRef , useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation, Pagination, Thumbs } from "swiper/modules";
 import "swiper/css";
@@ -23,8 +23,10 @@ import IMAGES from "../../utils/images.js";
 import { useMediaQuery } from "react-responsive";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import EnquiryForm from "../../features/EnquiryForm.jsx";
 
 const BikeDetails = ({ bike }) => {
+  const location = useLocation();
   const isMobile = useMediaQuery({ maxWidth: 767 });
   const [isFavorite, setIsFavorite] = useState(false);
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
@@ -38,15 +40,37 @@ const BikeDetails = ({ bike }) => {
   
   // For touch support on mobile devices
   const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
+  const [isZooming, setIsZooming] = useState(false);
+  const [showEnquiryPopup, setShowEnquiryPopup] = useState(false);
 
-  // Image arrays - replace with your bike images
-  const images = [
-    IMAGES.bike1,
-    IMAGES.bike2,
-    IMAGES.bike3,
-    IMAGES.bike4,
-    IMAGES.bike5,
-  ];
+
+
+  // Image arrays - determine based on current path
+  let images = [];
+
+  // Fixed path detection - use includes() method properly
+  if (location.pathname.includes('/car-details')) {
+    console.log('Loading car images');
+    images = [
+      IMAGES.car1,
+      IMAGES.car2,
+      IMAGES.car3,
+      IMAGES.car4,
+      IMAGES.car5,
+    ];
+  } else if (location.pathname.includes('/bike-details')) {
+    console.log('Loading bike images');
+    images = [
+      IMAGES.bike1,
+      IMAGES.bike3,
+      IMAGES.bike3,
+      IMAGES.bike4,
+      IMAGES.bike4,
+    ];
+  } else {
+    console.log('Default path, loading car images');
+   
+  }
 
   // Handle touch events for mobile zoom
   const handleTouchStart = (e) => {
@@ -118,6 +142,11 @@ const BikeDetails = ({ bike }) => {
 
   return (
     <>
+     {/* enquiry model */}
+    
+     {showEnquiryPopup && (
+      <EnquiryForm onClose ={() => {setShowEnquiryPopup(false)}}/>
+    )}
       <div className="">
         <div className="flex flex-col md:flex-row py-10">
           {/* Left Section - Images */}
@@ -316,11 +345,17 @@ const BikeDetails = ({ bike }) => {
                   ₹ 1,50,000
                 </h3>
                 <div className="flex mt-4 space-x-4 justify-center">
-                  <button className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] cursor-pointer flex items-center justify-center flex-1">
+                  <button className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] 
+                  cursor-pointer flex items-center justify-center flex-1"
+                  onClick={()=>setShowEnquiryPopup(true)}
+                  >
                     <QuestionAnswerIcon fontSize="small" className="mr-2" />
                     Enquiry
                   </button>
-                  <button className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] cursor-pointer flex items-center justify-center flex-1">
+                  <button className="bg-[#02487C] text-white px-6 py-3 
+                  rounded-[25px] cursor-pointer flex items-center justify-center flex-1"
+                     onClick={() => window.location.href = 'tel:+1234567890'}
+                  >
                     <CallIcon fontSize="small" className="mr-2" />
                     Call
                   </button>

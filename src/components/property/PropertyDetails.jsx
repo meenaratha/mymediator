@@ -325,7 +325,10 @@ const [showEnquiryPopup , setShowEnquiryPopup ] = useState(false);
                     <QuestionAnswerIcon fontSize="small" className="mr-2"  />
                     Enquiry
                   </button>
-                  <button className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] cursor-pointer flex items-center justify-center flex-1">
+                  <button className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] 
+                  cursor-pointer flex items-center justify-center flex-1"
+                  onClick={() => window.location.href = 'tel:+1234567890'}
+                  >
                     <CallIcon fontSize="small" className="mr-2" />
                     Call
                   </button>
