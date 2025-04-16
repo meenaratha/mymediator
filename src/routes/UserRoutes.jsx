@@ -19,6 +19,13 @@ import BikeDetailPage from "../Pages/UserFlow/BikeDetailPage";
 import SellerProfile from "../components/sell/sellerProfile";
 import  LaptopDetailPage  from "../Pages/UserFlow/ElectronicsDetailsPage";
 import ChatInterface from "../components/common/ChatInterFace";
+import LandPlotFormPage from "../Pages/UserFlow/LandPlotFormPage";
+import RentShopOfficeFormPage from "../Pages/UserFlow/RentShopOfficeFormPage";
+import SaleShopOfficeFormPage from "../Pages/UserFlow/SaleShopOfficeFormPage";
+import UploadElectronicFormPage from "../Pages/UserFlow/UploadElectronicFormPage";
+import UploadMotercycleFormPage from "../Pages/UserFlow/UploadMotercycleFormPage";
+import UploadBicycleFormPage from "../Pages/UserFlow/UploadBicycleFormPage";
+import UploadCarFormPage from "../Pages/UploadCarFormPage";
 
 const UserRoutes = () => {
   return (
@@ -42,6 +49,21 @@ const UserRoutes = () => {
 
         <Route path="/sale-house-apartment" element={<HouseSaleFormPage />} />
         <Route path="/rent-house-apartment" element={<HouseRentFormPage />} />
+        <Route path="/land-plot" element={<LandPlotFormPage />} />
+        <Route path="/rent-shop-office" element={<RentShopOfficeFormPage />} />
+        <Route path="/sale-shop-office" element={<SaleShopOfficeFormPage />} />
+
+        {/* electronic form */}
+        <Route path="/upload-electronics" element={<UploadElectronicFormPage />} />
+        {/* cycle forms */}
+        <Route path="/upload-motercycle" element={<UploadMotercycleFormPage />} />
+        <Route path="/upload-bicycle" element={<UploadBicycleFormPage />} />
+        {/* upload car form */}
+        <Route path="/upload-car" element={<UploadCarFormPage />} />
+
+
+
+
         <Route path="/notification" element={<ChatInterface/>} />
       </Route>
     </>
