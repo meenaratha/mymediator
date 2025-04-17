@@ -9,6 +9,7 @@ import { useMediaQuery } from "react-responsive"; // For detecting mobile device
 const PropertyCard = ({ property }) => {
   // Detect mobile devices
   const isMobile = useMediaQuery({ maxWidth: 767 });
+  
   return (
     <Card
       className={`${
@@ -64,7 +65,7 @@ const PropertyListingGrid = () => {
     {
       id: 1,
       name: "Minsod House",
-      image: IMAGES.mac1,
+      image: IMAGES.property1,
       location: "West Mambalam, Chennai",
       year: 2022,
       bedrooms: 2,
@@ -75,7 +76,7 @@ const PropertyListingGrid = () => {
     {
       id: 2,
       name: "Soujaiy House",
-      image: IMAGES.mac2,
+      image: IMAGES.property2,
       location: "West Mambalam, Chennai",
       size: "800 Sq . Ft",
       year: 2022,
@@ -87,7 +88,7 @@ const PropertyListingGrid = () => {
     {
       id: 3,
       name: "Xandite House",
-      image: IMAGES.mac3,
+      image: IMAGES.property3,
       location: "West Mambalam, Chennai",
       size: "800 Sq . Ft",
       year: 2022,
@@ -99,7 +100,7 @@ const PropertyListingGrid = () => {
     {
       id: 4,
       name: "Kaltet House",
-      image: IMAGES.mac4,
+      image: IMAGES.property4,
       location: "West Mambalam, Chennai",
       size: "800 Sq . Ft",
       year: 2022,
@@ -111,7 +112,7 @@ const PropertyListingGrid = () => {
     {
       id: 5,
       name: "KanetXo House",
-      image: IMAGES.mac5,
+      image: IMAGES.property5,
       location: "West Mambalam, Chennai",
       size: "800 Sq . Ft",
       year: 2022,
@@ -123,7 +124,7 @@ const PropertyListingGrid = () => {
     {
       id: 6,
       name: "Gloselt House",
-      image: IMAGES.mac6,
+      image: IMAGES.property6,
       location: "West Mambalam, Chennai",
       size: "800 Sq . Ft",
       year: 2022,
@@ -135,7 +136,7 @@ const PropertyListingGrid = () => {
     {
       id: 7,
       name: "Minzal House",
-      image: IMAGES.mac7,
+      image: IMAGES.property7,
       location: "West Mambalam, Chennai",
       size: "800 Sq . Ft",
       year: 2022,
@@ -147,7 +148,7 @@ const PropertyListingGrid = () => {
     {
       id: 8,
       name: "Soujaiy House",
-      image: IMAGES.mac8,
+      image: IMAGES.property4,
       location: "West Mambalam, Chennai",
       size: "800 Sq . Ft",
       year: 2022,
@@ -159,7 +160,7 @@ const PropertyListingGrid = () => {
     {
       id: 9,
       name: "Martela House",
-      image: "/api/placeholder/235/150",
+      image: IMAGES.property5,
       location: "West Mambalam, Chennai",
       size: "800 Sq . Ft",
       year: 2022,
@@ -171,7 +172,7 @@ const PropertyListingGrid = () => {
     {
       id: 10,
       name: "Minsod House",
-      image: "/api/placeholder/235/150",
+      image: IMAGES.property6,
       location: "West Mambalam, Chennai",
       size: "800 Sq . Ft",
       year: 2022,
@@ -183,7 +184,7 @@ const PropertyListingGrid = () => {
     {
       id: 11,
       name: "Soujaiy House",
-      image: "/api/placeholder/235/150",
+      image: IMAGES.property2,
       location: "West Mambalam, Chennai",
       size: "800 Sq . Ft",
       year: 2022,
@@ -195,7 +196,7 @@ const PropertyListingGrid = () => {
     {
       id: 12,
       name: "Xandite House",
-      image: "/api/placeholder/235/150",
+      image: IMAGES.property3,
       location: "West Mambalam, Chennai",
       size: "800 Sq . Ft",
       year: 2022,

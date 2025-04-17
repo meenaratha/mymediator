@@ -202,7 +202,7 @@ const Sell = () => {
 
               {/* Lands & Plots */}
               <Link
-                to=""
+                to="/land-plot"
                 className="bg-white rounded-lg shadow-sm p-4 flex justify-between items-center cursor-pointer"
               >
                 <span className="font-medium">Lands & Plots</span>
@@ -215,7 +215,7 @@ const Sell = () => {
 
               {/* For Rent: Shops & Offices */}
               <Link
-                to=""
+                to="/rent-shop-office"
                 className="bg-white rounded-lg shadow-sm p-4 flex justify-between items-center cursor-pointer"
               >
                 <span className="font-medium">For Rent : Shops & Offices</span>
@@ -228,7 +228,7 @@ const Sell = () => {
 
               {/* For Sale: Shops & Offices */}
               <Link
-                to=""
+                to="/sale-shop-office"
                 className="bg-white rounded-lg shadow-sm p-4 flex justify-between items-center cursor-pointer"
               >
                 <span className="font-medium">For Sale : Shops & Offices</span>
@@ -246,7 +246,7 @@ const Sell = () => {
             <div className="flex flex-col gap-4 flex-1">
               {/* Television */}
               <Link
-                to=""
+                to="/upload-electronics"
                 className="bg-white rounded-lg shadow-sm p-4 flex justify-between items-center cursor-pointer"
               >
                 <span className="font-medium">Television</span>
@@ -259,7 +259,7 @@ const Sell = () => {
 
               {/* Computer */}
               <Link
-                to=""
+                to="/upload-electronics"
                 className="bg-white rounded-lg shadow-sm p-4 flex justify-between items-center cursor-pointer"
               >
                 <span className="font-medium">Computer</span>
@@ -272,7 +272,7 @@ const Sell = () => {
 
               {/* Washing Machine */}
               <Link
-                to=""
+                to="/upload-electronics"
                 className="bg-white rounded-lg shadow-sm p-4 flex justify-between items-center cursor-pointer"
               >
                 <span className="font-medium">Washing Machine</span>
@@ -285,7 +285,7 @@ const Sell = () => {
 
               {/* Mobile Phone */}
               <Link
-                to=""
+                to="/upload-electronics"
                 className="bg-white rounded-lg shadow-sm p-4 flex justify-between items-center cursor-pointer"
               >
                 <span className="font-medium">Mobile Phone</span>
@@ -298,7 +298,7 @@ const Sell = () => {
 
               {/* Laptop*/}
               <Link
-                to=""
+                to="/upload-electronics"
                 className="bg-white rounded-lg shadow-sm p-4 flex justify-between items-center cursor-pointer"
               >
                 <span className="font-medium">Laptop</span>
@@ -311,7 +311,7 @@ const Sell = () => {
 
               {/* Printers*/}
               <Link
-                to=""
+                to="/upload-electronics"
                 className="bg-white rounded-lg shadow-sm p-4 flex justify-between items-center cursor-pointer"
               >
                 <span className="font-medium">Printers</span>
@@ -324,7 +324,7 @@ const Sell = () => {
 
               {/* AC*/}
               <Link
-                to=""
+                to="/upload-electronics"
                 className="bg-white rounded-lg shadow-sm p-4 flex justify-between items-center cursor-pointer"
               >
                 <span className="font-medium">AC</span>
@@ -336,7 +336,7 @@ const Sell = () => {
               </Link>
               {/* Fridges*/}
               <Link
-                to=""
+                to="/upload-electronics"
                 className="bg-white rounded-lg shadow-sm p-4 flex justify-between items-center cursor-pointer"
               >
                 <span className="font-medium">Fridges</span>
@@ -365,7 +365,7 @@ const Sell = () => {
           {activeCategory === "cars" && (
             <div className="flex flex-col gap-4 flex-1">
               <Link
-                to=""
+                to="/upload-car"
                 className="bg-white rounded-lg shadow-sm p-4 flex justify-between items-center cursor-pointer"
               >
                 <span className="font-medium">Upload Car</span>
@@ -382,7 +382,7 @@ const Sell = () => {
           {activeCategory === "bikes" && (
             <div className="flex flex-col gap-4 flex-1">
               <Link
-                to=""
+                to="/upload-motercycle"
                 className="bg-white rounded-lg shadow-sm p-4 flex justify-between items-center cursor-pointer"
               >
                 <span className="font-medium">Motorcycles</span>
@@ -393,7 +393,7 @@ const Sell = () => {
                 />
               </Link>
               <Link
-                to=""
+                to="/upload-bicycle"
                 className="bg-white rounded-lg shadow-sm p-4 flex justify-between items-center cursor-pointer"
               >
                 <span className="font-medium">Scooters</span>
@@ -404,7 +404,7 @@ const Sell = () => {
                 />
               </Link>
               <Link
-                to=""
+                to="/upload-bicycle"
                 className="bg-white rounded-lg shadow-sm p-4 flex justify-between items-center cursor-pointer"
               >
                 <span className="font-medium">Bicycle</span>

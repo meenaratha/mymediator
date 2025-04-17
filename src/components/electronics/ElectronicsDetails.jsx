@@ -22,6 +22,7 @@ import IMAGES from "../../utils/images.js";
 import { useMediaQuery } from "react-responsive";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import EnquiryForm from "../../features/EnquiryForm.jsx";
 
 const LaptopDetails = ({ laptop }) => {
   const isMobile = useMediaQuery({ maxWidth: 767 });
@@ -40,11 +41,11 @@ const LaptopDetails = ({ laptop }) => {
 
   // Image arrays - replace with your laptop images
   const images = [
-    IMAGES.laptop1,
-    IMAGES.laptop2,
-    IMAGES.laptop3,
-    IMAGES.laptop4,
-    IMAGES.laptop5,
+    IMAGES.mac1,
+    IMAGES.mac2,
+    IMAGES.mac3,
+    IMAGES.mac4,
+    IMAGES.mac5,
   ];
 
   // Handle touch events for mobile zoom
@@ -115,8 +116,15 @@ const LaptopDetails = ({ laptop }) => {
     setIsZooming(false);
   };
 
+const [showEnquiryPopup , setShowEnquiryPopup ] = useState(false);
   return (
     <>
+    {/* enquiry model */}
+    
+    {showEnquiryPopup && (
+      <EnquiryForm onClose ={() =>{setShowEnquiryPopup(false)}}/>
+    )}
+    
       <div className="">
         <div className="flex flex-col md:flex-row py-10">
           {/* Left Section - Images */}
@@ -315,11 +323,13 @@ const LaptopDetails = ({ laptop }) => {
                   ₹ 80,000
                 </h3>
                 <div className="flex mt-4 space-x-4 justify-center">
-                  <button className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] cursor-pointer flex items-center justify-center flex-1">
+                  <button className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] 
+                  cursor-pointer flex items-center justify-center flex-1" onClick={()=>setShowEnquiryPopup(true)}>
                     <QuestionAnswerIcon fontSize="small" className="mr-2" />
                     Enquiry
                   </button>
-                  <button className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] cursor-pointer flex items-center justify-center flex-1">
+                  <button className="bg-[#02487C] text-white px-6 py-3 
+                  rounded-[25px] cursor-pointer flex items-center justify-center flex-1" onClick={() => window.location.href = 'tel:+1234567890'}>
                     <CallIcon fontSize="small" className="mr-2" />
                     Call
                   </button>
@@ -332,7 +342,7 @@ const LaptopDetails = ({ laptop }) => {
 
       {/* Zoom Modal */}
       {showZoom && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-75 z-999 flex items-center justify-center p-4">
           <div className="relative w-full max-w-4xl h-[80vh] bg-white rounded-lg overflow-hidden">
             <button 
               onClick={handleZoomOut}

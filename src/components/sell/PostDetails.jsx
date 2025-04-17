@@ -75,14 +75,14 @@ const PropertyCard = ({
           </div>
           <div className="relative">
             {soldOut ? (
-              <div className="bg-blue-800 text-white px-4 py-1 rounded-md">
+              <div className="bg-[#0f1c5e] text-white px-4 py-1 rounded-md">
                 Sold out
               </div>
             ) : (
               <>
                 <button
                   onClick={toggleDropdown}
-                  className="bg-blue-800 text-white px-4 py-1 rounded-md text-sm flex items-center"
+                  className="bg-[#0f1c5e] text-white px-4 py-1 rounded-md text-sm flex items-center"
                 >
                   Status
                   {showStatusDropdown ? (
@@ -107,7 +107,7 @@ const PropertyCard = ({
                         <div
                           onClick={toggleAds}
                           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                            adsEnabled ? "bg-blue-800" : "bg-gray-300"
+                            adsEnabled ? "bg-[#0f1c5e]" : "bg-gray-300"
                           }`}
                         >
                           <span

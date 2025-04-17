@@ -14,60 +14,124 @@ import StarIcon from "@mui/icons-material/Star";
 
 const RecommendedBikes = () => {
   const isMobile = useMediaQuery({ maxWidth: 767 });
-
-  const bikes = [
-    {
-      id: 1,
-      name: "Royal Enfield Classic 350",
-      image: IMAGES.bike5,
-      location: "T. Nagar, Chennai",
-      distance: "5500 km",
-      year: "2022",
-      rating: 4.8,
-      price: "1.85",
-    },
-    {
-      id: 2,
-      name: "Bajaj RS 200",
-      image: IMAGES.bike4,
-      location: "Adyar, Chennai",
-      distance: "8200 km",
-      year: "2021",
-      rating: 4.5,
-      price: "1.25",
-    },
-    {
-      id: 3,
-      name: "Pulsar 220 FI",
-      image: IMAGES.bike3,
-      location: "Anna Nagar, Chennai",
-      distance: "6100 km",
-      year: "2020",
-      rating: 4.3,
-      price: "0.85",
-    },
-    {
-      id: 4,
-      name: "Yamaha R15 V4",
-      image: IMAGES.bike2,
-      location: "Velachery, Chennai",
-      distance: "3500 km",
-      year: "2023",
-      rating: 4.6,
-      price: "1.65",
-    },
-    {
-      id: 5,
-      name: "KTM 250 Duke",
-      image: IMAGES.bike1,
-      location: "Guindy, Chennai",
-      distance: "7200 km",
-      year: "2022",
-      rating: 4.4,
-      price: "2.10",
-    },
-  ];
-
+let  bikes = [];
+  
+   
+   // Fixed path detection - use includes() method properly
+    if (location.pathname.includes('/car-details')) {
+      console.log('Loading car images');
+      bikes = [
+        {
+          id: 1,
+          name: "Toyota Innova Crysta",
+          image: IMAGES.car5,
+          location: "T. Nagar, Chennai",
+          distance: "25000 km",
+          year: "2022",
+          rating: 4.8,
+          price: "18.5",
+        },
+        {
+          id: 2,
+          name: "Hyundai Creta",
+          image: IMAGES.car4,
+          location: "Adyar, Chennai",
+          distance: "18200 km",
+          year: "2021",
+          rating: 4.5,
+          price: "12.5",
+        },
+        {
+          id: 3,
+          name: "Maruti Swift",
+          image: IMAGES.car3,
+          location: "Anna Nagar, Chennai",
+          distance: "16100 km",
+          year: "2020",
+          rating: 4.3,
+          price: "8.5",
+        },
+        {
+          id: 4,
+          name: "Honda City",
+          image: IMAGES.car2,
+          location: "Velachery, Chennai",
+          distance: "13500 km",
+          year: "2023",
+          rating: 4.6,
+          price: "16.5",
+        },
+        {
+          id: 5,
+          name: "Mahindra XUV700",
+          image: IMAGES.car1,
+          location: "Guindy, Chennai",
+          distance: "17200 km",
+          year: "2022",
+          rating: 4.4,
+          price: "21.0",
+        },
+      ];
+     
+    } else if (location.pathname.includes('/bike-details')) {
+      console.log('Loading bike images');
+      bikes = [
+        {
+          id: 1,
+          name: "Royal Enfield Classic 350",
+          image: IMAGES.bike5,
+          location: "T. Nagar, Chennai",
+          distance: "5500 km",
+          year: "2022",
+          rating: 4.8,
+          price: "1.85",
+        },
+        {
+          id: 2,
+          name: "Bajaj RS 200",
+          image: IMAGES.bike4,
+          location: "Adyar, Chennai",
+          distance: "8200 km",
+          year: "2021",
+          rating: 4.5,
+          price: "1.25",
+        },
+        {
+          id: 3,
+          name: "Pulsar 220 FI",
+          image: IMAGES.bike3,
+          location: "Anna Nagar, Chennai",
+          distance: "6100 km",
+          year: "2020",
+          rating: 4.3,
+          price: "0.85",
+        },
+        {
+          id: 4,
+          name: "Yamaha R15 V4",
+          image: IMAGES.bike2,
+          location: "Velachery, Chennai",
+          distance: "3500 km",
+          year: "2023",
+          rating: 4.6,
+          price: "1.65",
+        },
+        {
+          id: 5,
+          name: "KTM 250 Duke",
+          image: IMAGES.bike1,
+          location: "Guindy, Chennai",
+          distance: "7200 km",
+          year: "2022",
+          rating: 4.4,
+          price: "2.10",
+        },
+      ];
+    } else {
+      console.log('Default path, loading car images');
+     
+    }
+ 
   return (
     <>
       <div className="h-[40px]"></div>
