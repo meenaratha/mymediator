@@ -8,13 +8,17 @@ import LocationIcon from "../../assets/images/common/location-icon.svg";
 import MobileApp from "../../assets/images/common/mobile.png";
 import CheckIcon from "@mui/icons-material/Check";
 import "../../assets/css/footer.css";
-
+import EnquiryForm from "../../features/EnquiryForm";
+import { useState } from "react";
 
 const Footer = () => {
+  const [showEnquiryPopup, setShowEnquiryPopup] = useState(false);
   return (
     <>
-     
-
+     {/* Enquiry Form Popup */}
+{showEnquiryPopup && (
+  <EnquiryForm onClose={() => setShowEnquiryPopup(false)} />
+)}
       {/* Footer Section */}
       <footer className="footer-container">
         <div className="footer-content">
@@ -67,16 +71,16 @@ const Footer = () => {
             <h3 className="footer-heading">Quick Link</h3>
             <ul className="footer-links">
               <li>
-                <Link to="/about">About Us</Link>
+                <Link to="/">About Us</Link>
               </li>
               <li>
-                <Link to="/privacy">Privacy Policy</Link>
+                <Link to="/">Privacy Policy</Link>
               </li>
               <li>
-                <Link to="/terms">Terms & Conditions</Link>
+                <Link to="/">Terms & Conditions</Link>
               </li>
               <li>
-                <Link to="/enquiry">Enquiry</Link>
+                <Link to="/" onClick={() => setShowEnquiryPopup(true)}>Enquiry</Link>
               </li>
             </ul>
           </div>
