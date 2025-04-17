@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { Header, Footer, HeroSection } from "@/components";
+import { Header, Footer, HeroSection,AccountDeleteModel } from "@/components";
 import IMAGES from "@/utils/images.js";
 import { useMediaQuery } from "react-responsive";
 import React, { useState } from "react";
@@ -27,7 +27,7 @@ const UserDashboardLayout = () => {
     {
       icon: <FaUser className="w-5 h-5" />,
       title: "My details",
-      path: "/my-details",
+      path: "#",
     },
     {
       icon: <FaListAlt className="w-5 h-5" />,
@@ -47,18 +47,18 @@ const UserDashboardLayout = () => {
     {
       icon: <FaFileContract className="w-5 h-5" />,
       title: "Terms and Conditions",
-      path: "/terms",
+      path: "/terms-and-conditions",
     },
     {
       icon: <FaShieldAlt className="w-5 h-5" />,
       title: "Privacy policy",
       path: "/privacy-policy",
     },
-    {
-      icon: <FaTrash className="w-5 h-5" />,
-      title: "Delete Account",
-      path: "/delete-account",
-    },
+    // {
+    //   icon: <FaTrash className="w-5 h-5" />,
+    //   title: "Delete Account",
+    //   path: "/delete-account",
+    // },
   ];
 
   const toggleSidebar = () => {
@@ -72,6 +72,11 @@ const UserDashboardLayout = () => {
     }
   };
 
+const [accountDelete, setAccountDelete] = useState(false);
+
+  const handleDeleteAccount = () => {
+    setAccountDelete(true);
+  };
   return (
     <>
       {/* Header with fixed height */}
@@ -140,6 +145,14 @@ const UserDashboardLayout = () => {
                     </Link>
                   </li>
                 ))}
+                <li><Link to="#"
+                className={`flex items-center p-3 rounded-md transition-colors duration-200 ${
+                       accountDelete == true
+                          ? "bg-[#0b1645] text-white"
+                          : "text-gray-700 hover:bg-gray-100 hover:text-[#0b1645]"
+                      }`}
+                  onClick={handleDeleteAccount}> <span className="mr-3"><FaTrash className="w-5 h-5" /></span>
+                      <span className="font-medium">Delete Account</span></Link></li>
               </ul>
             </nav>
           </aside>
@@ -201,6 +214,7 @@ const UserDashboardLayout = () => {
       </div>
 
       <Footer />
+      {accountDelete && <AccountDeleteModel onClose={() => setAccountDelete(false)} />}
     </>
   );
 };

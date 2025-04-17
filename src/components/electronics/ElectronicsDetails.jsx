@@ -23,6 +23,7 @@ import { useMediaQuery } from "react-responsive";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import EnquiryForm from "../../features/EnquiryForm.jsx";
+import { Link, useLocation } from "react-router-dom";
 
 const LaptopDetails = ({ laptop }) => {
   const isMobile = useMediaQuery({ maxWidth: 767 });
@@ -240,9 +241,9 @@ const [showEnquiryPopup , setShowEnquiryPopup ] = useState(false);
                   <p className="text-sm text-gray-500">Seller</p>
                 </div>
                 <div className="ml-auto">
-                  <button className="text-blue-600 text-sm font-medium cursor-pointer">
+                  <Link to="/seller-profile"  className="text-blue-600 text-sm font-medium cursor-pointer">
                     See Profile
-                  </button>
+                  </Link>
                 </div>
               </div>
 

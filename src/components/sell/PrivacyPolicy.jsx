@@ -24,7 +24,7 @@ const PrivacyPolicy = () => {
 
   return (
     <div className=" p-6 md:p-8 max-w-4xl mx-auto">
-      <h1 className="text-blue-800 text-2xl font-bold text-center mb-6">
+      <h1 className="text-[#0f1c5e] text-2xl font-bold text-center mb-6">
         {policyData.title}
       </h1>
       

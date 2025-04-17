@@ -21,6 +21,8 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import CloseIcon from "@mui/icons-material/Close";
 import EnquiryForm from "../../features/EnquiryForm.jsx";
+import { Link, useLocation } from "react-router-dom";
+
 const PropertyDetails = ({ property }) => {
   const isMobile = useMediaQuery({ maxWidth: 767 });
   const [isFavorite, setIsFavorite] = useState(false);
@@ -114,7 +116,6 @@ const PropertyDetails = ({ property }) => {
   };
 
 const [showEnquiryPopup , setShowEnquiryPopup ] = useState(false);
-
   return (
     <>
 {/* enquiry model */}
@@ -237,9 +238,9 @@ const [showEnquiryPopup , setShowEnquiryPopup ] = useState(false);
                   <p className="text-sm text-gray-500">Owner</p>
                 </div>
                 <div className="ml-auto">
-                  <button className="text-blue-600 text-sm font-medium cursor-pointer">
+                  <Link to="/seller-profile" className="text-blue-600 text-sm font-medium cursor-pointer">
                     See Profile
-                  </button>
+                  </Link>
                 </div>
               </div>
 

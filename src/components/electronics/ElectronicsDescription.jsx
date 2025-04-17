@@ -15,6 +15,7 @@ import {
 } from "@mui/icons-material";
 import axios from "axios";
 import LaptopDetails from "../electronics/ElectronicsDetails";
+import { Link, useLocation } from "react-router-dom";
 
 const LaptopDescription = () => {
   const [laptop, setLaptop] = useState(null);
@@ -176,9 +177,9 @@ const LaptopDescription = () => {
                     <p className="text-sm text-gray-500">Seller</p>
                   </div>
                 </div>
-                <a href="#" className="text-blue-600 font-semibold text-sm">
+                <Link to="/seller-profile" className="text-blue-600 font-semibold text-sm">
                   See Profile
-                </a>
+                </Link>
               </div>
 
               {/* Location Section */}

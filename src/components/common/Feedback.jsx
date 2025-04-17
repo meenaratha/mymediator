@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
-const Feedback = () => {
+
+const Feedback = ({onClose}) => {
   const [rating, setRating] = useState(0);
   const totalStars = 5;
 
@@ -10,10 +11,14 @@ const Feedback = () => {
 
   const handleSubmit = () => {
     console.log('Submitted rating:', rating);
+    if (onClose) {
+      onClose();
+    }
   };
 
   return (
-    <div className="fixed inset-0 bg-[rgba(39,39,39,0.57)] backdrop-blur-[10px] flex items-center justify-center z-[998]">
+    <div 
+     className="fixed inset-0 bg-[rgba(39,39,39,0.57)] backdrop-blur-[10px] flex items-center justify-center z-[998]">
       <div className="bg-[#003B6D] p-8 rounded-[20px] shadow-lg max-w-[420px] w-full mx-4 transform transition-all duration-300 ease-in-out">
         <h2 className="text-white text-[28px] font-semibold mb-8 text-center">
           Share your Feedback

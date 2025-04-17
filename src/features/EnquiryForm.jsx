@@ -1,13 +1,15 @@
-import React, { useEffect } from 'react';
+import React, {useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { updateFormData, clearFormData } from '../redux/enquiryFormSlice';
+import Feedback from '../components/common/Feedback';
 
 const EnquiryForm = ({onClose}) => {
   const dispatch = useDispatch();
   const formState = useSelector((state) => state.enquiryForm);
-  
+  const [feedbackPopup, setFeedbackPopup] =  useState(false);
+
   // Define validation schema with Yup
   const validationSchema = Yup.object({
     name: Yup.string().required('Name is required'),
@@ -20,35 +22,45 @@ const EnquiryForm = ({onClose}) => {
   // Initialize formik
   const formik = useFormik({
     initialValues: {
-      name: '',
-      email: '',
-      mobile: '',
-      whatsapp: '',
-      message: ''
+      name: formState.name || '',
+      email: formState.email || '',
+      mobile: formState.mobile || '',
+      whatsapp: formState.whatsapp || '',
+      message: formState.message || ''
     },
     validationSchema,
     onSubmit: (values) => {
       console.log('Form submitted with values:', values);
       // Dispatch to Redux store
       dispatch(clearFormData());
-      formik.resetForm();
-      if(onClose){
-        onClose();
-      }
+      setFeedbackPopup(true); // Show feedback popup after submission
+      // Don't reset form here - do it after closing the feedback
     }
   });
 
-  // Clear field error on change
+  // Update Redux state on form changes
   useEffect(() => {
-    const updateReduxState = () => {
-      dispatch(updateFormData(formik.values));
-    };
-    
-    updateReduxState();
+    dispatch(updateFormData(formik.values));
   }, [formik.values, dispatch]);
+
+  // Handle closing feedback popup
+  const handleFeedbackClose = () => {
+    setFeedbackPopup(false);
+    formik.resetForm();
+    if (onClose) {
+      onClose();
+    }
+  };
   
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-[#27272791]
+    <>
+   {/* Feedback popup - Make sure this is rendered at a high z-index */}
+   {feedbackPopup ? (
+        <Feedback onClose={handleFeedbackClose} />
+      ):
+
+ (
+  <div className="fixed inset-0 flex items-center justify-center bg-[#27272791]
      bg-opacity-50 z-999 backdrop-blur-md">
       <div className="bg-white rounded-lg p-6 w-full max-w-[600px] mx-auto relative">
         {/* Close button */}
@@ -63,7 +75,7 @@ const EnquiryForm = ({onClose}) => {
         </button>
 
         <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-blue-800">Enquiry Now</h2>
+          <h2 className="text-2xl font-bold text-[#0f1c5e]">Enquiry Now</h2>
         </div>
         
         <form onSubmit={formik.handleSubmit}>
@@ -160,7 +172,7 @@ const EnquiryForm = ({onClose}) => {
           <div className="text-center">
             <button
               type="submit"
-              className="w-[170px] bg-blue-700 hover:bg-blue-800 text-white font-medium py-2 px-4 rounded-md transition duration-300"
+              className="w-[170px] bg-[#0f1c5e] hover:bg-blue-800 text-white font-medium py-2 px-4 rounded-md transition duration-300"
             >
               Submit
             </button>
@@ -168,6 +180,9 @@ const EnquiryForm = ({onClose}) => {
         </form>
       </div>
     </div>
+    )}
+    </>
+   
   );
 };
 

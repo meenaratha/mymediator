@@ -1,38 +1,39 @@
+import IMAGES from "@/utils/images.js";
 
 const ChatInterface = () => {
   const messages = [
     {
       id: 1,
-      sender: 'Dinesh',
-      profileImg: '/api/placeholder/60/60',
-      text: 'Lorem ipsum Has Been The Industry\'s Standard Dummy Text Ever Since/Lorem Ipsum Has Been The Industry\'s Standard Dummy Text Ever Since/Lorem Ipsum Has Been The Industry\'s Standard Dummy Text Ever Since/Lorem Ipsum Has Been',
-      isNew: true
+      sender: "Dinesh",
+      profileImg: IMAGES.profile,
+      text: "Lorem ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been",
+      isNew: true,
     },
     {
       id: 2,
-      sender: 'Dinesh',
-      profileImg: '/api/placeholder/60/60',
-      text: 'Lorem ipsum Has Been The Industry\'s Standard Dummy Text Ever Since/Lorem Ipsum Has Been The Industry\'s Standard Dummy Text Ever Since/Lorem Ipsum Has Been The Industry\'s Standard Dummy Text Ever Since/Lorem Ipsum Has Been',
-      isNew: true
+      sender: "Dinesh",
+      profileImg: IMAGES.profile,
+      text: "Lorem ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been",
+      isNew: true,
     },
     {
       id: 3,
-      sender: 'Dinesh',
-      profileImg: '/api/placeholder/60/60',
-      text: 'Lorem ipsum Has Been The Industry\'s Standard Dummy Text Ever Since/Lorem Ipsum Has Been The Industry\'s Standard Dummy Text Ever Since/Lorem Ipsum Has Been The Industry\'s Standard Dummy Text Ever Since/Lorem Ipsum Has Been',
-      isNew: false
-    }
+      sender: "Dinesh",
+      profileImg: IMAGES.profile,
+      text: "Lorem ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been",
+      isNew: false,
+    },
   ];
 
   return (
-    <div className="w-full bg-gray-50 min-h-screen">
-      <div className="max-w-4xl mx-auto border border-gray-200 shadow-sm">
+    <div className="w-full ">
+      <div className="max-w-4xl mx-auto py-8">
         {messages.map((message) => (
           <div key={message.id} className="p-4 border-b border-gray-100 flex">
             <div className="flex-shrink-0 mr-4">
-              <img 
-                src={message.profileImg} 
-                alt={`${message.sender}'s profile`} 
+              <img
+                src={message.profileImg}
+                alt={`${message.sender}'s profile`}
                 className="w-12 h-12 rounded-full object-cover"
               />
             </div>

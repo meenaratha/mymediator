@@ -4,7 +4,7 @@ import { useMediaQuery } from "react-responsive"; // For detecting mobile device
 const UploadCarFormPage = () => {
   return (
     <>
-       <HeroSection tittle="Sale ( Shop & Office ) " />
+       <HeroSection tittle="Upload Car" />
             <div className="max-w-screen-xl max-w-[1200px] mx-auto px-4 py-12">
          <UploadCarForm/>
             </div>

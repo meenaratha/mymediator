@@ -1,30 +1,16 @@
 import React, { useState } from 'react';
 import CloseIcon from '@mui/icons-material/Close';
-const AccountDeleteModal = () => {
-  const [isOpen, setIsOpen] = useState(true);
+const AccountDeleteModal = ({ onClose }) => {
+ 
   
-  const handleClose = () => {
-    setIsOpen(false);
-    
-  };
-
-  if (!isOpen) return (
-    <div className="flex justify-center items-center h-64">
-      <button 
-        onClick={() => setIsOpen(true)}
-        className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md"
-      >
-        Show Modal
-      </button>
-    </div>
-  );
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div  style={{ backdropFilter: 'blur(10px)' }} 
+     className="fixed inset-0 bg-[#31303085] bg-opacity-50 flex items-center justify-center p-4 z-999">
       <div className="bg-white rounded-lg shadow-lg max-w-md w-full relative overflow-hidden p-2 z-99">
         {/* Close button */}
         <button 
-          onClick={handleClose}
+          onClick={onClose}
           className="absolute right-2 top-2 text-gray-500 hover:text-gray-700 transition-colors"
           aria-label="Close"
         >
@@ -45,8 +31,8 @@ const AccountDeleteModal = () => {
           {/* Button */}
           <div className="flex justify-center">
             <button 
-              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-12 rounded-md transition-colors"
-              onClick={handleClose}
+              className="cursor-pointer  bg-[#0f1c5e] hover:bg-blue-700 text-white font-medium py-2 px-12 rounded-md transition-colors"
+              onClick={onClose}
             >
               OK
             </button>
