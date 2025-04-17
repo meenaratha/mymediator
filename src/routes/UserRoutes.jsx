@@ -14,6 +14,7 @@ import {
   HouseSaleFormPage,
   HouseRentFormPage,
   FormLayout,
+  SubscriptionPlan,
 } from "@/components";
 import BikeDetailPage from "../Pages/UserFlow/BikeDetailPage";
 import SellerProfile from "../components/sell/sellerProfile";
@@ -43,6 +44,7 @@ const UserRoutes = () => {
         <Route path="/sale-house-apartment" element={<HouseSaleFormPage />} />
         <Route path="/rent-house-apartment" element={<HouseRentFormPage />} />
         <Route path="/notification" element={<ChatInterface/>} />
+        <Route path="/subscription" element={<SubscriptionPlan />} />
       </Route>
     </>
   );

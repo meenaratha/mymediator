@@ -174,6 +174,8 @@ const IMAGES = {
     "@/assets/images/common/propremiumimg.png",
     import.meta.url
   ).href,
+subscriptionbg: new URL("@/assets/images/common/prizeplanbackground.jpeg", import.meta.url).href,
+
 };
 
 export default IMAGES;

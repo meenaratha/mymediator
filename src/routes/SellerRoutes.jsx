@@ -4,6 +4,9 @@ import {
   SellerEnquiryListPage,
   SubscriptionHistoryPlanPage,
   SellerPostDetailsPage,
+  TermsAndCondition,
+  PrivacyPolicy,
+  AccountDeleteModel,
 } from "@/components";
 
 const SellerRoutes = () => {
@@ -22,6 +25,15 @@ const SellerRoutes = () => {
           path="/seller-post-details"
           element={<SellerPostDetailsPage />}
         />
+        <Route
+          path="/terms-and-conditions"
+          element={<TermsAndCondition />}
+        />
+        <Route
+          path="/privacy-policy"
+          element={<PrivacyPolicy />}
+        />
+        <Route path="/delete-account" element={<AccountDeleteModel />} />    
       </Route>
     </>
   );

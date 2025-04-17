@@ -20,7 +20,7 @@ export { default as HeroSection } from "./common/HeroSection";
 export { default as PropertyDescription } from "@/components/property/PropertyDescription";
 export { default as LoadMoreButton } from "@/components/common/LoadMoreButton";
 export { default as FreashRecommendationProducts } from "@/components/common/FreashRecommendationProducts";
-
+export { default as SubscriptionPlan } from "@/components/common/SubscriptionPlan";
 // models
 export { default as Feedback } from "./common/Feedback";
 export { default as OTPVerificationModal } from "@/components/common/OTPVerificationModal";
@@ -52,6 +52,9 @@ export { default as SellerPropertyTabContent } from "@/components/sell/SellerPro
 export { default as SellerElectronicsTabContent } from "@/components/sell/SellerElectronicsTabContent";
 export { default as SubscriptionHistory } from "@/components/sell/SubscriptionHistory";
 export { default as PostDetails } from "@/components/sell/PostDetails";
+export { default as TermsAndCondition } from "@/components/sell/TermsAndCondition";
+export { default as PrivacyPolicy } from "@/components/sell/PrivacyPolicy";
+export { default as AccountDeleteModel } from "@/components/sell/AccountDeleteModel";
 
 // pages
 export { default as HomePage } from "@/Pages/UserFlow/HomePage";
@@ -78,5 +81,6 @@ export { default as HouseRentFormPage } from "@/Pages/UserFlow/HouseRentFormPage
 export { default as SellerEnquiryListPage } from "@/Pages/SellerFlow/SellerEnquiryListPage";
 export { default as SubscriptionHistoryPlanPage } from "@/Pages/SellerFlow/SubscriptionHistoryPlanPage";
 export { default as SellerPostDetailsPage } from "@/Pages/SellerFlow/SellerPostDetailsPage";
+
 
 // Add more exports as needed
