@@ -109,6 +109,7 @@ const LandPlotForm = () => {
           await landPlotFormSchema.validate(formData, { abortEarly: false });
           console.log("✅ Validated data:", formData);
           // Handle successful form submission here
+
         } catch (err) {
           console.log("❌ Validation errors:", err.inner);
           
@@ -278,6 +279,7 @@ const LandPlotForm = () => {
       };
   return (
     <>
+    
     
     <div className="bg-gray-50 p-6 rounded-3xl w-full max-w-6xl shadow-[0_0_10px_rgba(176,_176,_176,_0.25)] mx-auto border border-[#b9b9b9] bg-[#f6f6f6]">
       <h1 className="text-center text-xl font-medium text-[#02487C] mb-8">
