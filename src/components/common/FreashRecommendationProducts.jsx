@@ -5,7 +5,7 @@ import BedIcon from "@mui/icons-material/Bed";
 import { red } from "@mui/material/colors";
 import { useMediaQuery } from "react-responsive";
 import { useState, useEffect } from "react";
-import axiosInstance from "../../services/axiosInstance.js";
+// import axiosInstance from "../../services/axiosInstance.js";
 import IMAGES from "../../utils/images";
 import { Navigate, useNavigate } from "react-router-dom";
 const PropertyCard = ({ item, category }) => {

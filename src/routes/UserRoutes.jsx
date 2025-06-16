@@ -27,7 +27,7 @@ import UploadElectronicFormPage from "../Pages/UserFlow/UploadElectronicFormPage
 import UploadMotercycleFormPage from "../Pages/UserFlow/UploadMotercycleFormPage";
 import UploadBicycleFormPage from "../Pages/UserFlow/UploadBicycleFormPage";
 import UploadCarFormPage from "../Pages/UploadCarFormPage";
-
+import { ProtectedRoute } from "../auth/ProtectedRoute";
 const UserRoutes = () => {
   return (
     <>
@@ -44,29 +44,221 @@ const UserRoutes = () => {
         {/* Authendication Routes */}
       </Route>
 
+      {/* Protected Routes - Authentication required (All logged-in users can access) */}
       <Route element={<FormLayout />}>
-        <Route path="/sell" element={<ProductCategory />} />
-        <Route path="/seller-profile" element={<SellerProfile />} />
+        {/* User Dashboard Routes */}
+        {/* <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <UserDashboard />
+            </ProtectedRoute>
+          }
+        /> */}
 
-        <Route path="/sale-house-apartment" element={<HouseSaleFormPage />} />
-        <Route path="/rent-house-apartment" element={<HouseRentFormPage />} />
-        <Route path="/land-plot" element={<LandPlotFormPage />} />
-        <Route path="/rent-shop-office" element={<RentShopOfficeFormPage />} />
-        <Route path="/sale-shop-office" element={<SaleShopOfficeFormPage />} />
+        {/* <Route
+          path="/my-enquiries"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <UserEnquiries />
+            </ProtectedRoute>
+          }
+        /> */}
 
-        {/* electronic form */}
-        <Route path="/upload-electronics" element={<UploadElectronicFormPage />} />
-        {/* cycle forms */}
-        <Route path="/upload-motercycle" element={<UploadMotercycleFormPage />} />
-        <Route path="/upload-bicycle" element={<UploadBicycleFormPage />} />
-        {/* upload car form */}
-        <Route path="/upload-car" element={<UploadCarFormPage />} />
+        {/* <Route
+          path="/my-listings"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <UserListings />
+            </ProtectedRoute>
+          }
+        /> */}
 
+        {/* <Route
+          path="/my-favorites"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <UserFavorites />
+            </ProtectedRoute>
+          }
+        /> */}
 
+        {/* <Route
+          path="/messages"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <UserMessages />
+            </ProtectedRoute>
+          }
+        /> */}
 
+        {/* <Route
+          path="/profile"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <UserProfile />
+            </ProtectedRoute>
+          }
+        /> */}
 
-        <Route path="/notification" element={<ChatInterface/>} />
-        <Route path="/subscription" element={<SubscriptionPlan />} />
+        {/* <Route
+          path="/notifications"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <UserNotifications />
+            </ProtectedRoute>
+          }
+        /> */}
+
+        {/* Selling/Upload Routes - Any authenticated user can sell */}
+        <Route
+          path="/sell"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <ProductCategory />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/seller-profile"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <SellerProfile />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Property Upload Routes */}
+        <Route
+          path="/sale-house-apartment"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <HouseSaleFormPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/rent-house-apartment"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <HouseRentFormPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/land-plot"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <LandPlotFormPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/rent-shop-office"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <RentShopOfficeFormPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/sale-shop-office"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <SaleShopOfficeFormPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Electronics Upload Routes */}
+        <Route
+          path="/upload-electronics"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <UploadElectronicFormPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Vehicle Upload Routes */}
+        <Route
+          path="/upload-motercycle"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <UploadMotercycleFormPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/upload-bicycle"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <UploadBicycleFormPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/upload-car"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <UploadCarFormPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Communication Routes */}
+        <Route
+          path="/chat"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <ChatInterface />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/subscription"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <SubscriptionPlan />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Legacy Routes - Redirect to new unified dashboard */}
+        {/* <Route
+          path="/seller-enquiry-list"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <UserEnquiries />
+            </ProtectedRoute>
+          }
+        /> */}
+
+        <Route
+          path="/seller-subscription-history-plan"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <SubscriptionPlan />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* <Route
+          path="/seller-post-details"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <UserListings />
+            </ProtectedRoute>
+          }
+        /> */}
       </Route>
     </>
   );
