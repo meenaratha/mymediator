@@ -90,33 +90,23 @@ export const AuthProvider = ({ children }) => {
 
   // Initialize auth on app load
   useEffect(() => {
-    const initializeAuth = async () => {
+    const initializeAuth = () => {
       const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
 
       if (token) {
-        try {
-          // Set token first to make authenticated requests
-          setAccessToken(token);
+        // Set token in axios defaults
+        setAccessToken(token);
 
-          // Verify token and get fresh user data from server
-          const verifyResponse = await api.get("/auth/verify");
-          const user = verifyResponse.data.user;
-
-          dispatch({
-            type: AUTH_ACTIONS.LOGIN_SUCCESS,
-            payload: {
-              user,
-              token,
-            },
-          });
-        } catch (error) {
-          // Token is invalid, clear everything
-          console.error("Token verification failed:", error);
-          localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-          localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
-          setAccessToken(null);
-          dispatch({ type: AUTH_ACTIONS.LOGOUT });
-        }
+        // Since there's no verify endpoint, we'll assume the token is valid
+        // and set the user as authenticated with minimal user data
+        // The actual user data will be fetched when needed or during login
+        dispatch({
+          type: AUTH_ACTIONS.LOGIN_SUCCESS,
+          payload: {
+            user: null, // Will be populated during login or from other API calls
+            token,
+          },
+        });
       } else {
         dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: false });
       }
@@ -125,29 +115,53 @@ export const AuthProvider = ({ children }) => {
     initializeAuth();
   }, []);
 
-  // Login function
+  // Login function for your API response structure
   const login = async (credentials) => {
     dispatch({ type: AUTH_ACTIONS.LOGIN_REQUEST });
 
     try {
-      const response = await api.post("/login", credentials);
-      const { user, access_token, refresh_token } = response.data;
+      console.log(
+        "AuthContext: Making login request with credentials:",
+        credentials
+      );
 
-      // Only store tokens in localStorage, NOT user data
-      localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, access_token);
-      if (refresh_token) {
-        localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refresh_token);
+      const response = await api.post("/login", credentials);
+      console.log("AuthContext: Login response received:", response.data);
+
+      // Your API returns: { token: "...", user: {...} }
+      const { token, user } = response.data;
+
+      console.log("AuthContext: Extracted data:", { token, user });
+
+      if (!token) {
+        throw new Error("No token received from server");
       }
 
+      if (!user) {
+        throw new Error("No user data received from server");
+      }
+
+      // Store token in localStorage using consistent keys
+      localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, token);
+
+      // Note: Your API doesn't seem to return a refresh token
+      // If it does in the future, it would be handled here
+
+      console.log("AuthContext: Token stored in localStorage:");
+      console.log(
+        "Access Token:",
+        localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN)
+      );
+
       // Set token in axios defaults
-      setAccessToken(access_token);
+      setAccessToken(token);
 
       // User data only in memory
       dispatch({
         type: AUTH_ACTIONS.LOGIN_SUCCESS,
         payload: {
           user,
-          token: access_token,
+          token,
         },
       });
 
@@ -157,8 +171,12 @@ export const AuthProvider = ({ children }) => {
         message: SUCCESS_MESSAGES.LOGIN_SUCCESS,
       };
     } catch (error) {
+      console.error("AuthContext: Login error:", error);
       const errorMessage =
-        error.response?.data?.message || ERROR_MESSAGES.UNKNOWN_ERROR;
+        error.response?.data?.message ||
+        error.message ||
+        ERROR_MESSAGES.UNKNOWN_ERROR;
+
       dispatch({
         type: AUTH_ACTIONS.LOGIN_FAILURE,
         payload: errorMessage,
@@ -167,28 +185,40 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Register function
+  // Register function for your API response structure
   const register = async (userData) => {
     dispatch({ type: AUTH_ACTIONS.LOGIN_REQUEST });
 
     try {
-      const response = await api.post("/auth/register", userData);
-      const { user, access_token, refresh_token } = response.data;
+      console.log("AuthContext: Making register request with data:", userData);
 
-      // Only store tokens in localStorage, NOT user data
-      localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, access_token);
-      if (refresh_token) {
-        localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refresh_token);
+      const response = await api.post("/register", userData);
+      console.log("AuthContext: Register response received:", response.data);
+
+      // Assuming register returns the same structure: { token: "...", user: {...} }
+      const { token, user } = response.data;
+
+      console.log("AuthContext: Extracted registration data:", { token, user });
+
+      if (!token) {
+        throw new Error("No token received from server");
       }
 
-      setAccessToken(access_token);
+      if (!user) {
+        throw new Error("No user data received from server");
+      }
+
+      // Store token in localStorage using consistent keys
+      localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, token);
+
+      setAccessToken(token);
 
       // User data only in memory
       dispatch({
         type: AUTH_ACTIONS.LOGIN_SUCCESS,
         payload: {
           user,
-          token: access_token,
+          token,
         },
       });
 
@@ -198,8 +228,12 @@ export const AuthProvider = ({ children }) => {
         message: SUCCESS_MESSAGES.REGISTRATION_SUCCESS,
       };
     } catch (error) {
+      console.error("AuthContext: Register error:", error);
       const errorMessage =
-        error.response?.data?.message || ERROR_MESSAGES.UNKNOWN_ERROR;
+        error.response?.data?.message ||
+        error.message ||
+        ERROR_MESSAGES.UNKNOWN_ERROR;
+
       dispatch({
         type: AUTH_ACTIONS.LOGIN_FAILURE,
         payload: errorMessage,
@@ -211,11 +245,16 @@ export const AuthProvider = ({ children }) => {
   // Logout function
   const logout = async () => {
     try {
-      await api.post("/auth/logout");
+      // Try to call logout endpoint if it exists, but don't fail if it doesn't
+      await api.post("/logout");
     } catch (error) {
-      console.error("Logout error:", error);
+      // Don't throw error if logout endpoint fails
+      console.warn(
+        "Logout endpoint error (continuing with local logout):",
+        error
+      );
     } finally {
-      // Clear only tokens, user data will be cleared from memory
+      // Always clear local storage and state
       localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
       localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
       setAccessToken(null);
@@ -226,8 +265,8 @@ export const AuthProvider = ({ children }) => {
   // Update profile function - NO localStorage for user data
   const updateProfile = async (profileData) => {
     try {
-      const response = await api.put("/auth/profile", profileData);
-      const updatedUser = response.data.user;
+      const response = await api.put("/profile", profileData);
+      const updatedUser = response.data.user || response.data;
 
       // Update user data only in memory - NOT in localStorage
       dispatch({
@@ -251,7 +290,7 @@ export const AuthProvider = ({ children }) => {
   // Change password function
   const changePassword = async (passwordData) => {
     try {
-      const response = await api.put("/auth/change-password", passwordData);
+      const response = await api.put("/change-password", passwordData);
       return {
         success: true,
         message: SUCCESS_MESSAGES.PASSWORD_CHANGED,

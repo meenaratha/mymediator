@@ -6,6 +6,7 @@ import SubscriptionPlan from "../components/common/SubscriptionPlan";
 import TermsAndCondition from "../components/sell/TermsAndCondition";
 import PrivacyPolicy from "../components/sell/PrivacyPolicy";
 import AccountDeleteModel from "../components/sell/AccountDeleteModel";
+import { FormLayout, SellerEnquiryList, SellerEnquiryListPage, SellerPostDetailsPage, SubscriptionHistoryPlanPage, UserDashboardLayout } from "../components";
 
 // Simple message component for deprecated routes
 const DeprecatedRouteMessage = ({ redirectTo, message }) => (
@@ -55,70 +56,63 @@ const DeprecatedRouteMessage = ({ redirectTo, message }) => (
 const SellerRoutes = () => {
   return (
     <>
-      {/* Deprecated Seller Routes - Redirect to unified dashboard */}
-      <Route
-        path="/seller-enquiry-list"
-        element={
-          <ProtectedRoute requireAuth={true}>
-            <DeprecatedRouteMessage
-              redirectTo="/my-enquiries"
-              message="Enquiries are now managed in your unified dashboard."
-            />
-          </ProtectedRoute>
-        }
-      />
+      <Route element={<UserDashboardLayout />}>
+        {/* Deprecated Seller Routes - Redirect to unified dashboard */}
+        <Route
+          path="/seller-enquiry-list"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <SellerEnquiryListPage />
+            </ProtectedRoute>
+          }
+        />
 
-      <Route
-        path="/seller-subscription-history-plan"
-        element={
-          <ProtectedRoute requireAuth={true}>
-            <DeprecatedRouteMessage
-              redirectTo="/subscription"
-              message="Subscription management has moved to a unified section."
-            />
-          </ProtectedRoute>
-        }
-      />
+        <Route
+          path="/seller-subscription-history-plan"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <SubscriptionHistoryPlanPage />
+            </ProtectedRoute>
+          }
+        />
 
-      <Route
-        path="/seller-post-details"
-        element={
-          <ProtectedRoute requireAuth={true}>
-            <DeprecatedRouteMessage
-              redirectTo="/my-listings"
-              message="Your listings are now managed in the unified dashboard."
-            />
-          </ProtectedRoute>
-        }
-      />
+        <Route
+          path="/seller-post-details"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <SellerPostDetailsPage />
+            </ProtectedRoute>
+          }
+        />
 
-      {/* Legal pages - accessible to all authenticated users */}
-      <Route
-        path="/terms-and-conditions"
-        element={
-          <ProtectedRoute requireAuth={true}>
-            <TermsAndCondition />
-          </ProtectedRoute>
-        }
-      />
+        {/* Legal pages - accessible to all authenticated users */}
+        <Route
+          path="/terms-and-conditions"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <TermsAndCondition />
+            </ProtectedRoute>
+          }
+        />
 
-      <Route
-        path="/privacy-policy"
-        element={
-          <ProtectedRoute requireAuth={true}>
-            <PrivacyPolicy />
-          </ProtectedRoute>
-        }
-      />
+        <Route
+          path="/privacy-policy"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <PrivacyPolicy />
+            </ProtectedRoute>
+          }
+        />
 
-      <Route
-        path="/delete-account"
-        element={
-          <ProtectedRoute requireAuth={true}>
-            <AccountDeleteModel />
-          </ProtectedRoute>
-        }
-      />
+        <Route
+          path="/delete-account"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <AccountDeleteModel />
+            </ProtectedRoute>
+          }
+        />
+      </Route>
     </>
   );
 };

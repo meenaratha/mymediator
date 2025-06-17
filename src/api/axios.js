@@ -1,9 +1,10 @@
 // src/api/axios.js
 import axios from "axios";
+import { STORAGE_KEYS } from "../utils/constants";
 
 // Define the API URL using Vite environment variable
-const apiUrl =
-  import.meta.env.VITE_API_URL || "https://www.mymediator.amrithaa.net/api";
+const apiUrl = import.meta.env.VITE_API_BASE_URL;
+ 
 
 // Create Axios instances for different purposes
 const createAxiosInstance = (baseURL, headers = {}) => {
@@ -43,27 +44,38 @@ const refreshAccessToken = async () => {
 
   refreshTokenPromise = (async () => {
     try {
-      const refreshToken = localStorage.getItem("refresh_token");
+      const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
       if (!refreshToken) {
         throw new Error("No refresh token available");
       }
 
-      const response = await axios.post(`${apiUrl}/auth/refresh`, {
+      const response = await axios.post(`${apiUrl}/refresh`, {
         refresh_token: refreshToken,
       });
 
-      const { access_token, refresh_token: newRefreshToken } = response.data;
+      const {
+        access_token,
+        refresh_token: newRefreshToken,
+        token,
+      } = response.data;
 
-      localStorage.setItem("access_token", access_token);
+      // Handle both possible token field names
+      const newAccessToken = access_token || token;
+
+      // Store tokens using consistent keys
+      localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, newAccessToken);
       if (newRefreshToken) {
-        localStorage.setItem("refresh_token", newRefreshToken);
+        localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, newRefreshToken);
       }
 
-      setAccessToken(access_token);
-      return access_token;
+      setAccessToken(newAccessToken);
+      return newAccessToken;
     } catch (error) {
-      localStorage.clear();
-      window.location.href = "/login";
+      // Clear all tokens and redirect to login
+      localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+      setAccessToken(null);
+      window.location.href = "/";
       throw error;
     } finally {
       refreshTokenPromise = null;
@@ -77,7 +89,7 @@ const refreshAccessToken = async () => {
 const addAuthInterceptor = (instance) => {
   instance.interceptors.request.use(
     (config) => {
-      const token = localStorage.getItem("access_token");
+      const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -98,7 +110,7 @@ const addErrorInterceptor = (instance) => {
       if (
         error.response?.status === 401 &&
         !originalRequest._retry &&
-        localStorage.getItem("refresh_token")
+        localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN)
       ) {
         originalRequest._retry = true;
 
@@ -122,8 +134,10 @@ const addErrorInterceptor = (instance) => {
               !isSessionExpiredDialogShown
             ) {
               console.log("Unauthorized request");
-              localStorage.clear();
-              window.location.href = "/login";
+              localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+              localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+              setAccessToken(null);
+              window.location.href = "/";
             }
             break;
 
@@ -131,8 +145,10 @@ const addErrorInterceptor = (instance) => {
             if (!isSessionExpiredDialogShown) {
               isSessionExpiredDialogShown = true;
               window.alert("Session Expired. Please login again.");
-              localStorage.clear();
-              window.location.href = "/login";
+              localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+              localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+              setAccessToken(null);
+              window.location.href = "/";
             }
             break;
 
@@ -167,12 +183,12 @@ const addErrorInterceptor = (instance) => {
 // Enhanced token management
 const setAccessToken = (token) => {
   if (token) {
-    localStorage.setItem("access_token", token);
+    localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, token);
     [api, apiForFiles, apiForFileDownload].forEach((instance) => {
       instance.defaults.headers["Authorization"] = `Bearer ${token}`;
     });
   } else {
-    localStorage.removeItem("access_token");
+    localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
     [api, apiForFiles, apiForFileDownload].forEach((instance) => {
       delete instance.defaults.headers["Authorization"];
     });

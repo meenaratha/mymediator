@@ -5,8 +5,8 @@ import { useAuth } from "./AuthContext";
 
 // Loading component
 const LoadingSpinner = () => (
-  <div className="flex items-center justify-center min-h-screen bg-gray-50">
-    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+  <div className="flex items-center flex-col gap-[20px] justify-center min-h-screen bg-gray-50">
+    <div className="animate-spin rounded-full h-28 w-28 border-b-2 border-blue-500"></div>
     <div className="ml-4 text-gray-600">Loading...</div>
   </div>
 );
@@ -15,7 +15,7 @@ const LoadingSpinner = () => (
 export const ProtectedRoute = ({
   children,
   requireAuth = true,
-  fallbackPath = "/login",
+  fallbackPath = "/",
   fallbackComponent: FallbackComponent = null,
 }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -35,7 +35,7 @@ export const ProtectedRoute = ({
 };
 
 // Public Route Component (redirects authenticated users to dashboard)
-export const PublicRoute = ({ children, redirectTo = "/dashboard" }) => {
+export const PublicRoute = ({ children, redirectTo = "/profile" }) => {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
@@ -68,7 +68,7 @@ export const withAuth = (Component, options = {}) => {
       return FallbackComponent ? (
         <FallbackComponent />
       ) : (
-        <Navigate to="/login" />
+        <Navigate to="/" />
       );
     }
 
@@ -127,7 +127,7 @@ export const LoginRequiredPage = () => (
       </p>
       <div className="space-y-3">
         <button
-          onClick={() => (window.location.href = "/login")}
+          onClick={() => (window.location.href = "/")}
           className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
         >
           Login

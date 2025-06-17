@@ -47,68 +47,6 @@ const UserRoutes = () => {
       {/* Protected Routes - Authentication required (All logged-in users can access) */}
       <Route element={<FormLayout />}>
         {/* User Dashboard Routes */}
-        {/* <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute requireAuth={true}>
-              <UserDashboard />
-            </ProtectedRoute>
-          }
-        /> */}
-
-        {/* <Route
-          path="/my-enquiries"
-          element={
-            <ProtectedRoute requireAuth={true}>
-              <UserEnquiries />
-            </ProtectedRoute>
-          }
-        /> */}
-
-        {/* <Route
-          path="/my-listings"
-          element={
-            <ProtectedRoute requireAuth={true}>
-              <UserListings />
-            </ProtectedRoute>
-          }
-        /> */}
-
-        {/* <Route
-          path="/my-favorites"
-          element={
-            <ProtectedRoute requireAuth={true}>
-              <UserFavorites />
-            </ProtectedRoute>
-          }
-        /> */}
-
-        {/* <Route
-          path="/messages"
-          element={
-            <ProtectedRoute requireAuth={true}>
-              <UserMessages />
-            </ProtectedRoute>
-          }
-        /> */}
-
-        {/* <Route
-          path="/profile"
-          element={
-            <ProtectedRoute requireAuth={true}>
-              <UserProfile />
-            </ProtectedRoute>
-          }
-        /> */}
-
-        {/* <Route
-          path="/notifications"
-          element={
-            <ProtectedRoute requireAuth={true}>
-              <UserNotifications />
-            </ProtectedRoute>
-          }
-        /> */}
 
         {/* Selling/Upload Routes - Any authenticated user can sell */}
         <Route
@@ -149,7 +87,7 @@ const UserRoutes = () => {
         />
 
         <Route
-          path="/land-plot"
+          path="/lands-plots"
           element={
             <ProtectedRoute requireAuth={true}>
               <LandPlotFormPage />
@@ -177,7 +115,7 @@ const UserRoutes = () => {
 
         {/* Electronics Upload Routes */}
         <Route
-          path="/upload-electronics"
+          path="/television"
           element={
             <ProtectedRoute requireAuth={true}>
               <UploadElectronicFormPage />
@@ -243,22 +181,13 @@ const UserRoutes = () => {
         /> */}
 
         <Route
-          path="/seller-subscription-history-plan"
+          path="/subscription"
           element={
             <ProtectedRoute requireAuth={true}>
               <SubscriptionPlan />
             </ProtectedRoute>
           }
         />
-
-        {/* <Route
-          path="/seller-post-details"
-          element={
-            <ProtectedRoute requireAuth={true}>
-              <UserListings />
-            </ProtectedRoute>
-          }
-        /> */}
       </Route>
     </>
   );

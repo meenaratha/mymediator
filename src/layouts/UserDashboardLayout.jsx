@@ -4,7 +4,7 @@ import IMAGES from "@/utils/images.js";
 import { useMediaQuery } from "react-responsive";
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-
+import LogoutIcon from "@mui/icons-material/Logout";
 import {
   FaUser,
   FaListAlt,
@@ -17,12 +17,13 @@ import {
   FaTimes,
   FaEdit,
 } from "react-icons/fa";
-
+import { useAuth } from "../auth/AuthContext"; 
 const UserDashboardLayout = () => {
   const isMobile = useMediaQuery({ maxWidth: 767 });
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
-
+  const { logout } = useAuth();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const menuItems = [
     {
       icon: <FaUser className="w-5 h-5" />,
@@ -76,6 +77,25 @@ const [accountDelete, setAccountDelete] = useState(false);
 
   const handleDeleteAccount = () => {
     setAccountDelete(true);
+  };
+
+  const handleLogout = async () => {
+    if (isLoggingOut) return; // Prevent multiple clicks
+
+    setIsLoggingOut(true);
+
+    try {
+      await logout();
+      // The logout function will handle clearing localStorage and redirecting
+      // You might want to show a success message here if needed
+      console.log("Logout successful");
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Handle logout error if needed
+      // Even if the API call fails, the local logout should still work
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
   return (
     <>
@@ -145,14 +165,45 @@ const [accountDelete, setAccountDelete] = useState(false);
                     </Link>
                   </li>
                 ))}
-                <li><Link to="#"
-                className={`flex items-center p-3 rounded-md transition-colors duration-200 ${
-                       accountDelete == true
-                          ? "bg-[#0b1645] text-white"
-                          : "text-gray-700 hover:bg-gray-100 hover:text-[#0b1645]"
-                      }`}
-                  onClick={handleDeleteAccount}> <span className="mr-3"><FaTrash className="w-5 h-5" /></span>
-                      <span className="font-medium">Delete Account</span></Link></li>
+                <li>
+                  <Link
+                    to="#"
+                    className={`flex items-center p-3 rounded-md transition-colors duration-200 ${
+                      accountDelete == true
+                        ? "bg-[#0b1645] text-white"
+                        : "text-gray-700 hover:bg-gray-100 hover:text-[#0b1645]"
+                    }`}
+                    onClick={handleDeleteAccount}
+                  >
+                    {" "}
+                    <span className="mr-3">
+                      <FaTrash className="w-5 h-5" />
+                    </span>
+                    <span className="font-medium">Delete Account</span>
+                  </Link>
+                </li>
+                <li>
+                  <button
+                    onClick={handleLogout}
+                    disabled={isLoggingOut}
+                    className={`cursor-pointer flex items-center p-3 rounded-md transition-colors duration-200 w-full ${
+                      isLoggingOut === true
+                        ? "bg-[#0b1645] text-white"
+                        : "text-gray-700 hover:bg-gray-100 hover:text-[#0b1645]"
+                    } ${
+                      isLoggingOut
+                        ? "opacity-50 cursor-not-allowed bg-[#0b1645] text-white"
+                        : "text-gray-700 hover:bg-gray-100 hover:text-[#0b1645]"
+                    }`}
+                  >
+                    <span className="mr-3">
+                      <LogoutIcon className="w-5 h-5" />
+                    </span>
+                    <span className="font-medium">
+                      {isLoggingOut ? "Logging out..." : "Logout"}
+                    </span>
+                  </button>
+                </li>
               </ul>
             </nav>
           </aside>
@@ -214,7 +265,9 @@ const [accountDelete, setAccountDelete] = useState(false);
       </div>
 
       <Footer />
-      {accountDelete && <AccountDeleteModel onClose={() => setAccountDelete(false)} />}
+      {accountDelete && (
+        <AccountDeleteModel onClose={() => setAccountDelete(false)} />
+      )}
     </>
   );
 };

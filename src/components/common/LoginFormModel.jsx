@@ -93,14 +93,16 @@ const LoginFormModel = ({
     }
 
     setIsSubmitting(true);
+    setErrors({}); // Clear any previous errors
 
     try {
       const result = await login({
-        mobile_number: formData.mobileNumber,
+        phone: formData.mobileNumber,
         password: formData.password,
       });
 
       if (result.success) {
+        // Reset form
         setFormData({
           mobileNumber: "",
           password: "",
@@ -108,8 +110,8 @@ const LoginFormModel = ({
         setErrors({});
         setLoginFormModel(false);
 
-        // All users go to unified dashboard after login
-        navigate("/dashboard");
+        // Navigate to dashboard
+        navigate("/seller-profile");
       } else {
         setErrors({
           general: result.error || "Login failed. Please try again.",
@@ -117,7 +119,9 @@ const LoginFormModel = ({
       }
     } catch (error) {
       console.error("Login error:", error);
-      setErrors({ general: "An unexpected error occurred. Please try again." });
+      setErrors({
+        general: "An unexpected error occurred. Please try again.",
+      });
     } finally {
       setIsSubmitting(false);
     }

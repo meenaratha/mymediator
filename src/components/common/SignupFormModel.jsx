@@ -7,7 +7,8 @@ import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import IMAGES from "@/utils/images.js";
 import "../../styles/Login.css";
-const SignupFormModel = ({ setLoginFormModel ,setSignupFormModel }) => {
+
+const SignupFormModel = ({ setLoginFormModel, setSignupFormModel }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
@@ -16,6 +17,7 @@ const SignupFormModel = ({ setLoginFormModel ,setSignupFormModel }) => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const isMobile = window.innerWidth < 768;
 
   // Refs for form fields
@@ -50,6 +52,8 @@ const SignupFormModel = ({ setLoginFormModel ,setSignupFormModel }) => {
     switch (name) {
       case "name":
         if (!value) return "Name is required";
+        if (value.trim().length < 2)
+          return "Name must be at least 2 characters";
         return null;
       case "mobileNumber":
         if (!value) return "Mobile number is required";
@@ -77,6 +81,7 @@ const SignupFormModel = ({ setLoginFormModel ,setSignupFormModel }) => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -94,40 +99,95 @@ const SignupFormModel = ({ setLoginFormModel ,setSignupFormModel }) => {
     setErrors((prev) => ({ ...prev, mobileNumber: error }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (validateForm()) {
-      console.log("Form submitted:", formData);
+  // API call function
+  const registerUser = async (userData) => {
+    try {
+      const response = await fetch(
+        "https://www.mymediator.amrithaa.net/backend/api/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            name: userData.name.trim(),
+            phone: userData.mobileNumber,
+            password: userData.password,
+          }),
+        }
+      );
 
-      // You can add your API call here
-      // Example:
-      // loginUser(formData)
-      //   .then(response => {
-      //     // Handle successful login
-      //     resetFormAndNavigate();
-      //   })
-      //   .catch(error => {
-      //     console.error('Login failed:', error);
-      //   });
+      const data = await response.json();
 
-      // For now, we'll just simulate a successful login
-      resetFormAndNavigate();
+      if (!response.ok) {
+        throw new Error(
+          data.message || `HTTP error! status: ${response.status}`
+        );
+      }
+
+      return {
+        success: true,
+        data: data,
+      };
+    } catch (error) {
+      console.error("Registration API error:", error);
+      return {
+        success: false,
+        error: error.message || "Registration failed. Please try again.",
+      };
     }
   };
 
-  const resetFormAndNavigate = () => {
-    // Reset the form
-    setFormData({
-      name: "",
-      mobileNumber: "",
-      password: "",
-    });
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-    // Clear any errors
-    setErrors({});
-    setSignupFormModel(false);
-    setLoginFormModel(true);
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrors({}); // Clear any previous errors
+
+    try {
+      const result = await registerUser(formData);
+
+      if (result.success) {
+        // Reset the form
+        setFormData({
+          name: "",
+          mobileNumber: "",
+          password: "",
+        });
+
+        // Clear any errors
+        setErrors({});
+
+        // Close signup modal and open login modal
+        setSignupFormModel(false);
+        setLoginFormModel(true);
+
+        // Optional: Show success message
+        console.log("Registration successful:", result.data);
+
+        // You could also show a toast notification here
+        // toast.success("Registration successful! Please login.");
+      } else {
+        // Handle API errors
+        setErrors({
+          general: result.error,
+        });
+      }
+    } catch (error) {
+      console.error("Unexpected registration error:", error);
+      setErrors({
+        general: "An unexpected error occurred. Please try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
   return (
     <>
       <div
@@ -143,10 +203,13 @@ const SignupFormModel = ({ setLoginFormModel ,setSignupFormModel }) => {
         >
           {/* Close Button */}
           <button
-            onClick={()=>{
-              setSignupFormModel(false);
+            onClick={() => {
+              if (!isSubmitting) {
+                setSignupFormModel(false);
+              }
             }}
             className="absolute top-3 right-3 text-gray-600 hover:text-black transition-colors cursor-pointer"
+            disabled={isSubmitting}
           >
             <CloseIcon />
           </button>
@@ -155,9 +218,19 @@ const SignupFormModel = ({ setLoginFormModel ,setSignupFormModel }) => {
           <div className="p-8 md:w-1/2">
             <div className="mb-6 text-center">
               <h2 className="font-bold text-xl py-2 text-gray-900">Sign up</h2>
+              <p className="text-gray-600 text-sm">
+                Create your account to get started
+              </p>
             </div>
 
             <form onSubmit={handleSubmit}>
+              {/* General Error Message */}
+              {errors.general && (
+                <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                  {errors.general}
+                </div>
+              )}
+
               {/* NAME */}
               <div className="mb-4" ref={nameInputRef}>
                 <input
@@ -166,12 +239,13 @@ const SignupFormModel = ({ setLoginFormModel ,setSignupFormModel }) => {
                   id="name"
                   value={formData.name}
                   onChange={handleChange}
+                  disabled={isSubmitting}
                   className={`w-full px-4 py-2 border rounded-md focus:outline-none bg-[#FCFCFC]
                    focus:border-blue-500 
                    border-[#CCCBCB] box-shadow-[ 0px 0.84px 3.36px 0px #C6C6C640] ${
                      errors.name ? "border-red-500" : "border-gray-300"
-                   }`}
-                  placeholder="Name"
+                   } ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
+                  placeholder="Full Name"
                 />
                 {errors.name && (
                   <p className="text-red-500 text-xs mt-1">{errors.name}</p>
@@ -185,6 +259,10 @@ const SignupFormModel = ({ setLoginFormModel ,setSignupFormModel }) => {
                   value={formData.mobileNumber}
                   onChange={handlePhoneChange}
                   placeholder="Mobile Number"
+                  disabled={isSubmitting}
+                  className={
+                    isSubmitting ? "opacity-50 pointer-events-none" : ""
+                  }
                 />
                 {errors.mobileNumber && (
                   <p className="text-red-500 text-xs mt-1">
@@ -197,9 +275,9 @@ const SignupFormModel = ({ setLoginFormModel ,setSignupFormModel }) => {
               <div className="mb-4">
                 <div
                   className={`flex items-center border rounded-md p-2 bg-[#FCFCFC] 
-                  border-[#CCCBCB] box-shadow-[ 0px 0.84px 3.36px 0px #C6C6C640];
-]
-                  ${errors.password ? "" : ""}`}
+                  border-[#CCCBCB] box-shadow-[ 0px 0.84px 3.36px 0px #C6C6C640]
+                  ${errors.password ? "border-red-500" : "border-gray-300"}
+                  ${isSubmitting ? "opacity-50" : ""}`}
                 >
                   <input
                     ref={passwordInputRef}
@@ -209,11 +287,13 @@ const SignupFormModel = ({ setLoginFormModel ,setSignupFormModel }) => {
                     onChange={handleChange}
                     placeholder="Enter the password"
                     className="w-full px-1 py-1 outline-none bg-[#FCFCFC]"
+                    disabled={isSubmitting}
                   />
                   <button
                     type="button"
                     onClick={togglePasswordVisibility}
                     className="text-gray-500 focus:outline-none"
+                    disabled={isSubmitting}
                   >
                     {showPassword ? (
                       <VisibilityOffIcon fontSize="small" />
@@ -227,24 +307,34 @@ const SignupFormModel = ({ setLoginFormModel ,setSignupFormModel }) => {
                 )}
               </div>
 
-              {/* Login Button */}
+              {/* Signup Button */}
               <div className="flex justify-center mt-10">
                 <button
                   type="submit"
-                  className="w-full max-w-[250px] bg-[#02487C] text-white py-2 rounded-[20px] hover:bg-blue-700 transition-colors cursor-pointer"
+                  disabled={isSubmitting}
+                  className="w-full max-w-[250px] bg-[#02487C] text-white py-2 rounded-[20px] hover:bg-blue-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Sign Up
+                  {isSubmitting ? "Creating Account..." : "Sign Up"}
                 </button>
               </div>
-              {/*login Link */}
-              {/* <div className="mt-4 text-center">
+
+              {/* Login Link */}
+              <div className="mt-4 text-center flex flex-wrap justify-center gap-2">
                 <span className="text-gray-600 text-sm">
-                  Do you have account ?{" "}
+                  Already have an account?{" "}
                 </span>
-                <a href="#" className="text-blue-600 text-sm font-medium">
-                 Login
-                </a>
-              </div> */}
+                <p
+                  className="text-[#02487C] text-sm font-medium cursor-pointer hover:underline"
+                  onClick={() => {
+                    if (!isSubmitting) {
+                      setSignupFormModel(false);
+                      setLoginFormModel(true);
+                    }
+                  }}
+                >
+                  Login
+                </p>
+              </div>
             </form>
           </div>
 
@@ -253,7 +343,7 @@ const SignupFormModel = ({ setLoginFormModel ,setSignupFormModel }) => {
             <div className="h-full p-8 flex items-center justify-center">
               <img
                 src={IMAGES.signupbanner}
-                alt="OTP Illustration"
+                alt="Signup Illustration"
                 className="max-w-full max-h-full"
               />
             </div>

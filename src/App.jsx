@@ -5,7 +5,7 @@ import "./App.css";
 function App() {
   return (
     <BrowserRouter
-      basename={import.meta.env.REACT_APP_BASENAME || "/mymediator"}
+      // basename={import.meta.env.REACT_APP_BASENAME || "/mymediator"}
     >
       <AuthProvider>
         <AppRoutes />

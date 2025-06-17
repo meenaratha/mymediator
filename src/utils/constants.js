@@ -14,15 +14,15 @@ export const AUTH_ACTIONS = {
 // API endpoints
 export const API_ENDPOINTS = {
   AUTH: {
-    LOGIN: "/auth/login",
-    REGISTER: "/auth/register",
-    LOGOUT: "/auth/logout",
-    REFRESH: "/auth/refresh",
-    VERIFY: "/auth/verify",
-    PROFILE: "/auth/profile",
-    CHANGE_PASSWORD: "/auth/change-password",
-    FORGOT_PASSWORD: "/auth/forgot-password",
-    RESET_PASSWORD: "/auth/reset-password",
+    LOGIN: "/login",
+    REGISTER: "/register",
+    LOGOUT: "/logout",
+    REFRESH: "/refresh",
+    VERIFY: "/verify",
+    PROFILE: "/profile",
+    CHANGE_PASSWORD: "/change-password",
+    FORGOT_PASSWORD: "/forgot-password",
+    RESET_PASSWORD: "/reset-password",
   },
   CARS: {
     BASE: "/cars",
