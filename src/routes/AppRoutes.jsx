@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import UserRoutes from "./UserRoutes";
 import SellerRoutes from "./SellerRoutes";
 import { NotFoundPage, LoginRequiredPage } from "../auth/ProtectedRoute";
+import Location from "../components/common/Location";
 
 const AppRoutes = () => {
   return (
@@ -15,6 +16,8 @@ const AppRoutes = () => {
 
       {/* Auth required page */}
       <Route path="/login-required" element={<LoginRequiredPage />} />
+
+      <Route path="/location" element={<Location />} />
 
       {/* 404 Not Found - catch all route */}
       <Route path="*" element={<NotFoundPage />} />

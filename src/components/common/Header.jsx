@@ -237,38 +237,101 @@ const Header = () => {
     setIsLocationOpen(false);
   };
 
+  // const handleCurrentLocation = () => {
+  //   setIsLoading(true);
+  //   if ("geolocation" in navigator) {
+  //     navigator.geolocation.getCurrentPosition(
+  //       async (position) => { 
+  //         try {
+  //           const response = await fetch(
+  //             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}`
+  //           );
+  //           const data = await response.json();
+  //           const location =
+  //             data.address.city || data.address.town || data.address.state;
+  //           const newLocation = location + ", " + data.address.state;
+  //           setSelectedLocation(newLocation);
+
+  //           // Send updated location to API
+  //           try {
+  //             await api.post("/location", {
+  //               location: newLocation,
+  //               latitude: position.coords.latitude,
+  //               longitude: position.coords.longitude,
+  //               address: data.display_name || "",
+  //               city: data.address?.city || data.address?.town || "",
+  //               state: data.address?.state || "",
+  //               country: data.address?.country || "",
+  //             });
+  //           } catch (error) {
+  //             console.error("Error updating location:", error);
+  //           }
+
+  //           setIsLoading(false);
+  //           setIsLocationOpen(false);
+  //         } catch (error) {
+  //           console.error("Error fetching location:", error);
+  //           setIsLoading(false);
+  //         }
+  //       },
+  //       (error) => {
+  //         console.error("Error getting location:", error);
+  //         setIsLoading(false);
+  //       }
+  //     );
+  //   }
+  // };
+
+  
   const handleCurrentLocation = () => {
     setIsLoading(true);
+
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
+          const { latitude, longitude } = position.coords;
+
           try {
+            const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+
             const response = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}`
+              `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`
             );
             const data = await response.json();
-            const location =
-              data.address.city || data.address.town || data.address.state;
-            const newLocation = location + ", " + data.address.state;
-            setSelectedLocation(newLocation);
 
-            // Send updated location to API
-            try {
+            if (data.status === "OK" && data.results.length > 0) {
+              const components = data.results[0].address_components;
+              const formattedAddress = data.results[0].formatted_address;
+
+              const getComponent = (type) =>
+                components.find((c) => c.types.includes(type))?.long_name || "";
+
+              const city =
+                getComponent("locality") ||
+                getComponent("sublocality") ||
+                getComponent("administrative_area_level_2");
+
+              const state = getComponent("administrative_area_level_1");
+              const country = getComponent("country");
+
+              const newLocation = `${city}, ${state}`;
+              setSelectedLocation(newLocation);
+
               await api.post("/location", {
                 location: newLocation,
-                latitude: position.coords.latitude,
-                longitude: position.coords.longitude,
-                address: data.display_name || "",
-                city: data.address?.city || data.address?.town || "",
-                state: data.address?.state || "",
-                country: data.address?.country || "",
+                latitude,
+                longitude,
+                address: formattedAddress,
+                city,
+                state,
+                country,
               });
-            } catch (error) {
-              console.error("Error updating location:", error);
-            }
 
-            setIsLoading(false);
-            setIsLocationOpen(false);
+              setIsLoading(false);
+              setIsLocationOpen(false);
+            } else {
+              throw new Error("No address found");
+            }
           } catch (error) {
             console.error("Error fetching location:", error);
             setIsLoading(false);
@@ -277,11 +340,25 @@ const Header = () => {
         (error) => {
           console.error("Error getting location:", error);
           setIsLoading(false);
+        },
+        {
+          enableHighAccuracy: true, // 💡 Makes it more precise on mobile GPS
+          timeout: 10000,
+          maximumAge: 0,
         }
       );
+    } else {
+      console.error("Geolocation not supported");
+      setIsLoading(false);
     }
   };
-
+  
+  
+  
+  
+  
+  
+  
   useEffect(() => {
     const categoryNames = categories.map((cat) => cat.name);
     if (categoryNames.length > 0) {

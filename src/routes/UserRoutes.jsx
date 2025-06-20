@@ -28,6 +28,7 @@ import UploadMotercycleFormPage from "../Pages/UserFlow/UploadMotercycleFormPage
 import UploadBicycleFormPage from "../Pages/UserFlow/UploadBicycleFormPage";
 import UploadCarFormPage from "../Pages/UploadCarFormPage";
 import { ProtectedRoute } from "../auth/ProtectedRoute";
+import PropertyFormPage from "../Pages/UserFlow/PropertyFormPage";
 const UserRoutes = () => {
   return (
     <>
@@ -68,6 +69,16 @@ const UserRoutes = () => {
         />
 
         {/* Property Upload Routes */}
+
+        <Route
+          path="/property/:sub-category/:id"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <PropertyFormPage />
+            </ProtectedRoute>
+          }
+        />
+
         <Route
           path="/sale-house-apartment"
           element={

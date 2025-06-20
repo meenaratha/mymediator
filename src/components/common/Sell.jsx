@@ -305,7 +305,7 @@ const Sell = () => {
               <Card
                 key={subcategory.id}
                 component={Link}
-                to={`/${subcategory.slug}`}
+                to={`/property/${subcategory.slug}/${subcategory.id}`}
                 className="shadow-sm cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.02]"
                 sx={{
                   borderRadius: 2,
