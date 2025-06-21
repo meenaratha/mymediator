@@ -128,14 +128,14 @@ class PropertyFormService {
       // Add images if they exist
       if (formData.images && formData.images.length > 0) {
         formData.images.forEach((image) => {
-          formDataToSend.append(`images`, image);
+          formDataToSend.append(`images[]`, image);
         });
       }
 
       // Add videos if they exist
       if (formData.videos && formData.videos.length > 0) {
         formData.videos.forEach((video) => {
-          formDataToSend.append(`videos`, video);
+          formDataToSend.append(`videos[]`, video);
         });
       }
 
