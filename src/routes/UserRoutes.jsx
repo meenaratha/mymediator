@@ -71,7 +71,7 @@ const UserRoutes = () => {
         {/* Property Upload Routes */}
 
         <Route
-          path="/property/:sub-category/:id"
+          path="/property/:slug/:id"
           element={
             <ProtectedRoute requireAuth={true}>
               <PropertyFormPage />
