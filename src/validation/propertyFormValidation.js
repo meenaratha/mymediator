@@ -83,20 +83,20 @@ export const createValidationSchema = (slug) => {
   let schemaFields = { ...commonFields };
 
   switch (slug) {
-    case 'lands-plots':
+    case "lands-plots":
       schemaFields = { ...schemaFields, ...landPlotFields };
       break;
-    
-    case 'for-sale-houses-apartments':
-    case 'for-rent-houses-apartments':
+
+    case "for-sale-houses-apartments":
+    case "for-rent-houses-apartments":
       schemaFields = { ...schemaFields, ...houseApartmentFields };
       break;
-    
-    case 'for-sale-shops-offices':
-    case 'for-rent-shops-offices':
+
+    case "for-sale-shops-offices":
+    case "for-rent-shops-offices":
       schemaFields = { ...schemaFields, ...commercialFields };
       break;
-    
+
     default:
       // Default to land plot validation if slug is not recognized
       schemaFields = { ...schemaFields, ...landPlotFields };

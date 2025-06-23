@@ -227,35 +227,132 @@ const PropertyForm = () => {
     loadDropdownData();
   }, [slug, dispatch]);
 
-  // Load districts when state changes
   useEffect(() => {
-    if (formData.state && dropdownData.states) {
-      const loadDistricts = async () => {
-        try {
-          const districts = await dropdownService.getDistricts(formData.state);
-          setDropdownData((prev) => ({ ...prev, districts }));
-        } catch (error) {
-          console.error("Failed to load districts:", error);
-        }
-      };
-      loadDistricts();
-    }
-  }, [formData.state]);
+    const loadDistricts = async () => {
+      if (!formData.state) {
+        setDropdownData((prev) => ({ ...prev, districts: [], cities: [] }));
+        return;
+      }
 
-  // Load cities when district changes
-  useEffect(() => {
-    if (formData.district && dropdownData.districts) {
-      const loadCities = async () => {
-        try {
-          const cities = await dropdownService.getCities(formData.district);
-          setDropdownData((prev) => ({ ...prev, cities }));
-        } catch (error) {
-          console.error("Failed to load cities:", error);
+      try {
+        console.log("Loading districts for state ID:", formData.state);
+        const response = await dropdownService.getDistricts(formData.state);
+        console.log("Districts API response:", response);
+
+        // Handle the response - it might be the array directly or wrapped
+        const districtsData = Array.isArray(response)
+          ? response
+          : response.data || response.districts || [];
+
+        setDropdownData((prev) => ({
+          ...prev,
+          districts: districtsData,
+          cities: [], // Clear cities when state changes
+        }));
+
+        // Clear district and city selections when state changes
+        if (formData.district) {
+          dispatch(updateFormField({ field: "district", value: "" }));
         }
-      };
-      loadCities();
-    }
-  }, [formData.district]);
+        if (formData.city) {
+          dispatch(updateFormField({ field: "city", value: "" }));
+        }
+      } catch (error) {
+        console.error("Failed to load districts:", error);
+        setDropdownData((prev) => ({ ...prev, districts: [], cities: [] }));
+
+        // Optionally show error to user
+        // dispatch(setApiError(`Failed to load districts: ${error.message}`));
+      }
+    };
+
+    loadDistricts();
+  }, [formData.state, dispatch]);
+
+  // 3. Update the useEffect for loading cities
+
+  useEffect(() => {
+    const loadCities = async () => {
+      if (!formData.district) {
+        setDropdownData((prev) => ({ ...prev, cities: [] }));
+        return;
+      }
+
+      try {
+        console.log("Loading cities for district ID:", formData.district);
+        const response = await dropdownService.getCities(formData.district);
+        console.log("Cities API response:", response);
+
+        // Handle the response - it might be the array directly or wrapped
+        const citiesData = Array.isArray(response)
+          ? response
+          : response.data || response.cities || [];
+
+        setDropdownData((prev) => ({
+          ...prev,
+          cities: citiesData,
+        }));
+
+        // Clear city selection when district changes
+        if (formData.city) {
+          dispatch(updateFormField({ field: "city", value: "" }));
+        }
+      } catch (error) {
+        console.error("Failed to load cities:", error);
+        setDropdownData((prev) => ({ ...prev, cities: [] }));
+
+        // Optionally show error to user
+        // dispatch(setApiError(`Failed to load cities: ${error.message}`));
+      }
+    };
+
+    loadCities();
+  }, [formData.district, dispatch]);
+
+  // 4. Update the initial dropdown loading to handle all responses properly
+  useEffect(() => {
+    const loadDropdownData = async () => {
+      if (!slug) return;
+
+      setLoadingDropdowns(true);
+      try {
+        const dropdowns = await dropdownService.getDropdownsForPropertyType(
+          slug
+        );
+        console.log(`Loaded dropdown data for: ${slug}`, dropdowns);
+
+        // Process each dropdown to ensure we have arrays
+        const processedDropdowns = {};
+        Object.keys(dropdowns).forEach((key) => {
+          const data = dropdowns[key];
+          if (Array.isArray(data)) {
+            processedDropdowns[key] = data;
+          } else if (data && data.data) {
+            processedDropdowns[key] = data.data;
+          } else if (data && data.response) {
+            processedDropdowns[key] = data.response;
+          } else {
+            processedDropdowns[key] = [];
+          }
+        });
+
+        setDropdownData({
+          ...processedDropdowns,
+          districts: [], // Will be loaded when state is selected
+          cities: [], // Will be loaded when district is selected
+        });
+      } catch (error) {
+        console.error("Failed to load dropdown data:", error);
+        dispatch(
+          setApiError("Failed to load form options. Please refresh the page.")
+        );
+      } finally {
+        setLoadingDropdowns(false);
+      }
+    };
+
+    loadDropdownData();
+  }, [slug, dispatch]);
 
   // Update preview URLs when formData.images or formData.videos change
   useEffect(() => {
@@ -429,6 +526,11 @@ const PropertyForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Prevent double submission
+    if (isLoading) {
+      return;
+    }
+
     if (!validationSchema) {
       dispatch(
         setApiError("Validation schema not loaded. Please refresh the page.")
@@ -436,32 +538,36 @@ const PropertyForm = () => {
       return;
     }
 
-    // Mark all fields as touched
-    const allFieldsTouched = {};
-    Object.keys(formData).forEach((key) => {
-      allFieldsTouched[key] = true;
-    });
-    dispatch({
-      type: "landplotform/setAllTouched",
-      payload: allFieldsTouched,
-    });
+    // Clear any previous errors
+    dispatch(setErrors({}));
+    dispatch(setApiError(null));
+   
 
     try {
-      // Validate form data
-      await validationSchema.validate(formData, { abortEarly: false });
-      console.log("✅ Validated data:", formData);
-
       // Set loading state
       dispatch(setLoading(true));
+      // Validate form data locally first
+      await validationSchema.validate(formData, { abortEarly: false });
 
+      // If validation passes, mark all fields as touched before submission
+      const allFieldsTouched = {};
+      Object.keys(formData).forEach((key) => {
+        allFieldsTouched[key] = true;
+      });
+      dispatch({
+        type: "propertyform/setAllTouched",
+        payload: allFieldsTouched,
+      });
+
+      console.log("✅ Client-side validation passed:", formData);
       // Prepare submission data with URL params
       const submissionData = {
         ...formData,
-        urlId: id, // ID from URL params
-        subcategoryId: getSubcategoryId(), // Subcategory ID based on slug
+        urlId: getSubcategoryId(), // ID from URL params
+        subcategoryId: id, // Subcategory ID based on slug
         slug: slug, // Current slug
       };
-
+      console.log("Submitting form data:", submissionData);
       // Submit form
       const result = await submitPropertyForm(submissionData, slug);
 
@@ -469,27 +575,83 @@ const PropertyForm = () => {
         alert("Form submitted successfully!");
         dispatch(resetForm());
       } else {
-        // Handle submission errors
-        dispatch(setApiError(result.details || result.error));
+        // Handle backend errors
+        if (result.error || result.details) {
+          dispatch(
+            setApiError(result.error || result.details || "Submission failed")
+          );
+        }
 
-        // Set validation errors from server if available
-        if (result.validationErrors) {
+        if (
+          result.validationErrors &&
+          Object.keys(result.validationErrors).length > 0
+        ) {
           dispatch(setErrors(result.validationErrors));
+
+          const firstErrorField = Object.keys(result.validationErrors)[0];
+          if (firstErrorField) {
+            dispatch(setFocusedField(firstErrorField));
+            setTimeout(() => {
+              const errorElement = document.getElementById(firstErrorField);
+              if (errorElement) {
+                errorElement.scrollIntoView({
+                  behavior: "smooth",
+                  block: "center",
+                });
+                errorElement.focus();
+              }
+            }, 100);
+          }
         }
       }
-    } catch (err) {
-      console.log("❌ Validation errors:", err.inner);
+    }
+    catch (err) {
+      // Handle validation errors
+      if (err.name === "ValidationError" && err.inner) {
+        console.log("❌ Validation failed:", err.inner);
 
-      const formattedErrors = {};
-      err.inner.forEach((e) => {
-        formattedErrors[e.path] = e.message;
-      });
-      dispatch(setErrors(formattedErrors));
+        // Create error object
+        const formattedErrors = {};
+        const touchedFields = {};
 
-      // Autofocus first field with error
-      if (err.inner && err.inner.length > 0) {
-        const firstErrorField = err.inner[0].path;
-        dispatch(setFocusedField(firstErrorField));
+        err.inner.forEach((error) => {
+          formattedErrors[error.path] = error.message;
+          touchedFields[error.path] = true;
+        });
+
+        // Mark ALL fields as touched to show all errors
+        const allFields = Object.keys(formData).reduce((acc, key) => {
+          acc[key] = true;
+          return acc;
+        }, {});
+
+        // Dispatch both errors and touched state
+        dispatch(setErrors(formattedErrors));
+        dispatch({
+          type: "landplotform/setAllTouched",
+          payload: allFields,
+        });
+
+        // Focus on first error field
+        if (err.inner.length > 0) {
+          const firstErrorField = err.inner[0].path;
+
+          // Small delay to ensure DOM is updated
+          setTimeout(() => {
+            const errorElement = document.getElementById(firstErrorField);
+            if (errorElement) {
+              errorElement.scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+              });
+              errorElement.focus();
+            }
+          }, 100);
+        }
+      } else {
+        dispatch(
+          setApiError(err.message || "An error occurred during validation")
+        );
       }
     } finally {
       dispatch(setLoading(false));
@@ -667,17 +829,59 @@ const PropertyForm = () => {
   //   }));
   // };
 
-  // Helper function to render dropdown options
-  const renderDropdownOptions = (apiResponse) => {
-    // Handle case where apiResponse is undefined or doesn't have data
-    if (!apiResponse || !apiResponse.data || !Array.isArray(apiResponse.data)) {
-      console.warn("Invalid dropdown data:", apiResponse);
+  // 1. Update the renderDropdownOptions function to handle the response properly
+  const renderDropdownOptions = (data, fieldName = "") => {
+    // Handle various data formats from API responses
+    let optionsArray = [];
+
+    if (!data) {
       return [];
     }
 
-    return apiResponse.data.map((option) => ({
-      value: option.id?.toString() || option.value?.toString(),
-      label: option.name || option.label || option.title || "Unlabeled Option",
+    // If data is already an array, use it directly
+    if (Array.isArray(data)) {
+      optionsArray = data;
+    }
+    // If data has a 'data' property that's an array, use that
+    else if (data.data && Array.isArray(data.data)) {
+      optionsArray = data.data;
+    }
+    // If data has a 'response' property that's an array, use that
+    else if (data.response && Array.isArray(data.response)) {
+      optionsArray = data.response;
+    }
+    // If data is an object with numeric keys (array-like)
+    else if (typeof data === "object") {
+      const keys = Object.keys(data);
+      if (keys.length > 0 && keys.every((key) => !isNaN(parseInt(key)))) {
+        optionsArray = Object.values(data);
+      } else {
+        // Try to find any array property in the object
+        for (const key in data) {
+          if (Array.isArray(data[key])) {
+            optionsArray = data[key];
+            break;
+          }
+        }
+      }
+    }
+
+    // If we still don't have an array, return empty
+    if (!Array.isArray(optionsArray)) {
+      console.warn(`No valid array found for ${fieldName}:`, data);
+      return [];
+    }
+
+    // Map the options to the expected format
+    return optionsArray.map((option) => ({
+      value: option.id?.toString() || option.value?.toString() || "",
+      label:
+        option.name ||
+        option.label ||
+        option.title ||
+        option.district_name ||
+        option.city_name ||
+        "Unknown",
     }));
   };
 

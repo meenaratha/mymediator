@@ -2,6 +2,41 @@ import { api, apiForFiles } from "../api/axios";
 
 // Property form submission service
 class PropertyFormService {
+  // Field mapping: backend field name -> frontend field name
+  fieldMapping = {
+    // Reverse mapping for error handling
+    property_name: "propertyName",
+    mobile_number: "mobileNumber",
+    listed_by: "listedBy",
+    building_direction_id: "buildingDirection",
+    amount: "amount",
+    address: "address",
+    state_id: "state",
+    district_id: "district",
+    city_id: "city",
+    plot_area: "plotArea",
+    length: "length",
+    breadth: "breadth",
+    bhk_id: "bhk",
+    bedrooms: "bedroom",
+    bathroom: "bathroom",
+    furnished_id: "furnished",
+    construction_status_id: "constructionStatus",
+    maintenance_id: "maintenance",
+    super_builtup_area: "superBuildArea",
+    carpet_area: "carpetArea",
+    floor_no: "floorNumber",
+    total_floors: "totalFloor",
+    bike_parking: "bikeParking",
+    car_parking: "carParking",
+    bachelor: "bachelor",
+    wash_room: "washRoom",
+    washroom: "washRoom", // Handle both variations
+    description: "description",
+    images: "images",
+    videos: "videos",
+  };
+
   // Get subcategory ID mapping for all slugs
   getSubcategoryMapping() {
     return {
@@ -17,6 +52,30 @@ class PropertyFormService {
   getSubcategoryIdFromSlug(slug) {
     const mapping = this.getSubcategoryMapping();
     return mapping[slug] || 3; // Default to lands-plots
+  }
+
+  // Map backend validation errors to frontend field names
+  mapValidationErrors(backendErrors) {
+    if (!backendErrors || typeof backendErrors !== "object") {
+      return {};
+    }
+
+    const mappedErrors = {};
+
+    Object.entries(backendErrors).forEach(([backendField, errorMessage]) => {
+      // Get the frontend field name from mapping
+      const frontendField = this.fieldMapping[backendField] || backendField;
+
+      // Handle Laravel's array format for error messages
+      if (Array.isArray(errorMessage)) {
+        mappedErrors[frontendField] = errorMessage[0]; // Take the first error message
+      } else {
+        mappedErrors[frontendField] = errorMessage;
+      }
+    });
+
+    console.log("Mapped validation errors:", mappedErrors);
+    return mappedErrors;
   }
 
   // Transform form data based on slug/subcategory
@@ -127,15 +186,15 @@ class PropertyFormService {
 
       // Add images if they exist
       if (formData.images && formData.images.length > 0) {
-        formData.images.forEach((image) => {
-          formDataToSend.append(`images[]`, image);
+        formData.images.forEach((image, index) => {
+          formDataToSend.append(`images[${index}]`, image);
         });
       }
 
       // Add videos if they exist
       if (formData.videos && formData.videos.length > 0) {
-        formData.videos.forEach((video) => {
-          formDataToSend.append(`videos[]`, video);
+        formData.videos.forEach((video, index) => {
+          formDataToSend.append(`videos[${index}]`, video);
         });
       }
 
@@ -160,15 +219,38 @@ class PropertyFormService {
       return {
         success: true,
         data: response.data,
+        message:
+          response.data.message || "Property form submitted successfully",
+      };
+
+      // Handle API response that indicates failure
+      if (response.data && response.data.success === false) {
+        return {
+          success: false,
+          error: response.data.message || "Submission failed",
+          details: response.data.details || response.data.message,
+          validationErrors: this.mapValidationErrors(
+            response.data.errors || {}
+          ),
+        };
+      }
+
+      // Default success response
+      return {
+        success: true,
+        data: response.data,
         message: "Property form submitted successfully",
       };
+
     } catch (error) {
       console.error("Error submitting property form:", error);
 
       // Handle different error scenarios
       if (error.response) {
         const { status, data } = error.response;
-
+        // Extract errors from various possible locations in the response
+        const errors = data.errors || data.data?.errors || {};
+        const mappedErrors = this.mapValidationErrors(errors);
         switch (status) {
           case 400:
             return {
@@ -176,7 +258,7 @@ class PropertyFormService {
               error: "Invalid form data",
               details:
                 data.message || "Please check your form data and try again",
-              validationErrors: data.errors || {},
+              validationErrors: mappedErrors,
             };
 
           case 413:
@@ -184,6 +266,7 @@ class PropertyFormService {
               success: false,
               error: "File too large",
               details: "One or more files exceed the maximum size limit",
+              validationErrors: mappedErrors,
             };
 
           case 422:
@@ -191,7 +274,7 @@ class PropertyFormService {
               success: false,
               error: "Validation failed",
               details: data.message || "Please check your form data",
-              validationErrors: data.errors || {},
+              validationErrors: mappedErrors,
             };
 
           case 500:
@@ -205,8 +288,9 @@ class PropertyFormService {
           default:
             return {
               success: false,
-              error: "Submission failed",
+              error: data.message || "Submission failed",
               details: data.message || "An unexpected error occurred",
+              validationErrors: mappedErrors,
             };
         }
       } else if (error.request) {

@@ -80,7 +80,7 @@ const propertyFormSlice = createSlice({
     },
 
     setAllTouched: (state, action) => {
-      state.touched = action.payload;
+      state.touched = { ...state.touched, ...action.payload };
     },
 
     setFocusedField: (state, action) => {
