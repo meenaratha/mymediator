@@ -5,6 +5,8 @@ import BedIcon from "@mui/icons-material/Bed";
 import { red } from "@mui/material/colors";
 import IMAGES from "@/utils/images.js";
 import { useMediaQuery } from "react-responsive"; // For detecting mobile devices
+import { useEffect, useState } from "react";
+import { api } from "@/api/axios"; // Adjust if your axios instance path is different
 
 const PropertyCard = ({ property }) => {
   // Detect mobile devices
@@ -18,8 +20,8 @@ const PropertyCard = ({ property }) => {
     >
       <div className="relative">
         <img
-          src={property.image}
-          alt={property.name}
+          src={property.image_url}
+          alt={property.property_name}
           className="w-full h-36 object-cover"
         />
         {/* <div className="absolute top-2 left-2 bg-blue-600 text-white px-2 py-1 text-xs rounded">
@@ -28,32 +30,40 @@ const PropertyCard = ({ property }) => {
       </div>
 
       <CardContent className="p-3">
-        <h3 className="font-bold text-lg">{property.name}</h3>
+        <h3 className="font-bold text-lg">{property.property_name}</h3>
 
         <div className="flex items-center text-sm text-gray-500 mt-1">
           {/* Location icon */}
           <LocationOnIcon sx={{ color: red[500] }} />
-          <span>{property.location}</span>
+          <span>
+            {property.city}, {property.district}
+          </span>
         </div>
 
         <div className="flex items-center mt-2 space-x-4">
           <div className="flex items-center">
             {/* Bed icon */}
             <SquareFootIcon />
-            <span className="ml-1 text-sm">{property.size} </span>
+            <span className="ml-1 text-sm">
+              {property.super_builtup_area || "N/A"} Sq.ft
+            </span>
           </div>
 
           <div className="flex items-center">
             {/* Bath icon */}
             <BedIcon />
 
-            <span className="ml-1 text-sm">{property.room} </span>
+            <span className="ml-1 text-sm">{property.bhk || "N/A"}</span>
           </div>
         </div>
 
         <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">
-          <span className="text-sm text-gray-500">{property.year}</span>
-          <span className="font-bold text-lg">₹ {property.price}L</span>
+          <span className="text-sm text-gray-500">
+            {property.year || "2022"}
+          </span>
+          <span className="font-bold text-lg">
+            ₹ {property.amount?.toLocaleString() || 0}
+          </span>
         </div>
       </CardContent>
     </Card>
@@ -61,151 +71,174 @@ const PropertyCard = ({ property }) => {
 };
 
 const PropertyListingGrid = () => {
-  const properties = [
-    {
-      id: 1,
-      name: "Minsod House",
-      image: IMAGES.property1,
-      location: "West Mambalam, Chennai",
-      year: 2022,
-      bedrooms: 2,
-      bathrooms: 1,
-      price: "65",
-      label: "Featured",
-    },
-    {
-      id: 2,
-      name: "Soujaiy House",
-      image: IMAGES.property2,
-      location: "West Mambalam, Chennai",
-      size: "800 Sq . Ft",
-      year: 2022,
-      bedrooms: 2,
-      bathrooms: 1,
-      price: "53",
-      label: "Featured",
-    },
-    {
-      id: 3,
-      name: "Xandite House",
-      image: IMAGES.property3,
-      location: "West Mambalam, Chennai",
-      size: "800 Sq . Ft",
-      year: 2022,
-      bedrooms: 2,
-      room: "3 BHK ",
-      price: "59",
-      label: "Featured",
-    },
-    {
-      id: 4,
-      name: "Kaltet House",
-      image: IMAGES.property4,
-      location: "West Mambalam, Chennai",
-      size: "800 Sq . Ft",
-      year: 2022,
-      bedrooms: 2,
-      room: "3 BHK ",
-      price: "69",
-      label: "Featured",
-    },
-    {
-      id: 5,
-      name: "KanetXo House",
-      image: IMAGES.property5,
-      location: "West Mambalam, Chennai",
-      size: "800 Sq . Ft",
-      year: 2022,
-      bedrooms: 2,
-      room: "3 BHK ",
-      price: "62",
-      label: "Featured",
-    },
-    {
-      id: 6,
-      name: "Gloselt House",
-      image: IMAGES.property6,
-      location: "West Mambalam, Chennai",
-      size: "800 Sq . Ft",
-      year: 2022,
-      bedrooms: 2,
-      room: "3 BHK ",
-      price: "66",
-      label: "Featured",
-    },
-    {
-      id: 7,
-      name: "Minzal House",
-      image: IMAGES.property7,
-      location: "West Mambalam, Chennai",
-      size: "800 Sq . Ft",
-      year: 2022,
-      bedrooms: 2,
-      room: "3 BHK ",
-      price: "56",
-      label: "Featured",
-    },
-    {
-      id: 8,
-      name: "Soujaiy House",
-      image: IMAGES.property4,
-      location: "West Mambalam, Chennai",
-      size: "800 Sq . Ft",
-      year: 2022,
-      bedrooms: 2,
-      room: "3 BHK ",
-      price: "52",
-      label: "Featured",
-    },
-    {
-      id: 9,
-      name: "Martela House",
-      image: IMAGES.property5,
-      location: "West Mambalam, Chennai",
-      size: "800 Sq . Ft",
-      year: 2022,
-      bedrooms: 2,
-      room: "3 BHK ",
-      price: "61",
-      label: "Featured",
-    },
-    {
-      id: 10,
-      name: "Minsod House",
-      image: IMAGES.property6,
-      location: "West Mambalam, Chennai",
-      size: "800 Sq . Ft",
-      year: 2022,
-      bedrooms: 2,
-      room: "3 BHK ",
-      price: "65",
-      label: "Featured",
-    },
-    {
-      id: 11,
-      name: "Soujaiy House",
-      image: IMAGES.property2,
-      location: "West Mambalam, Chennai",
-      size: "800 Sq . Ft",
-      year: 2022,
-      bedrooms: 2,
-      room: "3 BHK ",
-      price: "53",
-      label: "Featured",
-    },
-    {
-      id: 12,
-      name: "Xandite House",
-      image: IMAGES.property3,
-      location: "West Mambalam, Chennai",
-      size: "800 Sq . Ft",
-      year: 2022,
-      bedrooms: 2,
-      room: "3 BHK ",
-      price: "59",
-      label: "Featured",
-    },
-  ];
+  // const properties = [
+  //   {
+  //     id: 1,
+  //     name: "Minsod House",
+  //     image: IMAGES.property1,
+  //     location: "West Mambalam, Chennai",
+  //     year: 2022,
+  //     bedrooms: 2,
+  //     bathrooms: 1,
+  //     price: "65",
+  //     label: "Featured",
+  //   },
+  //   {
+  //     id: 2,
+  //     name: "Soujaiy House",
+  //     image: IMAGES.property2,
+  //     location: "West Mambalam, Chennai",
+  //     size: "800 Sq . Ft",
+  //     year: 2022,
+  //     bedrooms: 2,
+  //     bathrooms: 1,
+  //     price: "53",
+  //     label: "Featured",
+  //   },
+  //   {
+  //     id: 3,
+  //     name: "Xandite House",
+  //     image: IMAGES.property3,
+  //     location: "West Mambalam, Chennai",
+  //     size: "800 Sq . Ft",
+  //     year: 2022,
+  //     bedrooms: 2,
+  //     room: "3 BHK ",
+  //     price: "59",
+  //     label: "Featured",
+  //   },
+  //   {
+  //     id: 4,
+  //     name: "Kaltet House",
+  //     image: IMAGES.property4,
+  //     location: "West Mambalam, Chennai",
+  //     size: "800 Sq . Ft",
+  //     year: 2022,
+  //     bedrooms: 2,
+  //     room: "3 BHK ",
+  //     price: "69",
+  //     label: "Featured",
+  //   },
+  //   {
+  //     id: 5,
+  //     name: "KanetXo House",
+  //     image: IMAGES.property5,
+  //     location: "West Mambalam, Chennai",
+  //     size: "800 Sq . Ft",
+  //     year: 2022,
+  //     bedrooms: 2,
+  //     room: "3 BHK ",
+  //     price: "62",
+  //     label: "Featured",
+  //   },
+  //   {
+  //     id: 6,
+  //     name: "Gloselt House",
+  //     image: IMAGES.property6,
+  //     location: "West Mambalam, Chennai",
+  //     size: "800 Sq . Ft",
+  //     year: 2022,
+  //     bedrooms: 2,
+  //     room: "3 BHK ",
+  //     price: "66",
+  //     label: "Featured",
+  //   },
+  //   {
+  //     id: 7,
+  //     name: "Minzal House",
+  //     image: IMAGES.property7,
+  //     location: "West Mambalam, Chennai",
+  //     size: "800 Sq . Ft",
+  //     year: 2022,
+  //     bedrooms: 2,
+  //     room: "3 BHK ",
+  //     price: "56",
+  //     label: "Featured",
+  //   },
+  //   {
+  //     id: 8,
+  //     name: "Soujaiy House",
+  //     image: IMAGES.property4,
+  //     location: "West Mambalam, Chennai",
+  //     size: "800 Sq . Ft",
+  //     year: 2022,
+  //     bedrooms: 2,
+  //     room: "3 BHK ",
+  //     price: "52",
+  //     label: "Featured",
+  //   },
+  //   {
+  //     id: 9,
+  //     name: "Martela House",
+  //     image: IMAGES.property5,
+  //     location: "West Mambalam, Chennai",
+  //     size: "800 Sq . Ft",
+  //     year: 2022,
+  //     bedrooms: 2,
+  //     room: "3 BHK ",
+  //     price: "61",
+  //     label: "Featured",
+  //   },
+  //   {
+  //     id: 10,
+  //     name: "Minsod House",
+  //     image: IMAGES.property6,
+  //     location: "West Mambalam, Chennai",
+  //     size: "800 Sq . Ft",
+  //     year: 2022,
+  //     bedrooms: 2,
+  //     room: "3 BHK ",
+  //     price: "65",
+  //     label: "Featured",
+  //   },
+  //   {
+  //     id: 11,
+  //     name: "Soujaiy House",
+  //     image: IMAGES.property2,
+  //     location: "West Mambalam, Chennai",
+  //     size: "800 Sq . Ft",
+  //     year: 2022,
+  //     bedrooms: 2,
+  //     room: "3 BHK ",
+  //     price: "53",
+  //     label: "Featured",
+  //   },
+  //   {
+  //     id: 12,
+  //     name: "Xandite House",
+  //     image: IMAGES.property3,
+  //     location: "West Mambalam, Chennai",
+  //     size: "800 Sq . Ft",
+  //     year: 2022,
+  //     bedrooms: 2,
+  //     room: "3 BHK ",
+  //     price: "59",
+  //     label: "Featured",
+  //   },
+  // ];
+
+  const [properties, setProperties] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const isMobile = useMediaQuery({ maxWidth: 767 });
+
+  useEffect(() => {
+    const fetchProperties = async () => {
+      try {
+        const response = await api.get("/properties/list");
+        if (response.data.success && Array.isArray(response.data.data)) {
+          setProperties(response.data.data);
+        } else {
+          console.error("Invalid response format", response);
+        }
+      } catch (error) {
+        console.error("Failed to fetch properties:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProperties();
+  }, []);
 
   return (
     <div className="container mx-auto px-4 py-8 pt-[10px]">

@@ -73,12 +73,27 @@ const Sell = () => {
   };
 
   // Handler to switch categories
-  const handleCategoryClick = async (categoryId) => {
-    if (activeCategory === categoryId) return; // Don't refetch if same category
+  // const handleCategoryClick = async (categoryId) => {
+  //   if (activeCategory === categoryId) return; // Don't refetch if same category
 
-    setActiveCategory(categoryId);
-    await fetchSubcategories(categoryId);
+  //   setActiveCategory(categoryId);
+  //   await fetchSubcategories(categoryId);
+  // };
+
+  const handleCategoryClick = async (categoryId) => {
+    // If already selected, skip
+    if (activeCategory?.id === categoryId) return;
+
+    const selectedCategory = categories.find(
+      (category) => category.id === categoryId
+    );
+
+    if (selectedCategory) {
+      setActiveCategory(selectedCategory); // ✅ store the full object
+      await fetchSubcategories(categoryId);
+    }
   };
+  
 
   // Get fallback image for categories
   const getCategoryImage = (category) => {
@@ -305,7 +320,9 @@ const Sell = () => {
               <Card
                 key={subcategory.id}
                 component={Link}
-                to={`/property/${subcategory.slug}/${subcategory.id}`}
+                to={`/${activeCategory?.slug || "property"}/${
+                  subcategory.slug
+                }/${subcategory.id}`}
                 className="shadow-sm cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.02]"
                 sx={{
                   borderRadius: 2,

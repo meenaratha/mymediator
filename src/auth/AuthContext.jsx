@@ -193,10 +193,10 @@ export const AuthProvider = ({ children }) => {
       console.log("AuthContext: Making register request with data:", userData);
 
       const response = await api.post("/register", userData);
-      console.log("AuthContext: Register response received:", response.data);
+      console.log("AuthContext: Register response received:", response.user);
 
       // Assuming register returns the same structure: { token: "...", user: {...} }
-      const { token, user } = response.data;
+      const { token, user } = response.user;
 
       console.log("AuthContext: Extracted registration data:", { token, user });
 

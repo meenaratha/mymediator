@@ -29,6 +29,7 @@ import UploadBicycleFormPage from "../Pages/UserFlow/UploadBicycleFormPage";
 import UploadCarFormPage from "../Pages/UploadCarFormPage";
 import { ProtectedRoute } from "../auth/ProtectedRoute";
 import PropertyFormPage from "../Pages/UserFlow/PropertyFormPage";
+import ElectronicsFormPage from "../Pages/UserFlow/ElectronicsFormPage";
 const UserRoutes = () => {
   return (
     <>
@@ -75,6 +76,15 @@ const UserRoutes = () => {
           element={
             <ProtectedRoute requireAuth={true}>
               <PropertyFormPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/electronics/:slug/:id"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <ElectronicsFormPage />
             </ProtectedRoute>
           }
         />

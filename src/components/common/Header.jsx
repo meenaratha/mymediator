@@ -18,12 +18,17 @@ import LoginFormModel from "./LoginFormModel";
 import SignupFormModel from "./SignupFormModel";
 import ForgotPassword from "./ForgotPassword";
 import OTPVerificationModal from "./OTPVerificationModal";
+import LogoutIcon from "@mui/icons-material/Logout";
+import PersonIcon from "@mui/icons-material/Person";
+import SettingsIcon from "@mui/icons-material/Settings";
 import PasswordResetModel from "./PasswordResetModel";
 import { api } from "../../api/axios"; // Adjust the import path as needed
 import { Skeleton } from "@mui/material";
+import { useAuth } from "../../auth/AuthContext"; // Import the useAuth hook
 
 const Header = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, user, logout, loading } = useAuth(); // Get auth state
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
   const [isLocationOpen, setIsLocationOpen] = useState(false);
@@ -40,7 +45,7 @@ const Header = () => {
   const [megaMenuData, setMegaMenuData] = useState({});
   const [isLoadingCategories, setIsLoadingCategories] = useState(false);
   const [hasLocationBeenSent, setHasLocationBeenSent] = useState(false);
-
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false); // Add profile menu state
   // Add scroll event listener to check scroll position
   useEffect(() => {
     const handleScroll = () => {
@@ -241,7 +246,7 @@ const Header = () => {
   //   setIsLoading(true);
   //   if ("geolocation" in navigator) {
   //     navigator.geolocation.getCurrentPosition(
-  //       async (position) => { 
+  //       async (position) => {
   //         try {
   //           const response = await fetch(
   //             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}`
@@ -282,7 +287,6 @@ const Header = () => {
   //   }
   // };
 
-  
   const handleCurrentLocation = () => {
     setIsLoading(true);
 
@@ -352,13 +356,7 @@ const Header = () => {
       setIsLoading(false);
     }
   };
-  
-  
-  
-  
-  
-  
-  
+
   useEffect(() => {
     const categoryNames = categories.map((cat) => cat.name);
     if (categoryNames.length > 0) {
@@ -409,11 +407,40 @@ const Header = () => {
   };
 
   const handleProfileClick = () => {
-    navigate("/seller-enquiry-list");
+  
+      setIsProfileMenuOpen(!isProfileMenuOpen);
+   
   };
 
   const handleNotificationClick = () => {
     navigate("/notification");
+  };
+
+  // Handle logout
+  const handleLogout = async () => {
+    await logout();
+    setIsProfileMenuOpen(false);
+    navigate("/");
+  };
+
+  // Handle profile navigation
+  const handleProfileNavigation = (path) => {
+    navigate(path);
+    setIsProfileMenuOpen(false);
+  };
+
+  // Get user display name
+  const getUserDisplayName = () => {
+    if (!user) return "";
+    return user.name || user.username || user.email?.split("@")[0] || "User";
+  };
+
+  // Get user avatar
+  const getUserAvatar = () => {
+    if (user?.avatar || user?.profile_picture) {
+      return user.avatar || user.profile_picture;
+    }
+    return null;
   };
 
   // Megamenu skeleton loader
@@ -536,17 +563,124 @@ const Header = () => {
                   </Badge>
                 </motion.div>
 
-                {/* login button */}
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  transition={{ duration: 0.2 }}
-                  className="mymediator__sell_button"
-                  onClick={handleLoginClick}
-                  style={{ width: "100%" }}
-                >
-                  Login / Sign up
-                </motion.button>
+                {/* Conditional Login/Profile Section */}
+                {loading ? (
+                  // Show skeleton while loading auth state
+                  <div className="flex items-center gap-4">
+                    <Skeleton variant="rectangular" width={120} height={36} />
+                    <Skeleton variant="circular" width={40} height={40} />
+                  </div>
+                ) : isAuthenticated ? (
+                  // Show profile dropdown when authenticated
+                  <div className="profile-menu-container relative">
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      transition={{ duration: 0.2 }}
+                      className="flex items-center gap-2 cursor-pointer"
+                      onClick={handleProfileClick}
+                    >
+                      <Avatar
+                        sx={{ bgcolor: deepPurple[500], width: 40, height: 40 }}
+                        alt={getUserDisplayName()}
+                        src={getUserAvatar()}
+                      >
+                        {!getUserAvatar() &&
+                          getUserDisplayName().charAt(0).toUpperCase()}
+                      </Avatar>
+                      <div className="hidden lg:block">
+                        <p className="text-sm font-medium text-gray-700">
+                          {getUserDisplayName()}
+                        </p>
+                        <p className="text-xs text-gray-500">{user?.phone}</p>
+                      </div>
+                      <KeyboardArrowDownIcon
+                        className={`w-5 h-5 text-gray-700 transition-transform duration-200 ${
+                          isProfileMenuOpen ? "rotate-180" : ""
+                        }`}
+                      />
+                    </motion.div>
+
+                    <AnimatePresence>
+                      {isProfileMenuOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          transition={{ duration: 0.2, ease: "easeOut" }}
+                          className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
+                        >
+                          <div className="p-4 border-b border-gray-100">
+                            <p className="font-medium text-gray-900">
+                              {getUserDisplayName()}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              {user?.email}
+                            </p>
+                          </div>
+
+                          <div className="py-2">
+                            <motion.button
+                              whileHover={{ backgroundColor: "#f3f4f6" }}
+                              className="w-full flex items-center gap-3 px-4 py-2 text-left text-gray-700 hover:bg-gray-50"
+                              onClick={() =>
+                                handleProfileNavigation("/profile")
+                              }
+                            >
+                              <PersonIcon className="w-5 h-5" />
+                              My Profile
+                            </motion.button>
+
+                            <motion.button
+                              whileHover={{ backgroundColor: "#f3f4f6" }}
+                              className="w-full flex items-center gap-3 px-4 py-2 text-left text-gray-700 hover:bg-gray-50"
+                              onClick={() =>
+                                handleProfileNavigation("/seller-enquiry-list")
+                              }
+                            >
+                              <SettingsIcon className="w-5 h-5" />
+                              Seller Dashboard
+                            </motion.button>
+
+                            <motion.button
+                              whileHover={{ backgroundColor: "#f3f4f6" }}
+                              className="w-full flex items-center gap-3 px-4 py-2 text-left text-gray-700 hover:bg-gray-50"
+                              onClick={() =>
+                                handleProfileNavigation("/settings")
+                              }
+                            >
+                              <SettingsIcon className="w-5 h-5" />
+                              Settings
+                            </motion.button>
+                          </div>
+
+                          <div className="border-t border-gray-100 py-2">
+                            <motion.button
+                              whileHover={{ backgroundColor: "#fef2f2" }}
+                              className="w-full flex items-center gap-3 px-4 py-2 text-left text-red-600 hover:bg-red-50"
+                              onClick={handleLogout}
+                            >
+                              <LogoutIcon className="w-5 h-5" />
+                              Sign Out
+                            </motion.button>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                ) : (
+                  // Show login button when not authenticated
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    transition={{ duration: 0.2 }}
+                    className="mymediator__sell_button"
+                    onClick={handleLoginClick}
+                    style={{ width: "100%" }}
+                  >
+                    Login / Sign up
+                  </motion.button>
+                )}
 
                 {/* sell button */}
                 <motion.button
@@ -559,13 +693,13 @@ const Header = () => {
                   Sell
                 </motion.button>
 
-                <Avatar
+                {/* <Avatar
                   sx={{ bgcolor: deepPurple[500] }}
                   alt="Remy Sharp"
                   src={Profile}
                   onClick={handleProfileClick}
                   style={{ cursor: "pointer" }}
-                />
+                /> */}
               </div>
             </div>
           </div>
