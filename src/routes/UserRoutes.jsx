@@ -81,6 +81,15 @@ const UserRoutes = () => {
         />
 
         <Route
+          path="/property/:slug/:id/edit"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <PropertyFormPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
           path="/electronics/:slug/:id"
           element={
             <ProtectedRoute requireAuth={true}>

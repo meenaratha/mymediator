@@ -8,7 +8,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
 
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { DynamicInputs } from "@/components";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -18,6 +18,7 @@ import { createValidationSchema } from "../validation/propertyFormValidation";
 // Import API services
 import { dropdownService } from "../utils/propertyDropdownService";
 import { submitPropertyForm } from "../utils/propertyFormService";
+import { api, apiForFiles } from "../api/axios";
 
 import {
   setFormData,
@@ -34,15 +35,25 @@ import {
   setLoading,
   setApiError,
   resetForm,
-} from "../redux/landplotformSlice";
+  clearAutoPopulateData,
+} from "../redux/propertyFormSlice";
 
 const PropertyForm = () => {
   const dispatch = useDispatch();
   const { slug, id } = useParams(); // Get both slug and id from URL params
-  const { formData, errors, touched, isLoading, apiError, autoPopulateData } =
-    useSelector((state) => state.landplotform);
+  const location = useLocation();
+  const isEditMode = location.pathname.includes("edit");
 
-  const focusedField = useSelector((state) => state.landplotform.focusedField);
+  useEffect(() => {
+    if (!isEditMode) {
+      dispatch(clearAutoPopulateData()); // Clear form data when not in edit mode
+    }
+  }, [isEditMode]);
+
+  const { formData, errors, touched, isLoading, apiError, autoPopulateData } =
+    useSelector((state) => state.propertyform);
+
+  const focusedField = useSelector((state) => state.propertyform.focusedField);
   const [isDragging, setIsDragging] = useState(false);
   const [previewUrls, setPreviewUrls] = useState({
     images: [],
@@ -228,18 +239,11 @@ const PropertyForm = () => {
   }, [slug, dispatch]);
 
   useEffect(() => {
+    if (!formData.state) return;
+
     const loadDistricts = async () => {
-      if (!formData.state) {
-        setDropdownData((prev) => ({ ...prev, districts: [], cities: [] }));
-        return;
-      }
-
       try {
-        console.log("Loading districts for state ID:", formData.state);
         const response = await dropdownService.getDistricts(formData.state);
-        console.log("Districts API response:", response);
-
-        // Handle the response - it might be the array directly or wrapped
         const districtsData = Array.isArray(response)
           ? response
           : response.data || response.districts || [];
@@ -247,43 +251,25 @@ const PropertyForm = () => {
         setDropdownData((prev) => ({
           ...prev,
           districts: districtsData,
-          cities: [], // Clear cities when state changes
+          cities: [],
         }));
-
-        // Clear district and city selections when state changes
-        if (formData.district) {
-          dispatch(updateFormField({ field: "district", value: "" }));
-        }
-        if (formData.city) {
-          dispatch(updateFormField({ field: "city", value: "" }));
-        }
       } catch (error) {
         console.error("Failed to load districts:", error);
-        setDropdownData((prev) => ({ ...prev, districts: [], cities: [] }));
-
-        // Optionally show error to user
-        // dispatch(setApiError(`Failed to load districts: ${error.message}`));
       }
     };
 
     loadDistricts();
-  }, [formData.state, dispatch]);
-
+  }, [formData.state]);
+  
+  
   // 3. Update the useEffect for loading cities
 
   useEffect(() => {
+    if (!formData.district) return;
+
     const loadCities = async () => {
-      if (!formData.district) {
-        setDropdownData((prev) => ({ ...prev, cities: [] }));
-        return;
-      }
-
       try {
-        console.log("Loading cities for district ID:", formData.district);
         const response = await dropdownService.getCities(formData.district);
-        console.log("Cities API response:", response);
-
-        // Handle the response - it might be the array directly or wrapped
         const citiesData = Array.isArray(response)
           ? response
           : response.data || response.cities || [];
@@ -292,22 +278,14 @@ const PropertyForm = () => {
           ...prev,
           cities: citiesData,
         }));
-
-        // Clear city selection when district changes
-        if (formData.city) {
-          dispatch(updateFormField({ field: "city", value: "" }));
-        }
       } catch (error) {
         console.error("Failed to load cities:", error);
-        setDropdownData((prev) => ({ ...prev, cities: [] }));
-
-        // Optionally show error to user
-        // dispatch(setApiError(`Failed to load cities: ${error.message}`));
       }
     };
 
     loadCities();
-  }, [formData.district, dispatch]);
+  }, [formData.district]);
+  
 
   // 4. Update the initial dropdown loading to handle all responses properly
   useEffect(() => {
@@ -354,39 +332,50 @@ const PropertyForm = () => {
     loadDropdownData();
   }, [slug, dispatch]);
 
-  // Update preview URLs when formData.images or formData.videos change
   useEffect(() => {
-    // Clean up previous object URLs to avoid memory leaks
-    previewUrls.images.forEach((url) => URL.revokeObjectURL(url.url));
-    previewUrls.videos.forEach((url) => URL.revokeObjectURL(url.url));
+    // Revoke previous object URLs to prevent memory leaks
+    previewUrls.images.forEach((url) => {
+      if (url?.url?.startsWith?.("blob:")) URL.revokeObjectURL(url.url);
+    });
+    previewUrls.videos.forEach((url) => {
+      if (url?.url?.startsWith?.("blob:")) URL.revokeObjectURL(url.url);
+    });
 
-    // Create new object URLs for images
-    const imageUrls = formData.images
-      ? formData.images.map((file) => ({
+    // Generate image previews
+    const imageUrls =
+      formData.images?.map((file) => {
+        const isFileObject = file instanceof File;
+        return {
           file,
-          url: URL.createObjectURL(file),
-        }))
-      : [];
+          url: isFileObject ? URL.createObjectURL(file) : file.url || file,
+        };
+      }) || [];
 
-    // Create new object URLs for videos
-    const videoUrls = formData.videos
-      ? formData.videos.map((file) => ({
+    // Generate video previews
+    const videoUrls =
+      formData.videos?.map((file) => {
+        const isFileObject = file instanceof File;
+        return {
           file,
-          url: URL.createObjectURL(file),
-        }))
-      : [];
+          url: isFileObject ? URL.createObjectURL(file) : file.url || file,
+        };
+      }) || [];
 
     setPreviewUrls({
       images: imageUrls,
       videos: videoUrls,
     });
 
-    // Clean up function to revoke object URLs when component unmounts
     return () => {
-      imageUrls.forEach((item) => URL.revokeObjectURL(item.url));
-      videoUrls.forEach((item) => URL.revokeObjectURL(item.url));
+      imageUrls.forEach((item) => {
+        if (item?.url?.startsWith?.("blob:")) URL.revokeObjectURL(item.url);
+      });
+      videoUrls.forEach((item) => {
+        if (item?.url?.startsWith?.("blob:")) URL.revokeObjectURL(item.url);
+      });
     };
   }, [formData.images, formData.videos]);
+  
 
   // Console log to verify Redux state updates
   useEffect(() => {
@@ -446,25 +435,34 @@ const PropertyForm = () => {
     errors.plotArea,
   ]);
 
-  // Auto-populate handlers
-  const handleLoadDummyData = () => {
-    dispatch(loadDummyData());
-  };
+ 
 
-  const handleApiAutoPopulate = async () => {
-    dispatch(setLoading(true));
+  useEffect(() => {
+    const handleApiAutoPopulate = async () => {
+      if (!isEditMode) return;
 
-    try {
-      // Replace this with your actual API call
-      const response = await fetch("/api/property-data");
-      const apiData = await response.json();
+      dispatch(setLoading(true));
+      try {
+        const response = await apiForFiles.get(`/property/${id}/edit`);
+        const result = response.data; // ✅ FIXED: use response.data
 
-      dispatch(populateFormFromApi(apiData));
-    } catch (error) {
-      console.error("Failed to fetch property data:", error);
-      dispatch(setApiError(error.message));
-    }
-  };
+        console.log("API response:", result);
+        if (result.status && result.data) {
+          console.log("autopapulayte", result.data);
+          dispatch(populateFormFromApi(result.data));
+        } else {
+          dispatch(setApiError("Failed to load property data"));
+        }
+      } catch (error) {
+        console.error("Auto-populate error:", error);
+        dispatch(setApiError("Failed to auto-populate form."));
+      }
+    };
+
+    handleApiAutoPopulate();
+  }, [isEditMode, id]);
+  
+  
 
   const handleResetForm = () => {
     if (
@@ -563,6 +561,7 @@ const PropertyForm = () => {
       // Prepare submission data with URL params
       const submissionData = {
         ...formData,
+        action_id: isEditMode ? id : undefined,
         urlId: getSubcategoryId(), // ID from URL params
         subcategoryId: id, // Subcategory ID based on slug
         slug: slug, // Current slug
@@ -628,7 +627,7 @@ const PropertyForm = () => {
         // Dispatch both errors and touched state
         dispatch(setErrors(formattedErrors));
         dispatch({
-          type: "landplotform/setAllTouched",
+          type: "propertyform/setAllTouched",
           payload: allFields,
         });
 
@@ -787,12 +786,10 @@ const PropertyForm = () => {
 
   // Remove a specific file
   const handleRemoveFile = async (type, index) => {
-    // Use the removeFile action to update Redux store
     dispatch(removeFile({ type, index }));
 
     console.log(`Removed file at index ${index} from ${type}`);
 
-    // Clear error if files were invalid but now are valid
     if (errors[type] && validationSchema) {
       try {
         const updatedFiles = [...formData[type]];
@@ -800,7 +797,6 @@ const PropertyForm = () => {
         await validationSchema.validateAt(type, { [type]: updatedFiles });
         dispatch(setErrors({ ...errors, [type]: "" }));
       } catch (err) {
-        // Keep the error updated
         dispatch(setErrors({ ...errors, [type]: err.message }));
       }
     }
@@ -1105,7 +1101,12 @@ const PropertyForm = () => {
               type="select"
               name="state"
               id="state"
-              onChange={handleChange}
+              // onChange={handleChange}
+              onChange={(e) =>
+                dispatch(
+                  updateFormField({ field: "state", value: e.target.value })
+                )
+              }
               value={formData.state || ""}
               className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] 
               bg-white focus:outline-none "
@@ -1126,7 +1127,12 @@ const PropertyForm = () => {
               type="select"
               name="district"
               id="district"
-              onChange={handleChange}
+              // onChange={handleChange}
+              onChange={(e) =>
+                dispatch(
+                  updateFormField({ field: "district", value: e.target.value })
+                )
+              }
               value={formData.district || ""}
               className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] 
               bg-white focus:outline-none "
@@ -1147,7 +1153,12 @@ const PropertyForm = () => {
               type="select"
               name="city"
               id="city"
-              onChange={handleChange}
+              // onChange={handleChange}
+              onChange={(e) =>
+                dispatch(
+                  updateFormField({ field: "city", value: e.target.value })
+                )
+              }
               value={formData.city || ""}
               className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] 
               bg-white focus:outline-none "

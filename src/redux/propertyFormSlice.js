@@ -153,70 +153,59 @@ const propertyFormSlice = createSlice({
       const apiData = action.payload;
 
       // Basic Information
-      if (apiData.propertyName)
-        state.formData.propertyName = apiData.propertyName;
-      if (apiData.mobile || apiData.mobileNumber)
-        state.formData.mobileNumber = apiData.mobile || apiData.mobileNumber;
+      if (apiData.property_name)
+        state.formData.propertyName = apiData.property_name;
+      if (apiData.mobile_number)
+        state.formData.mobileNumber = apiData.mobile_number;
       if (apiData.address) state.formData.address = apiData.address;
-      if (apiData.state) state.formData.state = apiData.state;
-      if (apiData.district) state.formData.district = apiData.district;
-      if (apiData.city) state.formData.city = apiData.city;
+      if (apiData.state_id) state.formData.state = apiData.state_id;
+      if (apiData.district_id) state.formData.district = apiData.district_id;
+      if (apiData.city_id) state.formData.city = apiData.city_id;
       if (apiData.description) state.formData.description = apiData.description;
 
       // Room Details
-      if (apiData.bathroom || apiData.bathrooms)
-        state.formData.bathroom = apiData.bathroom || apiData.bathrooms;
-      if (apiData.bedroom || apiData.bedrooms)
-        state.formData.bedroom = apiData.bedroom || apiData.bedrooms;
-      if (apiData.washRoom || apiData.washrooms)
-        state.formData.washRoom = apiData.washRoom || apiData.washrooms;
-      if (apiData.bhk) state.formData.bhk = apiData.bhk;
+      if (apiData.bathroom) state.formData.bathroom = apiData.bathroom;
+      if (apiData.bedrooms) state.formData.bedroom = apiData.bedrooms;
+      if (apiData.wash_room) state.formData.washRoom = apiData.wash_room;
+      if (apiData.bhk_id) state.formData.bhk = apiData.bhk_id;
 
       // Property Features
-      if (apiData.furnished) state.formData.furnished = apiData.furnished;
-      if (apiData.listedBy) state.formData.listedBy = apiData.listedBy;
-      if (apiData.constructionStatus)
-        state.formData.constructionStatus = apiData.constructionStatus;
-      if (apiData.maintenance) state.formData.maintenance = apiData.maintenance;
+      if (apiData.furnished_id) state.formData.furnished = apiData.furnished_id;
+      if (apiData.listed_by) state.formData.listedBy = apiData.listed_by;
+      if (apiData.construction_status_id)
+        state.formData.constructionStatus = apiData.construction_status_id;
+      if (apiData.maintenance_id)
+        state.formData.maintenance = apiData.maintenance_id;
       if (apiData.bachelor) state.formData.bachelor = apiData.bachelor;
 
       // Area Measurements
-      if (apiData.superBuildArea || apiData.superBuiltupArea)
-        state.formData.superBuildArea =
-          apiData.superBuildArea || apiData.superBuiltupArea;
-      if (apiData.carpetArea) state.formData.carpetArea = apiData.carpetArea;
-      if (apiData.plotArea || apiData.plotarea)
-        state.formData.plotArea = apiData.plotArea || apiData.plotarea;
+      if (apiData.super_builtup_area)
+        state.formData.superBuildArea = apiData.super_builtup_area;
+      if (apiData.carpet_area) state.formData.carpetArea = apiData.carpet_area;
+      if (apiData.plot_area) state.formData.plotArea = apiData.plot_area;
       if (apiData.length) state.formData.length = apiData.length;
-      if (apiData.breadth || apiData.width)
-        state.formData.breadth = apiData.breadth || apiData.width;
+      if (apiData.breadth) state.formData.breadth = apiData.breadth;
 
       // Building Details
-      if (apiData.buildingDirection || apiData.direction)
-        state.formData.buildingDirection =
-          apiData.buildingDirection || apiData.direction;
-      if (apiData.floorNumber || apiData.floor)
-        state.formData.floorNumber = apiData.floorNumber || apiData.floor;
-      if (apiData.totalFloor || apiData.totalFloors)
-        state.formData.totalFloor = apiData.totalFloor || apiData.totalFloors;
+      if (apiData.building_direction_id)
+        state.formData.buildingDirection = apiData.building_direction_id;
+      if (apiData.floor_no) state.formData.floorNumber = apiData.floor_no;
+      if (apiData.total_floors)
+        state.formData.totalFloor = apiData.total_floors;
 
       // Parking
-      if (apiData.bikeParking || apiData.twoWheelerParking)
-        state.formData.bikeParking =
-          apiData.bikeParking || apiData.twoWheelerParking;
-      if (apiData.carParking || apiData.fourWheelerParking)
-        state.formData.carParking =
-          apiData.carParking || apiData.fourWheelerParking;
+      if (apiData.bike_parking)
+        state.formData.bikeParking = apiData.bike_parking;
+      if (apiData.car_parking) state.formData.carParking = apiData.car_parking;
 
       // Financial
-      if (apiData.amount || apiData.price || apiData.rent)
-        state.formData.amount = apiData.amount || apiData.price || apiData.rent;
+      if (apiData.amount) state.formData.amount = apiData.amount;
 
       // Handle arrays
-      if (apiData.images && Array.isArray(apiData.images)) {
+      if (Array.isArray(apiData.images)) {
         state.formData.images = [...apiData.images];
       }
-      if (apiData.videos && Array.isArray(apiData.videos)) {
+      if (Array.isArray(apiData.videos)) {
         state.formData.videos = [...apiData.videos];
       }
 
