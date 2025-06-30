@@ -7,7 +7,7 @@ import ClearIcon from "@mui/icons-material/Clear";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { DynamicInputs } from "@/components";
 import { useDispatch, useSelector } from "react-redux";
@@ -36,6 +36,8 @@ import {
   setApiError,
   resetForm,
   clearAutoPopulateData,
+  selectIsAutoPopulating,
+  updateMediaToDelete,
 } from "../redux/propertyFormSlice";
 
 const PropertyForm = () => {
@@ -61,8 +63,22 @@ const PropertyForm = () => {
   });
 
   // State for dropdown data
-  const [dropdownData, setDropdownData] = useState({});
-  const [loadingDropdowns, setLoadingDropdowns] = useState(true);
+  const isAutoPopulating = useSelector(selectIsAutoPopulating);
+  const [dropdownData, setDropdownData] = useState({
+    states: [],
+    districts: [],
+    cities: [],
+    buildingDirections: [],
+    constructionStatuses: [],
+    furnishingTypes: [],
+    listedBy: [],
+    maintenanceFrequencies: [],
+    bhkTypes: [],
+  });
+
+  const [loadingDropdowns, setLoadingDropdowns] = useState(false);
+  const [loadingDistricts, setLoadingDistricts] = useState(false);
+  const [loadingCities, setLoadingCities] = useState(false);
 
   // Dynamic validation schema based on slug
   const [validationSchema, setValidationSchema] = useState(null);
@@ -214,6 +230,7 @@ const PropertyForm = () => {
   }, [slug]);
 
   // Load dropdown data based on slug
+  // Load initial dropdown data based on slug
   useEffect(() => {
     const loadDropdownData = async () => {
       if (!slug) return;
@@ -223,8 +240,31 @@ const PropertyForm = () => {
         const dropdowns = await dropdownService.getDropdownsForPropertyType(
           slug
         );
-        setDropdownData(dropdowns);
         console.log(`Loaded dropdown data for: ${slug}`, dropdowns);
+
+        // Process each dropdown to ensure we have arrays
+        const processedDropdowns = {};
+        Object.keys(dropdowns).forEach((key) => {
+          const data = dropdowns[key];
+          if (Array.isArray(data)) {
+            processedDropdowns[key] = data;
+          } else if (data && data.data) {
+            processedDropdowns[key] = Array.isArray(data.data) ? data.data : [];
+          } else if (data && data.response) {
+            processedDropdowns[key] = Array.isArray(data.response)
+              ? data.response
+              : [];
+          } else {
+            processedDropdowns[key] = [];
+          }
+        });
+
+        setDropdownData((prev) => ({
+          ...prev,
+          ...processedDropdowns,
+          districts: [], // Will be loaded when state is selected
+          cities: [], // Will be loaded when district is selected
+        }));
       } catch (error) {
         console.error("Failed to load dropdown data:", error);
         dispatch(
@@ -238,54 +278,219 @@ const PropertyForm = () => {
     loadDropdownData();
   }, [slug, dispatch]);
 
-  useEffect(() => {
-    if (!formData.state) return;
+  // Memoized function to load districts
+  const loadDistricts = useCallback(
+    async (stateId) => {
+      if (!stateId) return;
 
-    const loadDistricts = async () => {
+      setLoadingDistricts(true);
       try {
-        const response = await dropdownService.getDistricts(formData.state);
-        const districtsData = Array.isArray(response)
-          ? response
-          : response.data || response.districts || [];
+        console.log("Loading districts for state:", stateId);
+        const response = await dropdownService.getDistricts(stateId);
+
+        // Handle different response formats
+        let districtsData = [];
+        if (Array.isArray(response)) {
+          districtsData = response;
+        } else if (response && response.data && Array.isArray(response.data)) {
+          districtsData = response.data;
+        } else if (
+          response &&
+          response.districts &&
+          Array.isArray(response.districts)
+        ) {
+          districtsData = response.districts;
+        } else if (
+          response &&
+          response.response &&
+          Array.isArray(response.response)
+        ) {
+          districtsData = response.response;
+        }
+
+        console.log("Loaded districts:", districtsData);
 
         setDropdownData((prev) => ({
           ...prev,
           districts: districtsData,
-          cities: [],
+          cities: [], // Clear cities when state changes
         }));
+
+        // If not auto-populating and we have a selected district that's not in the new list, clear it
+        if (isAutoPopulating && formData.district) {
+          const districtExists = districtsData.find(
+            (d) =>
+              String(d.id) === String(formData.district) ||
+              String(d.value) === String(formData.district)
+          );
+          if (!districtExists) {
+            dispatch(updateFormField({ field: "district", value: "" }));
+            dispatch(updateFormField({ field: "city", value: "" }));
+          }
+        }
       } catch (error) {
         console.error("Failed to load districts:", error);
+        setDropdownData((prev) => ({
+          ...prev,
+          districts: [],
+          cities: [],
+        }));
+        // Show user-friendly error
+        dispatch(setApiError("Failed to load districts. Please try again."));
+      } finally {
+        setLoadingDistricts(false);
       }
-    };
+    },
+    [dispatch, isAutoPopulating, formData.district]
+  );
 
-    loadDistricts();
-  }, [formData.state]);
-  
-  
-  // 3. Update the useEffect for loading cities
+  // Memoized function to load cities
+  const loadCities = useCallback(
+    async (districtId) => {
+      if (!districtId) return;
 
-  useEffect(() => {
-    if (!formData.district) return;
-
-    const loadCities = async () => {
+      setLoadingCities(true);
       try {
-        const response = await dropdownService.getCities(formData.district);
-        const citiesData = Array.isArray(response)
-          ? response
-          : response.data || response.cities || [];
+        console.log("Loading cities for district:", districtId);
+        const response = await dropdownService.getCities(districtId);
+
+        // Handle different response formats
+        let citiesData = [];
+        if (Array.isArray(response)) {
+          citiesData = response;
+        } else if (response && response.data && Array.isArray(response.data)) {
+          citiesData = response.data;
+        } else if (
+          response &&
+          response.cities &&
+          Array.isArray(response.cities)
+        ) {
+          citiesData = response.cities;
+        } else if (
+          response &&
+          response.response &&
+          Array.isArray(response.response)
+        ) {
+          citiesData = response.response;
+        }
+
+        console.log("Loaded cities:", citiesData);
 
         setDropdownData((prev) => ({
           ...prev,
           cities: citiesData,
         }));
+
+        // If not auto-populating and we have a selected city that's not in the new list, clear it
+        if (isAutoPopulating && formData.city) {
+          const cityExists = citiesData.find(
+            (c) =>
+              String(c.id) === String(formData.city) ||
+              String(c.value) === String(formData.city)
+          );
+          if (!cityExists) {
+            dispatch(updateFormField({ field: "city", value: "" }));
+          }
+        }
       } catch (error) {
         console.error("Failed to load cities:", error);
+        setDropdownData((prev) => ({
+          ...prev,
+          cities: [],
+        }));
+        // Show user-friendly error
+        dispatch(setApiError("Failed to load cities. Please try again."));
+      } finally {
+        setLoadingCities(false);
       }
-    };
+    },
+    [dispatch, isAutoPopulating, formData.city]
+  );
 
-    loadCities();
-  }, [formData.district]);
-  
+  // Load districts when state changes
+  useEffect(() => {
+    if (!formData.state) {
+      // Clear districts and cities if no state selected
+      if (!isAutoPopulating) {
+        setDropdownData((prev) => ({
+          ...prev,
+          districts: [],
+          cities: [],
+        }));
+        // Clear dependent fields
+        if (formData.district) {
+          dispatch(updateFormField({ field: "district", value: "" }));
+        }
+        if (formData.city) {
+          dispatch(updateFormField({ field: "city", value: "" }));
+        }
+      }
+      return;
+    }
+
+    // Load districts for the selected state
+    loadDistricts(formData.state);
+  }, [
+    formData.state,
+    loadDistricts,
+    dispatch,
+    isAutoPopulating,
+    formData.district,
+    formData.city,
+  ]);
+
+  // Load cities when district changes
+  useEffect(() => {
+    if (!formData.district) {
+      // Clear cities if no district selected
+      if (!isAutoPopulating) {
+        setDropdownData((prev) => ({
+          ...prev,
+          cities: [],
+        }));
+        // Clear city field
+        if (formData.city) {
+          dispatch(updateFormField({ field: "city", value: "" }));
+        }
+      }
+      return;
+    }
+
+    // Load cities for the selected district
+    loadCities(formData.district);
+  }, [
+    formData.district,
+    loadCities,
+    dispatch,
+    isAutoPopulating,
+    formData.city,
+  ]);
+
+  // Special handling for auto-population - ensure dependent dropdowns are loaded
+  useEffect(() => {
+    if (isAutoPopulating && formData.state && formData.district) {
+      // When auto-populating, we need to ensure districts are loaded first
+      const ensureDistrictsLoaded = async () => {
+        if (dropdownData.districts.length === 0) {
+          await loadDistricts(formData.state);
+        }
+        // Then load cities if we have a district
+        if (formData.district && dropdownData.cities.length === 0) {
+          await loadCities(formData.district);
+        }
+      };
+
+      ensureDistrictsLoaded();
+    }
+  }, [
+    isAutoPopulating,
+    formData.state,
+    formData.district,
+    dropdownData.districts.length,
+    dropdownData.cities.length,
+    loadDistricts,
+    loadCities,
+  ]);
 
   // 4. Update the initial dropdown loading to handle all responses properly
   useEffect(() => {
@@ -375,7 +580,6 @@ const PropertyForm = () => {
       });
     };
   }, [formData.images, formData.videos]);
-  
 
   // Console log to verify Redux state updates
   useEffect(() => {
@@ -435,8 +639,6 @@ const PropertyForm = () => {
     errors.plotArea,
   ]);
 
- 
-
   useEffect(() => {
     const handleApiAutoPopulate = async () => {
       if (!isEditMode) return;
@@ -449,7 +651,24 @@ const PropertyForm = () => {
         console.log("API response:", result);
         if (result.status && result.data) {
           console.log("autopapulayte", result.data);
-          dispatch(populateFormFromApi(result.data));
+          // Store the action_id from API response in formData
+          dispatch(
+            populateFormFromApi({
+              ...result.data,
+              action_id: result.data.action_id, // Make sure this matches your API response
+            })
+          );
+          // After populating, wait for state to update
+          setTimeout(() => {
+            // Now load dependent dropdowns if needed
+            if (result.data.state) {
+              loadDistricts(result.data.state).then(() => {
+                if (result.data.district) {
+                  loadCities(result.data.district);
+                }
+              });
+            }
+          }, 0);
         } else {
           dispatch(setApiError("Failed to load property data"));
         }
@@ -461,8 +680,6 @@ const PropertyForm = () => {
 
     handleApiAutoPopulate();
   }, [isEditMode, id]);
-  
-  
 
   const handleResetForm = () => {
     if (
@@ -521,6 +738,7 @@ const PropertyForm = () => {
   };
 
   // Handle form submission
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -535,11 +753,12 @@ const PropertyForm = () => {
       );
       return;
     }
+    // Get isEditMode from the URL
+    const isEditMode = location.pathname.includes("edit");
 
     // Clear any previous errors
     dispatch(setErrors({}));
     dispatch(setApiError(null));
-   
 
     try {
       // Set loading state
@@ -558,21 +777,39 @@ const PropertyForm = () => {
       });
 
       console.log("✅ Client-side validation passed:", formData);
+
+      // Prepare media_to_delete string
+      const allDeletedMedia = [
+        ...deletedMediaIds.images,
+        ...deletedMediaIds.videos,
+      ].join(",");
+
       // Prepare submission data with URL params
       const submissionData = {
         ...formData,
-        action_id: isEditMode ? id : undefined,
+        action_id: isEditMode ? formData.action_id : undefined,
         urlId: getSubcategoryId(), // ID from URL params
         subcategoryId: id, // Subcategory ID based on slug
         slug: slug, // Current slug
+        // Add deleted media IDs only in edit mode
+        ...(isEditMode && { media_to_delete: allDeletedMedia }),
       };
+
       console.log("Submitting form data:", submissionData);
-      // Submit form
-      const result = await submitPropertyForm(submissionData, slug);
+      // Submit form with edit mode flag
+      const result = await submitPropertyForm(submissionData, slug, isEditMode);
 
       if (result.success) {
-        alert("Form submitted successfully!");
-        dispatch(resetForm());
+        alert(
+          isEditMode
+            ? "Property updated successfully!"
+            : "Form submitted successfully!"
+        );
+        if (!isEditMode) {
+          dispatch(resetForm());
+        }
+        // Clear deleted media IDs after successful submission
+        setDeletedMediaIds({ images: [], videos: [] });
       } else {
         // Handle backend errors
         if (result.error || result.details) {
@@ -603,8 +840,7 @@ const PropertyForm = () => {
           }
         }
       }
-    }
-    catch (err) {
+    } catch (err) {
       // Handle validation errors
       if (err.name === "ValidationError" && err.inner) {
         console.log("❌ Validation failed:", err.inner);
@@ -784,101 +1020,127 @@ const PropertyForm = () => {
     }
   };
 
+  // Add a new state to track deleted media IDs
+  const [deletedMediaIds, setDeletedMediaIds] = useState({
+    images: [],
+    videos: [],
+  });
   // Remove a specific file
-  const handleRemoveFile = async (type, index) => {
-    dispatch(removeFile({ type, index }));
+  // const handleRemoveFile = async (type, index) => {
+  //   dispatch(removeFile({ type, index }));
 
-    console.log(`Removed file at index ${index} from ${type}`);
+  //   console.log(`Removed file at index ${index} from ${type}`);
 
-    if (errors[type] && validationSchema) {
-      try {
-        const updatedFiles = [...formData[type]];
-        updatedFiles.splice(index, 1);
-        await validationSchema.validateAt(type, { [type]: updatedFiles });
-        dispatch(setErrors({ ...errors, [type]: "" }));
-      } catch (err) {
-        dispatch(setErrors({ ...errors, [type]: err.message }));
-      }
-    }
-  };
-
-  // Clear all files for a specific type
-  const handleClearFiles = (type) => {
-    // Use the clearFiles action to update Redux store
-    dispatch(clearFiles(type));
-
-    console.log(`Cleared all files from ${type}`);
-
-    // Clear any errors for this field
-    if (errors[type]) {
-      dispatch(setErrors({ ...errors, [type]: "" }));
-    }
-  };
-
-  // Helper function to render dropdown options
-  // const renderDropdownOptions = (optionsArray) => {
-  //   if (!optionsArray || !Array.isArray(optionsArray)) return [];
-
-  //   return optionsArray.map((option) => ({
-  //     value: option.id || option.value,
-  //     label: option.name || option.label || option.title,
-  //   }));
+  //   if (errors[type] && validationSchema) {
+  //     try {
+  //       const updatedFiles = [...formData[type]];
+  //       updatedFiles.splice(index, 1);
+  //       await validationSchema.validateAt(type, { [type]: updatedFiles });
+  //       dispatch(setErrors({ ...errors, [type]: "" }));
+  //     } catch (err) {
+  //       dispatch(setErrors({ ...errors, [type]: err.message }));
+  //     }
+  //   }
   // };
 
-  // 1. Update the renderDropdownOptions function to handle the response properly
-  const renderDropdownOptions = (data, fieldName = "") => {
-    // Handle various data formats from API responses
-    let optionsArray = [];
+  // Clear all files for a specific type
+  // const handleClearFiles = (type) => {
+  //   // Use the clearFiles action to update Redux store
+  //   dispatch(clearFiles(type));
 
-    if (!data) {
-      return [];
+  //   console.log(`Cleared all files from ${type}`);
+
+  //   // Clear any errors for this field
+  //   if (errors[type]) {
+  //     dispatch(setErrors({ ...errors, [type]: "" }));
+  //   }
+  // };
+
+  // Modify the handleRemoveFile function to track deletions
+  // In PropertyForm component
+
+  // Helper function to update media_to_delete
+  const updateDeletedMedia = (id) => {
+    const currentIds = formData.media_to_delete
+      ? formData.media_to_delete.split(",")
+      : [];
+
+    if (!currentIds.includes(id.toString())) {
+      const newIds = [...currentIds, id.toString()].join(",");
+      dispatch(
+        updateFormField({
+          field: "media_to_delete",
+          value: newIds,
+        })
+      );
+    }
+  };
+
+  const handleRemoveFile = (type, index) => {
+    const file = formData[type][index];
+
+    // For existing files, ensure we track the deletion
+    if (file?.media_image_id) {
+      updateDeletedMedia(file.media_image_id);
     }
 
-    // If data is already an array, use it directly
-    if (Array.isArray(data)) {
-      optionsArray = data;
+    dispatch(removeFile({ type, index }));
+  };
+
+  const handleClearFiles = (type) => {
+    // Track all existing media IDs being cleared
+    const files = formData[type] || [];
+    const idsToDelete = files
+      .filter((file) => file?.media_image_id)
+      .map((file) => file.media_image_id.toString());
+
+    if (idsToDelete.length > 0) {
+      const currentIds = formData.media_to_delete
+        ? formData.media_to_delete.split(",")
+        : [];
+
+      const allIds = [...new Set([...currentIds, ...idsToDelete])].join(",");
+      dispatch(
+        updateFormField({
+          field: "media_to_delete",
+          value: allIds,
+        })
+      );
     }
-    // If data has a 'data' property that's an array, use that
-    else if (data.data && Array.isArray(data.data)) {
-      optionsArray = data.data;
-    }
-    // If data has a 'response' property that's an array, use that
-    else if (data.response && Array.isArray(data.response)) {
-      optionsArray = data.response;
-    }
-    // If data is an object with numeric keys (array-like)
-    else if (typeof data === "object") {
-      const keys = Object.keys(data);
-      if (keys.length > 0 && keys.every((key) => !isNaN(parseInt(key)))) {
-        optionsArray = Object.values(data);
-      } else {
-        // Try to find any array property in the object
-        for (const key in data) {
-          if (Array.isArray(data[key])) {
-            optionsArray = data[key];
-            break;
-          }
+
+    dispatch(clearFiles(type));
+  };
+  // Helper function to render dropdown options
+  const renderDropdownOptions = (options) => {
+    if (!Array.isArray(options)) return [];
+
+    return options.map((option) => ({
+      value: option.id || option.value || option.key,
+      label: option.name || option.label || option.title || option.text,
+    }));
+  };
+
+  // Handle form field changes with proper validation
+  const handleFieldChange = (field, value) => {
+    dispatch(updateFormField({ field, value }));
+
+    // Handle dependent dropdown resets for manual changes (not auto-population)
+    if (!isAutoPopulating) {
+      if (field === "state") {
+        // Clear dependent fields when state changes
+        if (formData.district) {
+          dispatch(updateFormField({ field: "district", value: "" }));
+        }
+        if (formData.city) {
+          dispatch(updateFormField({ field: "city", value: "" }));
+        }
+      } else if (field === "district") {
+        // Clear city when district changes
+        if (formData.city) {
+          dispatch(updateFormField({ field: "city", value: "" }));
         }
       }
     }
-
-    // If we still don't have an array, return empty
-    if (!Array.isArray(optionsArray)) {
-      console.warn(`No valid array found for ${fieldName}:`, data);
-      return [];
-    }
-
-    // Map the options to the expected format
-    return optionsArray.map((option) => ({
-      value: option.id?.toString() || option.value?.toString() || "",
-      label:
-        option.name ||
-        option.label ||
-        option.title ||
-        option.district_name ||
-        option.city_name ||
-        "Unknown",
-    }));
   };
 
   // Show loading state while dropdowns are loading
@@ -1101,21 +1363,17 @@ const PropertyForm = () => {
               type="select"
               name="state"
               id="state"
-              // onChange={handleChange}
-              onChange={(e) =>
-                dispatch(
-                  updateFormField({ field: "state", value: e.target.value })
-                )
-              }
+              onChange={(e) => handleFieldChange("state", e.target.value)}
               value={formData.state || ""}
-              className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] 
-              bg-white focus:outline-none "
-              placeholder="Select state"
+              className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] bg-white focus:outline-none"
+              placeholder={isAutoPopulating ? "Loading..." : "Select state"}
               onBlur={handleBlur}
               error={errors.state}
               touched={touched.state}
               focusedField={focusedField}
               options={renderDropdownOptions(dropdownData.states)}
+              loading={loadingDropdowns || isAutoPopulating}
+              disabled={loadingDropdowns || isAutoPopulating}
             />
           </div>
 
@@ -1127,24 +1385,26 @@ const PropertyForm = () => {
               type="select"
               name="district"
               id="district"
-              // onChange={handleChange}
-              onChange={(e) =>
-                dispatch(
-                  updateFormField({ field: "district", value: e.target.value })
-                )
-              }
+              onChange={(e) => handleFieldChange("district", e.target.value)}
               value={formData.district || ""}
-              className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] 
-              bg-white focus:outline-none "
-              placeholder="Select district"
+              className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] bg-white focus:outline-none"
+              placeholder={
+                !formData.state
+                  ? "Select state first"
+                  : loadingDistricts || isAutoPopulating
+                  ? "Loading..."
+                  : "Select district"
+              }
               onBlur={handleBlur}
               error={errors.district}
               touched={touched.district}
               focusedField={focusedField}
               options={renderDropdownOptions(dropdownData.districts)}
-              disabled={!formData.state}
+              disabled={!formData.state || loadingDistricts || isAutoPopulating}
+              loading={loadingDistricts || isAutoPopulating}
             />
           </div>
+
           <div>
             <label className="block text-gray-800 font-medium mb-2 px-4">
               City
@@ -1153,22 +1413,23 @@ const PropertyForm = () => {
               type="select"
               name="city"
               id="city"
-              // onChange={handleChange}
-              onChange={(e) =>
-                dispatch(
-                  updateFormField({ field: "city", value: e.target.value })
-                )
-              }
+              onChange={(e) => handleFieldChange("city", e.target.value)}
               value={formData.city || ""}
-              className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] 
-              bg-white focus:outline-none "
-              placeholder="Select city"
+              className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] bg-white focus:outline-none"
+              placeholder={
+                !formData.district
+                  ? "Select district first"
+                  : loadingCities || isAutoPopulating
+                  ? "Loading..."
+                  : "Select city"
+              }
               onBlur={handleBlur}
               error={errors.city}
               touched={touched.city}
               focusedField={focusedField}
               options={renderDropdownOptions(dropdownData.cities)}
-              disabled={!formData.district}
+              disabled={!formData.district || loadingCities || isAutoPopulating}
+              loading={loadingCities || isAutoPopulating}
             />
           </div>
         </div>

@@ -79,12 +79,13 @@ class PropertyFormService {
   }
 
   // Transform form data based on slug/subcategory
-  transformFormData(formData, slug, subcategoryId, urlId) {
+  transformFormData(formData, slug, subcategoryId, urlId, ) {
     // Base payload structure
     const basePayload = {
       form_type: "property",
       subcategory_id: subcategoryId,
       url_id: urlId, // ID from URL params
+      action_id: formData.action_id,
       property_name: formData.propertyName,
       mobile_number: formData.mobileNumber,
       address: formData.address,
@@ -97,6 +98,10 @@ class PropertyFormService {
       building_direction_id:
         parseInt(formData.buildingDirection) || formData.buildingDirection,
       status: "available",
+      // Include media_to_delete if it exists
+      ...(formData.media_to_delete && {
+        media_to_delete: formData.media_to_delete,
+      }),
     };
 
     // Add slug-specific fields
@@ -158,13 +163,16 @@ class PropertyFormService {
   }
 
   // Submit form with files
-  async submitPropertyForm(submissionData, slug) {
+  async submitPropertyForm(submissionData, slug, isEditMode = false) {
     try {
       const { urlId, subcategoryId, ...formData } = submissionData;
 
       // Transform form data based on slug
       const payload = this.transformFormData(
-        formData,
+        {
+          ...formData,
+          action_id: formData.action_id, // Include action_id from formData
+        },
         slug,
         subcategoryId,
         urlId
@@ -184,44 +192,51 @@ class PropertyFormService {
         }
       });
 
-      // Add images if they exist
-      if (formData.images && formData.images.length > 0) {
-        formData.images.forEach((image, index) => {
-          formDataToSend.append(`images[${index}]`, image);
-        });
+      // Add all regular form fields
+    Object.entries(formData).forEach(([key, value]) => {
+      if (value !== null && value !== undefined && value !== '') {
+        // Special handling for media_to_delete
+        if (key === 'media_to_delete' && value) {
+          // Ensure it's a clean comma-separated string
+          const cleanIds = value.split(',')
+            .map(id => id.trim())
+            .filter(id => id)
+            .join(',');
+          formDataToSend.append(key, cleanIds);
+        } else {
+          formDataToSend.append(key, value);
+        }
       }
+    });
 
-      // Add videos if they exist
-      if (formData.videos && formData.videos.length > 0) {
-        formData.videos.forEach((video, index) => {
-          formDataToSend.append(`videos[${index}]`, video);
-        });
+    // Handle images
+    formData.images?.forEach((image, index) => {
+      if (image instanceof File) {
+        formDataToSend.append(`images[${index}]`, image);
+      } else if (image.media_image_id) {
+        formDataToSend.append(`existing_images[${index}]`, image.media_image_id);
       }
+    });
 
-      // Log payload for debugging
-      console.log("Submitting form with payload:", {
-        slug,
-        subcategoryId,
-        urlId,
-        formFields: Object.fromEntries(
-          Object.entries(payload).filter(
-            ([key, value]) =>
-              value !== null && value !== undefined && value !== ""
-          )
-        ),
-        imageCount: formData.images?.length || 0,
-        videoCount: formData.videos?.length || 0,
-      });
+    // Handle videos
+    formData.videos?.forEach((video, index) => {
+      if (video instanceof File) {
+        formDataToSend.append(`videos[${index}]`, video);
+      } else if (video.media_video_id) {
+        formDataToSend.append(`existing_videos[${index}]`, video.media_video_id);
+      }
+    });
+
+    // Debug the payload
+    console.log('Final media_to_delete:', formData.media_to_delete);
+    for (let [key, value] of formDataToSend.entries()) {
+      console.log(key, value);
+    }
+      // Determine the API endpoint based on mode
+      const endpoint = isEditMode ? `/upload/update` : "/upload-form";
 
       // Submit using file upload API instance
-      const response = await apiForFiles.post("/upload-form", formDataToSend);
-
-      return {
-        success: true,
-        data: response.data,
-        message:
-          response.data.message || "Property form submitted successfully",
-      };
+      const response = await apiForFiles.post(endpoint, formDataToSend);
 
       // Handle API response that indicates failure
       if (response.data && response.data.success === false) {
@@ -239,9 +254,10 @@ class PropertyFormService {
       return {
         success: true,
         data: response.data,
-        message: "Property form submitted successfully",
+        message: isEditMode
+          ? "Property updated successfully"
+          : "Property form submitted successfully",
       };
-
     } catch (error) {
       console.error("Error submitting property form:", error);
 
@@ -311,14 +327,15 @@ class PropertyFormService {
   }
 
   // Submit form with automatic subcategory detection
-  async submitForm(submissionData, slug) {
+  async submitForm(submissionData, slug, isEditMode = false) {
     const subcategoryId = this.getSubcategoryIdFromSlug(slug);
     return this.submitPropertyForm(
       {
         ...submissionData,
         subcategoryId,
       },
-      slug
+      slug,
+      isEditMode
     );
   }
 
@@ -372,8 +389,8 @@ class PropertyFormService {
 export const propertyFormService = new PropertyFormService();
 
 // Export the main submit method for convenience
-export const submitPropertyForm = (submissionData, slug) =>
-  propertyFormService.submitForm(submissionData, slug);
+export const submitPropertyForm = (submissionData, slug, isEditMode = false) =>
+  propertyFormService.submitForm(submissionData, slug, isEditMode);
 
 // Export form configuration helper
 export const getFormConfig = (slug) => propertyFormService.getFormConfig(slug);
