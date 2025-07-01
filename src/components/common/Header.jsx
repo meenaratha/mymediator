@@ -12,7 +12,7 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import GpsFixedIcon from "@mui/icons-material/GpsFixed";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import MobileHeader from "./MobileHeader";
 import LoginFormModel from "./LoginFormModel";
 import SignupFormModel from "./SignupFormModel";
@@ -25,18 +25,14 @@ import PasswordResetModel from "./PasswordResetModel";
 import { api } from "../../api/axios"; // Adjust the import path as needed
 import { Skeleton } from "@mui/material";
 import { useAuth } from "../../auth/AuthContext"; // Import the useAuth hook
-
+import { useLoadScript, Autocomplete } from "@react-google-maps/api";
 const Header = () => {
   const navigate = useNavigate();
   const { isAuthenticated, user, logout, loading } = useAuth(); // Get auth state
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
-  const [isLocationOpen, setIsLocationOpen] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState(
-    "Chennai, Tamil Nadu"
-  );
+
   const [searchQuery, setSearchQuery] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [isNotificationShaking, setIsNotificationShaking] = useState(true);
   const [isFixed, setIsFixed] = useState(false);
 
@@ -46,6 +42,18 @@ const Header = () => {
   const [isLoadingCategories, setIsLoadingCategories] = useState(false);
   const [hasLocationBeenSent, setHasLocationBeenSent] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false); // Add profile menu state
+
+  const [isLocationOpen, setIsLocationOpen] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState("Select location");
+  const [recentLocations, setRecentLocations] = useState([]);
+  const [popularLocations] = useState([
+    "Chennai, Tamil Nadu",
+    "Mumbai, Maharashtra",
+    "Delhi, India",
+  ]);
+  const [isLoading, setIsLoading] = useState(false);
+  const autocompleteRef = useRef(null);
+
   // Add scroll event listener to check scroll position
   useEffect(() => {
     const handleScroll = () => {
@@ -130,231 +138,208 @@ const Header = () => {
   }, []);
 
   // Send location to API when user enters the website
+
+  // Load location from localStorage
   useEffect(() => {
-    const sendLocationToAPI = async (locationData) => {
-      try {
-        const response = await api.post("/location", {
-          location: locationData.location,
-          latitude: locationData.latitude,
-          longitude: locationData.longitude,
-          address: locationData.address,
-          city: locationData.city,
-          state: locationData.state,
-          country: locationData.country,
-        });
+    const saved = localStorage.getItem("selectedLocation");
+    if (saved) {
+      const loc = JSON.parse(saved);
+      setSelectedLocation(loc.address || `${loc.city}, ${loc.state}`);
+    }
+  }, []);
 
-        console.log("Location sent successfully:", response.data);
-      } catch (error) {
-        console.error("Error sending location:", error);
-      }
-    };
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+    libraries: ["places"],
+  });
 
-    const getAndSendLocation = () => {
-      if (hasLocationBeenSent) return; // Prevent multiple calls
+  useEffect(() => {
+    const selected = localStorage.getItem("selectedLocation");
+    if (!selected) {
+      // Show popup after 1s if location not already selected
+      setTimeout(() => {
+        setIsLocationOpen(true);
+      }, 1000);
+    }
+  }, []);
 
-      if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          async (position) => {
-            try {
-              const { latitude, longitude } = position.coords;
+  useEffect(() => {
+    setIsLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        try {
+          const res = await fetch(
+            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${
+              import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+            }`
+          );
+          const data = await res.json();
+          const result = data.results[0];
+          const address = result?.formatted_address || "";
+          const components = result?.address_components || [];
 
-              // Get address from coordinates
-              const response = await fetch(
-                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
-              );
-              const data = await response.json();
+          const getComponent = (type) =>
+            components.find((c) => c.types.includes(type))?.long_name || "";
 
-              const locationData = {
-                location: selectedLocation,
-                latitude: latitude,
-                longitude: longitude,
-                address: data.display_name || "",
-                city: data.address?.city || data.address?.town || "",
-                state: data.address?.state || "",
-                country: data.address?.country || "",
-              };
+          const city =
+            getComponent("locality") ||
+            getComponent("sublocality") ||
+            getComponent("administrative_area_level_2");
 
-              await sendLocationToAPI(locationData);
-              setHasLocationBeenSent(true);
+          const state = getComponent("administrative_area_level_1");
+          const country = getComponent("country");
 
-              // Update selected location if different
-              const newLocation = `${locationData.city}, ${locationData.state}`;
-              if (newLocation !== ", ") {
-                setSelectedLocation(newLocation);
-              }
-            } catch (error) {
-              console.error("Error processing location:", error);
-            }
-          },
-          (error) => {
-            console.error("Error getting location:", error);
-            // Send basic location data even if geolocation fails
-            if (!hasLocationBeenSent) {
-              sendLocationToAPI({
-                location: selectedLocation,
-                latitude: null,
-                longitude: null,
-                address: "",
-                city: "Chennai",
-                state: "Tamil Nadu",
-                country: "India",
-              });
-              setHasLocationBeenSent(true);
-            }
-          },
-          {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 300000, // 5 minutes
-          }
-        );
-      } else {
-        // Geolocation not supported, send basic location
-        if (!hasLocationBeenSent) {
-          sendLocationToAPI({
-            location: selectedLocation,
-            latitude: null,
-            longitude: null,
-            address: "",
-            city: "Chennai",
-            state: "Tamil Nadu",
-            country: "India",
-          });
-          setHasLocationBeenSent(true);
+          const locationData = {
+            address,
+            city,
+            state,
+            country,
+            latitude,
+            longitude,
+          };
+
+          localStorage.setItem(
+            "selectedLocation",
+            JSON.stringify(locationData)
+          );
+          setSelectedLocation(address || `${city}, ${state}`);
+        } catch (err) {
+          console.error("Geocode error:", err);
         }
+        setIsLoading(false);
+      },
+      (err) => {
+        console.error("Geolocation error:", err);
+        setIsLoading(false);
       }
-    };
-
-    // Send location on component mount
-    getAndSendLocation();
-  }, [selectedLocation, hasLocationBeenSent]);
-
-  const locations = {
-    recentLocation: [
-      { title: "Use Current location", icon: "location_on" },
-      { title: "Tamil Nadu", icon: "location_on" },
-    ],
-    popularLocation: ["Chennai, Tamil Nadu", "Ambattur"],
-  };
-
-  const handleLocationSelect = (location) => {
-    setSelectedLocation(location);
-    setIsLocationOpen(false);
-  };
+    );
+  }, []);
 
   // const handleCurrentLocation = () => {
   //   setIsLoading(true);
-  //   if ("geolocation" in navigator) {
-  //     navigator.geolocation.getCurrentPosition(
-  //       async (position) => {
-  //         try {
-  //           const response = await fetch(
-  //             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}`
-  //           );
-  //           const data = await response.json();
-  //           const location =
-  //             data.address.city || data.address.town || data.address.state;
-  //           const newLocation = location + ", " + data.address.state;
-  //           setSelectedLocation(newLocation);
+  //   navigator.geolocation.getCurrentPosition(
+  //     async (position) => {
+  //       const { latitude, longitude } = position.coords;
+  //       try {
+  //         const res = await fetch(
+  //           `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${
+  //             import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+  //           }`
+  //         );
+  //         const data = await res.json();
+  //         const result = data.results[0];
+  //         const address = result?.formatted_address || "";
+  //         const components = result?.address_components || [];
 
-  //           // Send updated location to API
-  //           try {
-  //             await api.post("/location", {
-  //               location: newLocation,
-  //               latitude: position.coords.latitude,
-  //               longitude: position.coords.longitude,
-  //               address: data.display_name || "",
-  //               city: data.address?.city || data.address?.town || "",
-  //               state: data.address?.state || "",
-  //               country: data.address?.country || "",
-  //             });
-  //           } catch (error) {
-  //             console.error("Error updating location:", error);
-  //           }
+  //         const getComponent = (type) =>
+  //           components.find((c) => c.types.includes(type))?.long_name || "";
 
-  //           setIsLoading(false);
-  //           setIsLocationOpen(false);
-  //         } catch (error) {
-  //           console.error("Error fetching location:", error);
-  //           setIsLoading(false);
-  //         }
-  //       },
-  //       (error) => {
-  //         console.error("Error getting location:", error);
-  //         setIsLoading(false);
+  //         const city =
+  //           getComponent("locality") ||
+  //           getComponent("sublocality") ||
+  //           getComponent("administrative_area_level_2");
+
+  //         const state = getComponent("administrative_area_level_1");
+  //         const country = getComponent("country");
+
+  //         const locationData = {
+  //           address,
+  //           city,
+  //           state,
+  //           country,
+  //           latitude,
+  //           longitude,
+  //         };
+
+  //         localStorage.setItem(
+  //           "selectedLocation",
+  //           JSON.stringify(locationData)
+  //         );
+  //         setSelectedLocation(address || `${city}, ${state}`);
+  //         setIsLocationOpen(false);
+  //       } catch (err) {
+  //         console.error("Geocode error:", err);
   //       }
-  //     );
-  //   }
+  //       setIsLoading(false);
+  //     },
+  //     (err) => {
+  //       console.error("Geolocation error:", err);
+  //       setIsLoading(false);
+  //     }
+  //   );
   // };
+
+  // Load recent locations on open
 
   const handleCurrentLocation = () => {
     setIsLoading(true);
-
-    if ("geolocation" in navigator) {
+    if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
-          const { latitude, longitude } = position.coords;
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
 
           try {
-            const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-
-            const response = await fetch(
-              `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`
+            const res = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
             );
-            const data = await response.json();
+            const data = await res.json();
 
-            if (data.status === "OK" && data.results.length > 0) {
-              const components = data.results[0].address_components;
-              const formattedAddress = data.results[0].formatted_address;
+            const newLocation = {
+              address: data.display_name,
+              city:
+                data.address.city || data.address.town || data.address.village,
+              state: data.address.state,
+              country: data.address.country,
+              latitude: lat,
+              longitude: lng,
+            };
 
-              const getComponent = (type) =>
-                components.find((c) => c.types.includes(type))?.long_name || "";
-
-              const city =
-                getComponent("locality") ||
-                getComponent("sublocality") ||
-                getComponent("administrative_area_level_2");
-
-              const state = getComponent("administrative_area_level_1");
-              const country = getComponent("country");
-
-              const newLocation = `${city}, ${state}`;
-              setSelectedLocation(newLocation);
-
-              await api.post("/location", {
-                location: newLocation,
-                latitude,
-                longitude,
-                address: formattedAddress,
-                city,
-                state,
-                country,
-              });
-
-              setIsLoading(false);
-              setIsLocationOpen(false);
-            } else {
-              throw new Error("No address found");
-            }
-          } catch (error) {
-            console.error("Error fetching location:", error);
+            handleLocationSelect(newLocation);
+          } catch (err) {
+            console.error("Location fetch error", err);
+          } finally {
             setIsLoading(false);
           }
         },
-        (error) => {
-          console.error("Error getting location:", error);
-          setIsLoading(false);
-        },
-        {
-          enableHighAccuracy: true, // 💡 Makes it more precise on mobile GPS
-          timeout: 10000,
-          maximumAge: 0,
-        }
+        () => setIsLoading(false)
       );
     } else {
-      console.error("Geolocation not supported");
       setIsLoading(false);
+      alert("Geolocation not supported");
     }
+  };
+
+
+
+  useEffect(() => {
+    if (isLocationOpen) {
+      const saved = JSON.parse(localStorage.getItem("recentLocations")) || [];
+      setRecentLocations(saved);
+    }
+    document.body.style.overflow = isLocationOpen ? "hidden" : "";
+  }, [isLocationOpen]);
+
+  const handleLocationSelect = (location) => {
+    const address = location.address || `${location.city}, ${location.state}`;
+
+    // Save selected location
+    localStorage.setItem("selectedLocation", JSON.stringify(location));
+    setSelectedLocation(address);
+    setIsLocationOpen(false);
+
+    // Update recent locations
+    const saved = JSON.parse(localStorage.getItem("recentLocations")) || [];
+    const updated = [address, ...saved.filter((loc) => loc !== address)].slice(
+      0,
+      5
+    );
+    localStorage.setItem("recentLocations", JSON.stringify(updated));
+    setRecentLocations(updated);
+
+    // Send to backend
+    axios.post("/location", location).catch(console.error);
   };
 
   useEffect(() => {
@@ -407,9 +392,7 @@ const Header = () => {
   };
 
   const handleProfileClick = () => {
-  
-      setIsProfileMenuOpen(!isProfileMenuOpen);
-   
+    setIsProfileMenuOpen(!isProfileMenuOpen);
   };
 
   const handleNotificationClick = () => {
@@ -458,7 +441,30 @@ const Header = () => {
       ))}
     </div>
   );
+  const locationDropdownRef = useRef(null);
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        locationDropdownRef.current &&
+        !locationDropdownRef.current.contains(event.target)
+      ) {
+        setIsLocationOpen(false);
+      }
+    };
 
+    if (isLocationOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isLocationOpen]);
+
+  if (loadError) return <div>Google Maps failed to load.</div>;
+  if (!isLoaded) return <div>Loading map...</div>;
   return (
     <>
       {/* Mobile Header */}
@@ -814,100 +820,159 @@ const Header = () => {
                   whileHover={{ scale: 1.02 }}
                   transition={{ duration: 0.2 }}
                   className="flex items-center gap-1 ml-6 cursor-pointer border border-gray-300 rounded-full px-3 py-1.5 relative"
-                  onClick={() => setIsLocationOpen(!isLocationOpen)}
                 >
                   <LocationOnIcon className="w-5 h-5 text-red-500" />
-                  <span className="text-gray-700">{selectedLocation}</span>
+                  <span className="text-gray-700 max-w-[160px] ellipse  line-clamp-2 break-words">
+                    {selectedLocation}
+                  </span>
                   <motion.div
                     animate={{ rotate: isLocationOpen ? 180 : 0 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <KeyboardArrowDownIcon className="w-5 h-5 text-gray-700" />
+                    <KeyboardArrowDownIcon
+                      className="w-5 h-5 text-gray-700"
+                      onClick={() => setIsLocationOpen(!isLocationOpen)}
+                    />
                   </motion.div>
 
                   <AnimatePresence>
                     {isLocationOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 20, height: 0 }}
-                        animate={{ opacity: 1, y: 0, height: "auto" }}
-                        exit={{ opacity: 0, y: 20, height: 0 }}
-                        transition={{ duration: 0.3, ease: "easeOut" }}
-                        className="absolute top-full right-0 mt-2 w-[280px] bg-white rounded-lg shadow-lg z-50"
-                      >
-                        <div className="p-3 max-h-[400px] overflow-y-auto custom-scrollbar">
-                          {/* Use Current Location */}
-                          <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="flex items-center gap-3 py-2 px-3 hover:bg-gray-50 rounded-md cursor-pointer mb-3 border-b border-gray-200 pb-3"
-                            onClick={handleCurrentLocation}
+                      <>
+                        {/* Popup */}
+                        <motion.div
+                          initial={{ opacity: 0, y: 20, height: 0 }}
+                          animate={{ opacity: 1, y: 0, height: "auto" }}
+                          exit={{ opacity: 0, y: 20, height: 0 }}
+                          transition={{ duration: 0.3, ease: "easeOut" }}
+                          // className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[350px] bg-white rounded-lg shadow-lg z-50"
+                          className="absolute top-full right-0 mt-2 w-[350px] bg-white rounded-lg shadow-lg z-50"
+                        >
+                          <div
+                            ref={locationDropdownRef}
+                            className="p-3 max-h-[400px] overflow-y-auto custom-scrollbar"
                           >
-                            {isLoading ? (
-                              <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                            ) : (
-                              <GpsFixedIcon className="w-5 h-5 text-blue-500" />
-                            )}
-                            <span className="text-blue-500 font-medium">
-                              {isLoading
-                                ? "Getting location..."
-                                : "Use Current Location"}
-                            </span>
-                          </motion.div>
-
-                          {/* Recent Location */}
-                          <div className="mb-3 border-b border-gray-200 pb-3">
-                            <h3 className="text-sm text-gray-500 mb-2">
-                              Recent Location
-                            </h3>
-                            {locations.recentLocation.map((item, index) => (
-                              <motion.div
-                                key={item.title}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{
-                                  duration: 0.2,
-                                  delay: index * 0.05,
+                            {/* Google Autocomplete */}
+                            <div className="mb-3">
+                              <Autocomplete
+                                onLoad={(autocomplete) => {
+                                  autocompleteRef.current = autocomplete;
                                 }}
-                                className="flex items-center gap-3 py-2 px-3 hover:bg-gray-50 rounded-md cursor-pointer"
-                                onClick={() => handleLocationSelect(item.title)}
-                              >
-                                <LocationOnIcon className="w-5 h-5 text-gray-600" />
-                                <span className="text-gray-700">
-                                  {item.title}
-                                </span>
-                              </motion.div>
-                            ))}
-                          </div>
+                                onPlaceChanged={() => {
+                                  const place =
+                                    autocompleteRef.current.getPlace();
+                                  if (!place.address_components) return;
 
-                          {/* Popular Location */}
-                          <div>
-                            <h3 className="text-sm text-gray-500 mb-2">
-                              Popular Location
-                            </h3>
-                            {locations.popularLocation.map(
-                              (location, index) => (
+                                  const components = place.address_components;
+
+                                  const getComponent = (type) =>
+                                    components.find((c) =>
+                                      c.types.includes(type)
+                                    )?.long_name || "";
+
+                                  const address = place.formatted_address;
+                                  const city =
+                                    getComponent("locality") ||
+                                    getComponent("sublocality") ||
+                                    getComponent("administrative_area_level_2");
+                                  const state = getComponent(
+                                    "administrative_area_level_1"
+                                  );
+                                  const country = getComponent("country");
+
+                                  const lat = place.geometry?.location?.lat();
+                                  const lng = place.geometry?.location?.lng();
+
+                                  const newLocation = {
+                                    address,
+                                    city,
+                                    state,
+                                    country,
+                                    latitude: lat,
+                                    longitude: lng,
+                                  };
+
+                                  handleLocationSelect(newLocation);
+                                }}
+                              >
+                                <div className="relative">
+                                  <SearchIcon className="absolute left-3 top-3 text-gray-400" />
+                                  <input
+                                    type="text"
+                                    placeholder="Search for area, street name..."
+                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  />
+                                </div>
+                              </Autocomplete>
+                            </div>
+
+                            {/* Use Current Location */}
+                            <motion.div
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="flex items-center gap-3 py-2 px-3 hover:bg-gray-50 rounded-md cursor-pointer mb-3 border-b border-gray-200 pb-3"
+                              onClick={handleCurrentLocation}
+                            >
+                              {isLoading ? (
+                                <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                              ) : (
+                                <GpsFixedIcon className="w-5 h-5 text-blue-500" />
+                              )}
+                              <span className="text-blue-500 font-medium">
+                                {isLoading
+                                  ? "Getting location..."
+                                  : "Use Current Location"}
+                              </span>
+                            </motion.div>
+
+                            {/* Recent Locations */}
+                            {recentLocations.length > 0 && (
+                              <div className="mb-3 border-b border-gray-200 pb-3">
+                                <h3 className="text-sm text-gray-500 mb-2">
+                                  Recent Locations
+                                </h3>
+                                {recentLocations.map((location, index) => (
+                                  <motion.div
+                                    key={index}
+                                    className="flex items-center gap-3 py-2 px-3 hover:bg-gray-50 rounded-md cursor-pointer"
+                                    onClick={() =>
+                                      handleLocationSelect({
+                                        address: location,
+                                      })
+                                    }
+                                  >
+                                    <LocationOnIcon className="w-5 h-5 text-gray-600" />
+                                    <span className="text-gray-700">
+                                      {location}
+                                    </span>
+                                  </motion.div>
+                                ))}
+                              </div>
+                            )}
+
+                            {/* Popular Locations */}
+                            <div>
+                              <h3 className="text-sm text-gray-500 mb-2">
+                                Popular Locations
+                              </h3>
+                              {popularLocations.map((location, index) => (
                                 <motion.div
-                                  key={location}
-                                  initial={{ opacity: 0, x: -20 }}
-                                  animate={{ opacity: 1, x: 0 }}
-                                  transition={{
-                                    duration: 0.2,
-                                    delay: (index + 2) * 0.05,
-                                  }}
+                                  key={index}
                                   className="flex items-center gap-3 py-2 px-3 hover:bg-gray-50 rounded-md cursor-pointer"
-                                  onClick={() => handleLocationSelect(location)}
+                                  onClick={() =>
+                                    handleLocationSelect({ address: location })
+                                  }
                                 >
                                   <LocationOnIcon className="w-5 h-5 text-gray-600" />
                                   <span className="text-gray-700">
                                     {location}
                                   </span>
                                 </motion.div>
-                              )
-                            )}
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      </motion.div>
+                        </motion.div>
+                      </>
                     )}
                   </AnimatePresence>
                 </motion.div>
@@ -916,6 +981,18 @@ const Header = () => {
           </div>
         </div>
       </section>
+
+      {isLocationOpen && (
+        <>
+          {/* Overlay */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.5 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black z-40"
+          />
+        </>
+      )}
 
       {loginFormModel && (
         <LoginFormModel

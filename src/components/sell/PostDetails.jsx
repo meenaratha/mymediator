@@ -10,6 +10,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import LoadMoreButton from "../../components/common/LoadMoreButton";
 import { api } from "@/api/axios";
 import { toast } from "react-toastify";
+import IMAGES from "@/utils/images.js";
+
 
 const PropertyCard = ({
   propertyImage,
@@ -88,7 +90,7 @@ const PropertyCard = ({
       {/* Property Image */}
       <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
         <img
-          src={propertyImage || "/placeholder-property.jpg"}
+          src={propertyImage || IMAGES.propertybanner1}
           alt={propertyName}
           className="w-full h-full object-cover"
         />
@@ -255,7 +257,7 @@ const PostDetails = () => {
     else setLoading(true);
 
     try {
-      const response = await api.get(`/properties/list/vendor?page=${page}`);
+      const response = await api.get(`/properties/list/vendor/web?page=${page}`);
       const result = response.data?.data;
 
       setProperties((prev) =>

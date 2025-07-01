@@ -5,6 +5,8 @@ class PropertyFormService {
   // Field mapping: backend field name -> frontend field name
   fieldMapping = {
     // Reverse mapping for error handling
+    media_to_delete: "",
+    form_type:"",
     property_name: "propertyName",
     mobile_number: "mobileNumber",
     listed_by: "listedBy",
@@ -79,7 +81,7 @@ class PropertyFormService {
   }
 
   // Transform form data based on slug/subcategory
-  transformFormData(formData, slug, subcategoryId, urlId, ) {
+  transformFormData(formData, slug, subcategoryId, urlId) {
     // Base payload structure
     const basePayload = {
       form_type: "property",
@@ -100,7 +102,7 @@ class PropertyFormService {
       status: "available",
       // Include media_to_delete if it exists
       ...(formData.media_to_delete && {
-        media_to_delete: formData.media_to_delete,
+        media_to_delete: formData.media_to_delete || "",
       }),
     };
 
@@ -169,69 +171,64 @@ class PropertyFormService {
 
       // Transform form data based on slug
       const payload = this.transformFormData(
-        {
-          ...formData,
-          action_id: formData.action_id, // Include action_id from formData
-        },
+        formData,
         slug,
         subcategoryId,
         urlId
       );
-
       // Create FormData for multipart upload
       const formDataToSend = new FormData();
 
-      // Add all form fields to FormData
-      Object.keys(payload).forEach((key) => {
-        if (
-          payload[key] !== null &&
-          payload[key] !== undefined &&
-          payload[key] !== ""
-        ) {
-          formDataToSend.append(key, payload[key]);
+      // Add all regular form fields with proper field mapping
+      Object.entries(payload).forEach(([key, value]) => {
+        if (value !== null && value !== undefined && value !== "") {
+          // Special handling for media_to_delete
+          if (key === "media_to_delete" && value) {
+            const cleanIds = value
+              .split(",")
+              .map((id) => id.trim())
+              .filter((id) => id)
+              .join(",");
+            formDataToSend.append(key, cleanIds);
+          } else {
+            // Use the mapped field name if available
+            const backendField =
+              Object.keys(this.fieldMapping).find(
+                (k) => this.fieldMapping[k] === key
+              ) || key;
+            formDataToSend.append(backendField, value);
+          }
         }
       });
 
-      // Add all regular form fields
-    Object.entries(formData).forEach(([key, value]) => {
-      if (value !== null && value !== undefined && value !== '') {
-        // Special handling for media_to_delete
-        if (key === 'media_to_delete' && value) {
-          // Ensure it's a clean comma-separated string
-          const cleanIds = value.split(',')
-            .map(id => id.trim())
-            .filter(id => id)
-            .join(',');
-          formDataToSend.append(key, cleanIds);
-        } else {
-          formDataToSend.append(key, value);
-        }
-      }
-    });
+      // Handle media files with proper field names
+      ["images", "videos"].forEach((type) => {
+        formData[type]?.forEach((file, index) => {
+          if (file instanceof File) {
+            // New file upload - use plural field name
+            formDataToSend.append(`${type}[${index}]`, file);
+          } else if (file.media_image_id) {
+            // Existing image - use singular field name as per backend expectation
+            formDataToSend.append(
+              `existing_${type.slice(0, -1)}[${index}]`,
+              file.media_image_id
+            );
+          } else if (file.media_video_id) {
+            // Existing video - use singular field name
+            formDataToSend.append(
+              `existing_${type.slice(0, -1)}[${index}]`,
+              file.media_video_id
+            );
+          }
+        });
+      });
 
-    // Handle images
-    formData.images?.forEach((image, index) => {
-      if (image instanceof File) {
-        formDataToSend.append(`images[${index}]`, image);
-      } else if (image.media_image_id) {
-        formDataToSend.append(`existing_images[${index}]`, image.media_image_id);
+      // Debug the payload
+      console.log("Final FormData payload:");
+      for (let [key, value] of formDataToSend.entries()) {
+        console.log(key, value);
       }
-    });
 
-    // Handle videos
-    formData.videos?.forEach((video, index) => {
-      if (video instanceof File) {
-        formDataToSend.append(`videos[${index}]`, video);
-      } else if (video.media_video_id) {
-        formDataToSend.append(`existing_videos[${index}]`, video.media_video_id);
-      }
-    });
-
-    // Debug the payload
-    console.log('Final media_to_delete:', formData.media_to_delete);
-    for (let [key, value] of formDataToSend.entries()) {
-      console.log(key, value);
-    }
       // Determine the API endpoint based on mode
       const endpoint = isEditMode ? `/upload/update` : "/upload-form";
 

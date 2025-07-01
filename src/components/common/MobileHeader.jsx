@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link ,useNavigate} from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "../../assets/images/common/logo.png";
@@ -17,6 +17,9 @@ import SignupFormModel from "./SignupFormModel";
 import ForgotPassword from "./ForgotPassword";
 import OTPVerificationModal from "./OTPVerificationModal";
 import PasswordResetModel from "./PasswordResetModel";
+import { Loader } from "@googlemaps/js-api-loader";
+import { Autocomplete, LoadScript } from "@react-google-maps/api";
+import { useLoadScript } from "@react-google-maps/api";
 const MobileHeader = ({ isFixed }) => {
    const navigate = useNavigate();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -29,7 +32,15 @@ const MobileHeader = ({ isFixed }) => {
   );
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [activeCategory, setActiveCategory] = useState(null);
+  const mobileLocationRef = useRef(null);
+  const mobileAutocompleteRef = useRef(null); 
+  const [locationLoading, setLocationLoading] = useState(false);
 
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+    libraries: ["places"],
+  });
+  
   const categories = {
     Property: {
       icon: "",
@@ -75,14 +86,81 @@ const MobileHeader = ({ isFixed }) => {
       ],
     },
   };
-
   const popularLocations = ["Kerala", "Tamil Nadu", "Punjab", "Maharashtra"];
+  const fetchAndSetCurrentLocation = async () => {
+    if (!window.google) return;
+    setLocationLoading(true);
+    try {
+      const position = await new Promise((resolve, reject) =>
+        navigator.geolocation.getCurrentPosition(resolve, reject)
+      );
+      const { latitude, longitude } = position.coords;
+
+      const geocoder = new window.google.maps.Geocoder();
+      geocoder.geocode(
+        { location: { lat: latitude, lng: longitude } },
+        (results, status) => {
+          if (status === "OK" && results[0]) {
+            const components = results[0].address_components;
+            const getComponent = (type) =>
+              components.find((c) => c.types.includes(type))?.long_name || "";
+
+            const city =
+              getComponent("locality") ||
+              getComponent("administrative_area_level_2");
+            const state = getComponent("administrative_area_level_1");
+            const formatted =
+              city && state
+                ? results[0].formatted_address
+                : `${city}, ${state}`;
+
+            setSelectedLocation(formatted);
+            setLocationQuery(formatted);
+            localStorage.setItem("user_location", formatted);
+            setIsLocationOpen(false);
+          }
+        }
+      );
+    } catch (err) {
+      console.error("Geolocation error:", err);
+    } finally {
+      setLocationLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isLoaded && window.innerWidth <= 768) {
+      const savedLocation = localStorage.getItem("user_location");
+      if (savedLocation) {
+        setSelectedLocation(savedLocation);
+      } else {
+        fetchAndSetCurrentLocation();
+      }
+    }
+  }, [isLoaded]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        isLocationOpen &&
+        mobileLocationRef.current &&
+        !mobileLocationRef.current.contains(event.target)
+      ) {
+        setIsLocationOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isLocationOpen]);
 
   const handleLocationSelect = (location) => {
     setSelectedLocation(location);
     setIsLocationOpen(false);
     setIsMenuOpen(false);
+    localStorage.setItem("user_location", location);
   };
+
+
 
   const handleCategoryClick = (category) => {
     if (activeCategory === category) {
@@ -116,6 +194,9 @@ const MobileHeader = ({ isFixed }) => {
   const handleNotificationClick = ()=>{
     navigate("/notification");
   }
+
+  if (loadError) return <div>Error loading maps</div>;
+  if (!isLoaded) return <div>Loading...</div>;
   return (
     <>
       {/* Main Header */}
@@ -159,7 +240,10 @@ const MobileHeader = ({ isFixed }) => {
                 },
               }}
             >
-              <NotificationsIcon style={{ color: "black" }} onClick={handleNotificationClick} />
+              <NotificationsIcon
+                style={{ color: "black" }}
+                onClick={handleNotificationClick}
+              />
             </Badge>
           </div>
         </div>
@@ -267,16 +351,40 @@ const MobileHeader = ({ isFixed }) => {
 
               {/* Search */}
               <div className="p-4">
-                <div className="relative">
-                  <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <input
-                    type="text"
-                    value={locationQuery}
-                    onChange={(e) => setLocationQuery(e.target.value)}
-                    placeholder="Search city, area or locality"
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
-                  />
-                </div>
+                {isLocationOpen && isLoaded && (
+                  <Autocomplete
+                    onLoad={(autocomplete) => {
+                      mobileAutocompleteRef.current = autocomplete;
+                    }}
+                    onPlaceChanged={() => {
+                      const place = mobileAutocompleteRef.current.getPlace();
+                      if (!place?.address_components) return;
+                      const components = place.address_components;
+                      const getComponent = (type) =>
+                        components.find((c) => c.types.includes(type))
+                          ?.long_name || "";
+                      const city =
+                        getComponent("locality") ||
+                        getComponent("administrative_area_level_2");
+                      const state = getComponent("administrative_area_level_1");
+                      const address = place.formatted_address;
+                      const location =
+                        city && state ?address : `${city}, ${state}`  ;
+                      setSelectedLocation(location);
+                      setLocationQuery(location);
+                      localStorage.setItem("user_location", location);
+                      setIsLocationOpen(false);
+                    }}
+                  >
+                    <input
+                      type="text"
+                      value={locationQuery}
+                      onChange={(e) => setLocationQuery(e.target.value)}
+                      placeholder="Search city, area or locality"
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+                    />
+                  </Autocomplete>
+                )}
               </div>
 
               {/* Use Current Location */}

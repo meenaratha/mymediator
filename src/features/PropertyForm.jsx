@@ -40,17 +40,70 @@ import {
   updateMediaToDelete,
 } from "../redux/propertyFormSlice";
 
+import { useLoadScript } from "@react-google-maps/api";
+import { Autocomplete } from "@react-google-maps/api";
+const libraries = ["places"];
+
 const PropertyForm = () => {
   const dispatch = useDispatch();
   const { slug, id } = useParams(); // Get both slug and id from URL params
   const location = useLocation();
   const isEditMode = location.pathname.includes("edit");
+  
+  const [autocomplete, setAutocomplete] = useState(null);
 
   useEffect(() => {
     if (!isEditMode) {
       dispatch(clearAutoPopulateData()); // Clear form data when not in edit mode
     }
   }, [isEditMode]);
+
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: "AIzaSyB-T2GimiJHK0Ndb9RV02CUgIoR4dMU7q0",
+    libraries,
+  });
+
+
+  const onLoad = (autocomplete) => {
+    setAutocomplete(autocomplete);
+    autocomplete.setFields([
+      "address_components",
+      "geometry",
+      "formatted_address",
+    ]);
+  };
+
+  const onPlaceChanged = () => {
+    if (autocomplete !== null) {
+      const place = autocomplete.getPlace();
+      if (!place.geometry) {
+        console.log("No geometry available for this place");
+        return;
+      }
+
+      // Update address and coordinates in Redux
+      dispatch(
+        updateFormField({
+          field: "address",
+          value: place.formatted_address,
+        })
+      );
+      dispatch(
+        updateFormField({
+          field: "latitude",
+          value: place.geometry.location.lat(),
+        })
+      );
+      dispatch(
+        updateFormField({
+          field: "longitude",
+          value: place.geometry.location.lng(),
+        })
+      );
+    }
+  };
+
+
 
   const { formData, errors, touched, isLoading, apiError, autoPopulateData } =
     useSelector((state) => state.propertyform);
@@ -784,15 +837,18 @@ const PropertyForm = () => {
         ...deletedMediaIds.videos,
       ].join(",");
 
+      // Prepare the media_to_delete string from deletedMediaIds state
+      const mediaToDeleteString = deletedMediaIds.images.join(",");
+
       // Prepare submission data with URL params
       const submissionData = {
         ...formData,
+        media_to_delete: allDeletedMedia, // Formatted string
         action_id: isEditMode ? formData.action_id : undefined,
         urlId: getSubcategoryId(), // ID from URL params
-        subcategoryId: id, // Subcategory ID based on slug
+        subcategory_id: id, // Subcategory ID based on slug
         slug: slug, // Current slug
-        // Add deleted media IDs only in edit mode
-        ...(isEditMode && { media_to_delete: allDeletedMedia }),
+        // form_type: "property",
       };
 
       console.log("Submitting form data:", submissionData);
@@ -1020,11 +1076,6 @@ const PropertyForm = () => {
     }
   };
 
-  // Add a new state to track deleted media IDs
-  const [deletedMediaIds, setDeletedMediaIds] = useState({
-    images: [],
-    videos: [],
-  });
   // Remove a specific file
   // const handleRemoveFile = async (type, index) => {
   //   dispatch(removeFile({ type, index }));
@@ -1056,60 +1107,79 @@ const PropertyForm = () => {
   //   }
   // };
 
-  // Modify the handleRemoveFile function to track deletions
-  // In PropertyForm component
+  // In your PropertyForm component
 
-  // Helper function to update media_to_delete
-  const updateDeletedMedia = (id) => {
-    const currentIds = formData.media_to_delete
-      ? formData.media_to_delete.split(",")
-      : [];
-
-    if (!currentIds.includes(id.toString())) {
-      const newIds = [...currentIds, id.toString()].join(",");
-      dispatch(
-        updateFormField({
-          field: "media_to_delete",
-          value: newIds,
-        })
-      );
-    }
-  };
+  // Track deleted media IDs in state
+  const [deletedMediaIds, setDeletedMediaIds] = useState({
+    images: [],
+    videos: [],
+  });
 
   const handleRemoveFile = (type, index) => {
     const file = formData[type][index];
 
-    // For existing files, ensure we track the deletion
-    if (file?.media_image_id) {
-      updateDeletedMedia(file.media_image_id);
+    // Track deleted IDs
+    if (file?.media_image_id || file?.media_video_id) {
+      const id = file.media_image_id || file.media_video_id;
+      const newDeletedIds = [...deletedMediaIds[type], id];
+
+      setDeletedMediaIds((prev) => ({
+        ...prev,
+        [type]: newDeletedIds,
+      }));
+
+      // Update formData.media_to_delete immediately
+      const allDeleted = [
+        ...newDeletedIds,
+        ...(type === "images"
+          ? deletedMediaIds.videos
+          : deletedMediaIds.images),
+      ].join(",");
+
+      dispatch(
+        updateFormField({
+          field: "media_to_delete",
+          value: allDeleted,
+        })
+      );
     }
 
+    // Remove from UI
     dispatch(removeFile({ type, index }));
   };
 
   const handleClearFiles = (type) => {
-    // Track all existing media IDs being cleared
     const files = formData[type] || [];
     const idsToDelete = files
-      .filter((file) => file?.media_image_id)
-      .map((file) => file.media_image_id.toString());
+      .filter((file) => file?.media_image_id || file?.media_video_id)
+      .map((file) => file.media_image_id || file.media_video_id);
 
     if (idsToDelete.length > 0) {
-      const currentIds = formData.media_to_delete
-        ? formData.media_to_delete.split(",")
-        : [];
+      const newDeletedIds = [...deletedMediaIds[type], ...idsToDelete];
+      setDeletedMediaIds((prev) => ({
+        ...prev,
+        [type]: newDeletedIds,
+      }));
 
-      const allIds = [...new Set([...currentIds, ...idsToDelete])].join(",");
+      // Update formData.media_to_delete
+      const allDeleted = [
+        ...newDeletedIds,
+        ...(type === "images"
+          ? deletedMediaIds.videos
+          : deletedMediaIds.images),
+      ].join(",");
+
       dispatch(
         updateFormField({
           field: "media_to_delete",
-          value: allIds,
+          value: allDeleted,
         })
       );
     }
 
     dispatch(clearFiles(type));
   };
+
   // Helper function to render dropdown options
   const renderDropdownOptions = (options) => {
     if (!Array.isArray(options)) return [];
@@ -1149,11 +1219,33 @@ const PropertyForm = () => {
       <div className="bg-gray-50 p-6 rounded-3xl w-full max-w-6xl shadow-[0_0_10px_rgba(176,_176,_176,_0.25)] mx-auto border border-[#b9b9b9] bg-[#f6f6f6]">
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          <span className="ml-4 text-gray-600">Loading form options...</span>
+          <span className="ml-4 text-gray-600">Loading form ...</span>
         </div>
       </div>
     );
   }
+  
+  if (loadError) {
+    return (
+      <div className="bg-gray-50 p-6 rounded-3xl w-full max-w-6xl shadow-[0_0_10px_rgba(176,_176,_176,_0.25)] mx-auto border border-[#b9b9b9] bg-[#f6f6f6]">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <span className="ml-4 text-gray-600">Error map loading</span>
+        </div>
+      </div>
+    );
+  } 
+  if (!isLoaded) {
+    return (
+      <div className="bg-gray-50 p-6 rounded-3xl w-full max-w-6xl shadow-[0_0_10px_rgba(176,_176,_176,_0.25)] mx-auto border border-[#b9b9b9] bg-[#f6f6f6]">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <span className="ml-4 text-gray-600"> map loading...</span>
+        </div>
+      </div>
+    );
+  }
+
 
   return (
     <div className="bg-gray-50 p-6 rounded-3xl w-full max-w-6xl shadow-[0_0_10px_rgba(176,_176,_176,_0.25)] mx-auto border border-[#b9b9b9] bg-[#f6f6f6]">
@@ -1336,7 +1428,7 @@ const PropertyForm = () => {
             <label className="block text-gray-800 font-medium mb-2 px-4">
               Address
             </label>
-            <DynamicInputs
+            {/* <DynamicInputs
               type="text"
               name="address"
               id="address"
@@ -1349,7 +1441,24 @@ const PropertyForm = () => {
               error={errors.address}
               touched={touched.address}
               focusedField={focusedField}
-            />
+            /> */}
+
+            <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
+              <DynamicInputs
+                type="text"
+                name="address"
+                id="address"
+                onChange={handleChange}
+                value={formData.address || ""}
+                className="w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] 
+          bg-white focus:outline-none"
+                placeholder="Enter address"
+                onBlur={handleBlur}
+                error={errors.address}
+                touched={touched.address}
+                focusedField={focusedField}
+              />
+            </Autocomplete>
           </div>
         </div>
 
