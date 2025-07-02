@@ -1305,11 +1305,11 @@ const PropertyForm = () => {
       )}
 
       {/* Show success message if data was auto-populated */}
-      {autoPopulateData && (
+      {/* {autoPopulateData && (
         <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
           <strong>Success:</strong> Form data has been auto-populated!
         </div>
-      )}
+      )} */}
 
       {/* Show current configuration info */}
       {/* <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded mb-6">

@@ -36,7 +36,7 @@ const UserRoutes = () => {
       <Route element={<MasterLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/property" element={<PropertyFilterPage />} />
-        <Route path="/property-details" element={<ProductDetailPage />} />
+        <Route path="/properties/:slug" element={<ProductDetailPage />} />
         <Route path="/electronics" element={<ElectronicsPage />} />
         <Route path="/car" element={<CarsPage />} />
         <Route path="/bike" element={<BikesPage />} />
@@ -94,6 +94,15 @@ const UserRoutes = () => {
           element={
             <ProtectedRoute requireAuth={true}>
               <ElectronicsFormPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/car/:slug/:id"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <UploadCarFormPage />
             </ProtectedRoute>
           }
         />

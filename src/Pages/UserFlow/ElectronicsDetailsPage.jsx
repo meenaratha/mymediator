@@ -10,8 +10,8 @@ const LaptopDetailPage = () => {
   
   return (
     <>
-      <HeroSection title="Laptop Details" />
-      
+      <HeroSection tittle="Laptop Details" />
+
       <div className="max-w-screen-xl max-w-[1200px] mx-auto px-4">
         <LaptopDescription />
         <RecommendedLaptops />

@@ -11,6 +11,13 @@ const DROPDOWN_ENDPOINTS = {
   districts: "/get-districts", // Will use query params
   cities: "/get-cities", // Will use query params
   bhkTypes: "/get-bhk",
+
+  // car
+  carBrand: "/car/brands",
+  carModel: "/car/models/by-brand",
+  fuelTypes: "/car/fuel-types",
+  transmissions: "/car/owners",
+
 };
 
 class DropdownService {
@@ -113,14 +120,40 @@ class DropdownService {
     return this.fetchDropdownData(
       DROPDOWN_ENDPOINTS.cities,
       { district_id: districtId },
-      'POST' // Specify POST method
+      "POST" // Specify POST method
     );
   }
-
 
   async getBHKTypes() {
     return this.fetchDropdownData(DROPDOWN_ENDPOINTS.bhkTypes);
   }
+
+  async getcarBrand() {
+    return this.fetchDropdownData(DROPDOWN_ENDPOINTS.carBrand);
+  }
+
+  async getcarModel(carBrandId) {
+    if (!carBrandId) {
+      throw new Error("car brand is required to fetch cities");
+    }
+    return this.fetchDropdownData(
+      DROPDOWN_ENDPOINTS.carModel,
+      { brand_id: carBrandId },
+      "POST" // Specify POST method
+    );
+  }
+
+  async getfuelTypes() {
+    return this.fetchDropdownData(DROPDOWN_ENDPOINTS.fuelTypes);
+}
+
+  
+  async gettransmissions() {
+ 
+    return this.fetchDropdownData(DROPDOWN_ENDPOINTS.transmissions);
+  }
+  
+
 
   // Improved preloading with progress tracking
   async preloadCommonDropdowns() {
@@ -135,6 +168,9 @@ class DropdownService {
       },
       { name: "states", method: this.getStates },
       { name: "bhkTypes", method: this.getBHKTypes },
+      { name: "carBrand", method: this.getcarBrand },
+      { name: "fuelTypes", method: this.getfuelTypes },
+      { name: "transmissions" , method:this.gettransmissions },
     ];
 
     const results = {};
@@ -172,7 +208,13 @@ class DropdownService {
         () => []
       ),
       bhkTypes: await this.getBHKTypes().catch(() => []),
+
+      // car
+      carBrand: await this.getcarBrand().catch(() => []),
+      fuelTypes: await this.getfuelTypes().catch(() => []),
+      transmissions: await this.gettransmissions().catch(()=>[]),
     };
+
 
     const typeSpecificDropdowns = {
       // Land plots specific
@@ -190,7 +232,6 @@ class DropdownService {
         ),
         bhkTypes: await this.getBHKTypes().catch(() => []),
       },
-      
     };
 
     return {
@@ -223,6 +264,11 @@ export const {
   getDistricts,
   getCities,
   getBHKTypes,
+  // car dropdowns
+  getcarBrand,
+  getcarModel,
+  getfuelTypes,
+  gettransmissions,
   preloadCommonDropdowns,
   getDropdownsForPropertyType,
 } = dropdownService;

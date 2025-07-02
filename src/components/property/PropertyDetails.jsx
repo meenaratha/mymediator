@@ -37,7 +37,7 @@ const PropertyDetails = ({ property }) => {
   // For touch support on mobile devices
   const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
   // Image arrays
-  const images = [
+  const dummyimages = [
     IMAGES.property1,
     IMAGES.property2,
     IMAGES.property3,
@@ -46,6 +46,13 @@ const PropertyDetails = ({ property }) => {
     IMAGES.property6,
     IMAGES.propertydetails,
   ];
+
+  const images = Array.isArray(property.image_url)
+    ? property.image_url
+    : property.image_url
+    ? [property.image_url]
+    : [];
+
 
 
   // Handle touch events for mobile zoom
@@ -118,12 +125,15 @@ const PropertyDetails = ({ property }) => {
 const [showEnquiryPopup , setShowEnquiryPopup ] = useState(false);
   return (
     <>
-{/* enquiry model */}
+      {/* enquiry model */}
 
-{showEnquiryPopup && (
-  <EnquiryForm onClose ={() =>{setShowEnquiryPopup(false)}}/>
-)}
-
+      {showEnquiryPopup && (
+        <EnquiryForm
+          onClose={() => {
+            setShowEnquiryPopup(false);
+          }}
+        />
+      )}
 
       <div className="">
         <div className="flex flex-col md:flex-row py-10">
@@ -147,8 +157,14 @@ const [showEnquiryPopup , setShowEnquiryPopup ] = useState(false);
                   {images.map((thumb, index) => (
                     <SwiperSlide
                       key={index}
+                      style={{
+                        height: "40px !important",
+                        maxHeight: "40px !important ",
+                      }}
                       className={`w-24 h-16 rounded overflow-hidden cursor-pointer  ${
-                        activeIndex === index ? "border-2 border-gray-200 rounded-[10px]" : "border-transparent"
+                        activeIndex === index
+                          ? "border-2 border-gray-200 rounded-[10px]"
+                          : "border-transparent"
                       }`}
                       onClick={() => {
                         if (mainSwiper) {
@@ -173,7 +189,12 @@ const [showEnquiryPopup , setShowEnquiryPopup ] = useState(false);
                   slidesPerView={1}
                   spaceBetween={20}
                   loop={true}
-                  thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
+                  thumbs={{
+                    swiper:
+                      thumbsSwiper && !thumbsSwiper.destroyed
+                        ? thumbsSwiper
+                        : null,
+                  }}
                   autoplay={{
                     delay: 3000,
                     disableOnInteraction: false,
@@ -203,10 +224,12 @@ const [showEnquiryPopup , setShowEnquiryPopup ] = useState(false);
                             onClick={() => setIsFavorite(!isFavorite)}
                           >
                             <FavoriteBorderIcon
-                              className={isFavorite ? "text-red-500" : "text-gray-600"}
+                              className={
+                                isFavorite ? "text-red-500" : "text-gray-600"
+                              }
                             />
                           </button>
-                          <button 
+                          <button
                             className="bg-white p-2 rounded-full"
                             onClick={() => handleZoomIn(image)}
                           >
@@ -238,7 +261,10 @@ const [showEnquiryPopup , setShowEnquiryPopup ] = useState(false);
                   <p className="text-sm text-gray-500">Owner</p>
                 </div>
                 <div className="ml-auto">
-                  <Link to="/seller-profile" className="text-blue-600 text-sm font-medium cursor-pointer">
+                  <Link
+                    to="/seller-profile"
+                    className="text-blue-600 text-sm font-medium cursor-pointer"
+                  >
                     See Profile
                   </Link>
                 </div>
@@ -252,31 +278,29 @@ const [showEnquiryPopup , setShowEnquiryPopup ] = useState(false);
                     sx={{ color: "red" }}
                   />
                   <div className="ml-2">
-                    <p className="text-sm text-gray-500">T.Nagar</p>
-                    <p className="font-semibold text-xl">Chennai</p>
+                    <p className="text-sm text-gray-500"> {property.city}</p>
+                    <p className="font-semibold text-xl">{property.district}</p>
                   </div>
                   <div className="ml-auto">
                     <div className="w-[150px] h-[150px] rounded-lg overflow-hidden">
                       <MapContainer
-                        center={[
-                          property.location.latitude,
-                          property.location.longitude,
-                        ]}
+                        // center={[
+                        //   property.location.latitude,
+                        //   property.location.longitude,
+                        // ]}
                         zoom={13}
                         scrollWheelZoom={false}
                         className="w-[150px] h-[150px] rounded-[10px]"
                       >
-                        <TileLayer
-                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                        />
+                        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                         <Marker
-                          position={[
-                            property.location.latitude,
-                            property.location.longitude,
-                          ]}
+                        // position={[
+                        //   property.location.latitude,
+                        //   property.location.longitude,
+                        // ]}
                         >
                           <Popup>
-                            {property.type} <br /> {property.facing}
+                            {/* {property.type} <br /> {property.facing} */}
                           </Popup>
                         </Marker>
                       </MapContainer>
@@ -294,7 +318,7 @@ const [showEnquiryPopup , setShowEnquiryPopup ] = useState(false);
             <div className="w-full md:w-1/2">
               <div className="flex items-center py-2">
                 <h2 className="md:text-2xl text-[20px] font-bold">
-                  DIVIYA HOUSE
+                  {property.property_name}
                 </h2>
                 <div className="w-[fit-content] ml-4 bg-blue-100 text-blue-800 px-2 py-1 rounded-md flex items-center text-xs">
                   <VerifiedIcon fontSize="small" className="mr-1" />
@@ -302,33 +326,43 @@ const [showEnquiryPopup , setShowEnquiryPopup ] = useState(false);
                 </div>
               </div>
 
-              <div className="flex items-center mt-2 mb-2">
-                <p className="mr-4">Individual( 3 BHK )</p>
-                <p className="mr-4">2021</p>
-                <div className="flex items-center">
-                  <StarIcon className="text-orange-500" />
-                  <span className="ml-1">4.5</span>
+              {property.bhk !== "" && (
+                <div className="flex items-center mt-2 mb-2">
+                  <p className="mr-4">( {property.bhk || "N/A"} )</p>
+                  <p className="mr-4">2021</p>
+                  <div className="flex items-center">
+                    <StarIcon className="text-orange-500" />
+                    <span className="ml-1">4.5</span>
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className="flex items-center text-red-500 mt-4 gap-[10px]">
                 <LocationOnIcon fontSize="small" />
-                <p className="text-sm text-black">West Mambalam, Chennai</p>
+                <p className="text-sm text-black">
+                  {property.city}, {property.district}
+                </p>
               </div>
             </div>
             <div className="w-full md:w-1/2 flex flex-col md:items-center md:mt-[10px]">
               <div className="mt-1 md:mt-0">
                 <h3 className="md:text-2xl text-[20px] font-bold md:text-center">
-                  ₹ 9,90,000
+                  ₹ {property.amount}
                 </h3>
                 <div className="flex mt-4 space-x-4 justify-center">
-                  <button onClick={()=>setShowEnquiryPopup(true)} className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] cursor-pointer flex items-center justify-center flex-1">
-                    <QuestionAnswerIcon fontSize="small" className="mr-2"  />
+                  <button
+                    onClick={() => setShowEnquiryPopup(true)}
+                    className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] cursor-pointer flex items-center justify-center flex-1"
+                  >
+                    <QuestionAnswerIcon fontSize="small" className="mr-2" />
                     Enquiry
                   </button>
-                  <button className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] 
+                  <button
+                    className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] 
                   cursor-pointer flex items-center justify-center flex-1"
-                  onClick={() => window.location.href = 'tel:+1234567890'}
+                    onClick={() =>
+                      (window.location.href = `tel:${property.mobile_number}`)
+                    }
                   >
                     <CallIcon fontSize="small" className="mr-2" />
                     Call
@@ -344,38 +378,45 @@ const [showEnquiryPopup , setShowEnquiryPopup ] = useState(false);
       {showZoom && (
         <div className="fixed inset-0 bg-black bg-opacity-75 z-999 flex items-center justify-center p-4">
           <div className="relative w-full max-w-4xl h-[80vh] bg-white rounded-lg overflow-hidden">
-            <button 
+            <button
               onClick={handleZoomOut}
               className="absolute top-4 right-4 bg-white rounded-full  z-10 w-[30px] h-[30px] flex items-center justify-center cursor-pointer"
             >
               <CloseIcon className="text-gray-600" />
             </button>
-            <div 
+            <div
               className="w-full h-full overflow-hidden"
               onMouseMove={handleZoomMouseMove}
             >
               <img
                 src={zoomedImageSrc}
                 alt="Zoomed property view"
-                className={`w-full h-full ${isMobile ? "object-contain" : "object-cover"}`}
+                className={`w-full h-full ${
+                  isMobile ? "object-contain" : "object-cover"
+                }`}
                 style={{
                   transform: `scale(${zoomLevel})`,
                   transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
-                  transition: 'transform-origin 0.1s ease-out'
+                  transition: "transform-origin 0.1s ease-out",
                 }}
               />
             </div>
-            
+
             {/* Thumbnail navigation in zoom view */}
-             {/* Thumbnail navigation in zoom view - responsive for mobile */}
-             <div className="absolute bottom-4 left-0 right-0 px-4">
+            {/* Thumbnail navigation in zoom view - responsive for mobile */}
+            <div className="absolute bottom-4 left-0 right-0 px-4">
               <div className="overflow-x-auto pb-2 max-w-full scrollbar-hide">
-                <div className="flex space-x-2 justify-center md:justify-center min-w-max mx-auto" style={{ scrollbarWidth: 'none' }}>
+                <div
+                  className="flex space-x-2 justify-center md:justify-center min-w-max mx-auto"
+                  style={{ scrollbarWidth: "none" }}
+                >
                   {images.map((img, idx) => (
-                    <div 
-                      key={idx} 
+                    <div
+                      key={idx}
                       className={`w-12 h-12 md:w-16 md:h-16 rounded-md overflow-hidden cursor-pointer border-2 flex-shrink-0 ${
-                        zoomedImageSrc === img ? "border-blue-500" : "border-gray-200"
+                        zoomedImageSrc === img
+                          ? "border-blue-500"
+                          : "border-gray-200"
                       }`}
                       onClick={() => {
                         setZoomedImageSrc(img);
@@ -385,10 +426,10 @@ const [showEnquiryPopup , setShowEnquiryPopup ] = useState(false);
                         }
                       }}
                     >
-                      <img 
-                        src={img} 
+                      <img
+                        src={img}
                         alt={`Thumbnail ${idx}`}
-                        className="w-full h-full object-cover" 
+                        className="w-full h-full object-cover"
                       />
                     </div>
                   ))}

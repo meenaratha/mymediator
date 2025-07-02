@@ -14,7 +14,7 @@ const HeroSection = ({ tittle }) => {
       {/* Content */}
       <div className="relative z-10 text-center text-white">
         {/* Heading */}
-        <h1 className="text-[20px] font-semibold mb-4">{tittle}</h1>
+        <h1 className="text-[20px] font-semibold mb-4 text-white">{tittle}</h1>
       </div>
     </div>
   );

@@ -1,49 +1,76 @@
-import * as Yup from 'yup';
+import * as Yup from "yup";
 
-export const uploadcarFormSchema = Yup.object().shape({
-  brandName: Yup.string().required('Brand name is required'),
-  model: Yup.string().required('Model is required'),
-  variant: Yup.string().required('Variant is required'),
+export const uploadCarFormSchema = Yup.object().shape({
+  title: Yup.string().required("Title is required"),
+
+  subcategory_id: Yup.string().required("Subcategory is required"),
+
   year: Yup.string()
-  .required(' Year is required')
-  .matches(/^[0-9]+(\.[0-9]{1,2})?$/, 'Amount must be a valid year'),
-  kmdriven: Yup.string().required(' Kmdriven is required'),
-  noofowner: Yup.string().required('No of owner is required'),
- amount: Yup.string()
-    .required('Amount is required')
-    .matches(/^[0-9]+(\.[0-9]{1,2})?$/, 'Amount must be a valid number'),
-  addtittle: Yup.string().required('Addtittle is required'),
-  transmissionautomatic: Yup.string().required('Transmission is required'),
-  transmissionmanual: Yup.string().required(' Transmission is required'),
-  address: Yup.string().required('Address is required'),
-  state: Yup.string().required('State is required'),
-  district: Yup.string().required('District is required'),
-  fuel: Yup.string().required('Fuel is required'),
-  description: Yup.string().required('Description is required'),
-  
+    .required("Year is required")
+    .matches(/^\d{4}$/, "Year must be a 4-digit number"),
+
+  kilometers: Yup.string().required("Kilometers driven is required"),
+
+  brand_id: Yup.string().required("Brand is required"),
+
+  model_id: Yup.string().required("Model is required"),
+
+  fuel_type_id: Yup.string().required("Fuel type is required"),
+
+  transmission_id: Yup.string().required("Transmission type is required"),
+
+  number_of_owner_id: Yup.string().required("Number of owners is required"),
+
+  price: Yup.string()
+    .required("Price is required")
+    .matches(/^[0-9]+(\.[0-9]{1,2})?$/, "Price must be a valid number"),
+
+  description: Yup.string().required("Short description is required"),
+
+
+  status: Yup.string().required("Status is required"),
+
+  state_id: Yup.string().required("State is required"),
+
+  district_id: Yup.string().required("District is required"),
+
+  city_id: Yup.string().required("City is required"),
+
+  address: Yup.string().required("Address is required"),
+
+  latitude: Yup.string().required("Latitude is required"),
+
+  longitude: Yup.string().required("Longitude is required"),
+
+  mobile_number: Yup.string()
+    .required("Mobile number is required")
+    .matches(/^[6-9]\d{9}$/, "Enter a valid 10-digit mobile number"),
+
   images: Yup.array()
-    .required('At least one image is required')
-    .min(1, 'Please upload at least one image')
-    .test('fileSize', 'Each image file should be less than 5MB', (value) => {
+    .test("fileSize", "Each image must be less than 5MB", (value) => {
       if (!value || value.length === 0) return true;
-      return value.every(file => file.size <= 5 * 1024 * 1024);
+      return value.every((file) => file.size <= 5 * 1024 * 1024);
     })
-    .test('fileType', 'Only image files are allowed', (value) => {
-      if (!value || value.length === 0) return true;
-      return value.every(file => 
-        ['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type)
-      );
-    }),
+    .test(
+      "fileType",
+      "Only JPG, PNG, GIF, or WEBP images are allowed",
+      (value) => {
+        if (!value || value.length === 0) return true;
+        return value.every((file) =>
+          ["image/jpeg", "image/png", "image/gif", "image/webp"].includes(
+            file.type
+          )
+        );
+      }
+    ),
+
   videos: Yup.array()
-    .test('fileSize', 'Each video file should be less than 50MB', (value) => {
+    .test("fileSize", "Each video must be less than 50MB", (value) => {
       if (!value || value.length === 0) return true;
-      return value.every(file => file.size <= 50 * 1024 * 1024);
+      return value.every((file) => file.size <= 50 * 1024 * 1024);
     })
-    .test('fileType', 'Only video files are allowed', (value) => {
+    .test("fileType", "Only video files are allowed", (value) => {
       if (!value || value.length === 0) return true;
-      return value.every(file => 
-        file.type.startsWith('video/')
-      );
+      return value.every((file) => file.type.startsWith("video/"));
     }),
-  longdescription: Yup.string().required('Description is required'),
 });

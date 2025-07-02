@@ -18,11 +18,12 @@ import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
 import ReportIcon from "@mui/icons-material/Report";
-import axios from "axios";
+import { api } from "@/api/axios"; // Adjust if your axios instance path is different
 import "leaflet/dist/leaflet.css";
 import PropertyDetails from "./PropertyDetails";
 
 const PropertyDescription = () => {
+  const { slug } = useParams();
   const [property, setProperty] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -30,23 +31,23 @@ const PropertyDescription = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(
-          "https://raw.githubusercontent.com/Meenadeveloper/json-datas/refs/heads/main/data.json"
-        );
-        const data = response.data;
-        setProperty(data.property);
+        const response = await api.get(`/properties/${slug}`);
+        setProperty(response.data.data); // assuming your API returns { success, message, data }
         setIsLoading(false);
       } catch (error) {
         setError(error);
         setIsLoading(false);
       }
     };
-    fetchData();
-  }, []);
 
+    fetchData();
+  }, [slug]);
+  
   if (isLoading) {
     return <div>Loading...</div>;
   }
+
+  if (!property) return <div>Property not found.</div>;
 
   if (error) {
     return <div>Error: {error.message}</div>;
@@ -63,24 +64,30 @@ const PropertyDescription = () => {
             <div className="bg-white p-6 shadow-lg rounded-lg h-full border border-gray-200 ">
               {/* Upper section with icons and details */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 border-b border-[#E1E1E1] pb-4">
-                <div className="flex items-center space-x-2">
-                  <HomeOutlinedIcon className="text-gray-500" />
-                  <span className="text-sm font-medium text-gray-600">
-                    990 Sq. Ft
-                  </span>
-                </div>
+                {property.super_builtup_area !== "" && (
+                  <div className="flex items-center space-x-2">
+                    <HomeOutlinedIcon className="text-gray-500" />
+                    <span className="text-sm font-medium text-gray-600">
+                      {property.super_builtup_area} Sq. Ft
+                    </span>
+                  </div>
+                )}
+
                 <div className="flex items-center space-x-2">
                   <CompassCalibrationOutlinedIcon className="text-gray-500" />
                   <span className="text-sm font-medium text-gray-600">
-                    North Facing
+                    {property.building_direction}
                   </span>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <BedOutlinedIcon className="text-gray-500" />
-                  <span className="text-sm font-medium text-gray-600">
-                    3 BHK
-                  </span>
-                </div>
+
+                {property.bhk !== "" && (
+                  <div className="flex items-center space-x-2">
+                    <BedOutlinedIcon className="text-gray-500" />
+                    <span className="text-sm font-medium text-gray-600">
+                      {property.bhk}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Middle section with owner, location, and date */}
@@ -94,7 +101,7 @@ const PropertyDescription = () => {
                 <div className="flex items-center space-x-2">
                   <LocationOnOutlinedIcon className="text-gray-500" />
                   <span className="text-sm font-medium text-gray-600">
-                    T. Nagar, Chennai
+                    {property.city}, {property.district}
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -108,12 +115,7 @@ const PropertyDescription = () => {
               {/* Description Section */}
               <div className="pt-4">
                 <h3 className="text-lg font-bold mb-2">Description</h3>
-                <p className="text-gray-700 text-sm">
-                  A property description is the written part of the real estate
-                  listing that describes the details and noteworthy features of
-                  the home. As potential buyers read real estate listings, a
-                  well-written description will help pique their interest.
-                </p>
+                <p className="text-gray-700 text-sm">{property.description}</p>
               </div>
             </div>
           </div>
@@ -134,7 +136,10 @@ const PropertyDescription = () => {
                     <p className="text-sm text-gray-500">Owner</p>
                   </div>
                 </div>
-                <Link to="/seller-profile" className="text-blue-600 font-semibold text-sm">
+                <Link
+                  to="/seller-profile"
+                  className="text-blue-600 font-semibold text-sm"
+                >
                   See Profile
                 </Link>
               </div>
@@ -143,10 +148,10 @@ const PropertyDescription = () => {
               <div className="my-4">
                 <div className="flex flex-col justify-center items-center max-w-sm mx-auto gap-[10px]">
                   <MapContainer
-                    center={[
-                      property.location.latitude,
-                      property.location.longitude,
-                    ]}
+                    // center={[
+                    //   property.location.latitude,
+                    //   property.location.longitude,
+                    // ]}
                     zoom={false}
                     scrollWheelZoom={false}
                     className="w-[150px] h-[150px] rounded-[10px] "
@@ -156,13 +161,13 @@ const PropertyDescription = () => {
                       // attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> meena'
                     />
                     <Marker
-                      position={[
-                        property.location.latitude,
-                        property.location.longitude,
-                      ]}
+                    // position={[
+                    //   property.location.latitude,
+                    //   property.location.longitude,
+                    // ]}
                     >
                       <Popup>
-                        {property.type} <br /> {property.facing}
+                        {property.subcategory} <br /> {property.city}
                       </Popup>
                     </Marker>
                   </MapContainer>
@@ -170,7 +175,7 @@ const PropertyDescription = () => {
                   <div className="flex items-center space-x-2">
                     <CompassCalibrationOutlinedIcon className="text-gray-500" />
                     <span className="text-sm font-medium text-gray-600">
-                      T.nagar , chennai
+                      {property.city}, {property.district}
                     </span>
                   </div>
                 </div>
@@ -179,7 +184,7 @@ const PropertyDescription = () => {
               {/* Ad ID and Report Section */}
               <div className="flex justify-between items-center text-gray-600 pt-4 border-t">
                 <div className="text-sm">
-                  <span className="font-semibold">ADS ID :</span> 148562548
+                  <span className="font-semibold">ADS ID :</span> {property.id}
                 </div>
                 <div className="text-blue-600" aria-label="report">
                   <ReportIcon />
@@ -193,54 +198,62 @@ const PropertyDescription = () => {
 
       <div className="p-4 rounded-xl shadow-lg bg-white w-full ">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm sm:text-base">
-          <div className="grid grid-cols-2 ">
+          {/* <div className="grid grid-cols-2 ">
             <div className="flex gap-[15px] justify-between">
               <span>Type </span>
               <span>:</span>
             </div>
 
             <span className="px-[10px]">Individual House</span>
-          </div>
+          </div> */}
           <div className="grid grid-cols-2 sm:grid-cols-2">
             <div className="flex gap-[15px] justify-between">
               <span>Facing </span>
               <span>:</span>
             </div>
 
-            <span className="px-[10px]">North facing</span>
+            <span className="px-[10px]">{property.building_direction}</span>
           </div>
-          <div className="grid grid-cols-2 ">
-            <div className="flex gap-[15px] justify-between">
-              <span>Total Floors </span>
-              <span>:</span>
-            </div>
+          {property.total_floors !== "" && (
+            <div className="grid grid-cols-2 ">
+              <div className="flex gap-[15px] justify-between">
+                <span>Total Floors </span>
+                <span>:</span>
+              </div>
 
-            <span className="px-[10px]">03</span>
-          </div>
+              <span className="px-[10px]">{property.total_floors}</span>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 ">
             <div className="flex gap-[15px] justify-between">
               <span>Bedrooms </span>
               <span>:</span>
             </div>
 
-            <span className="px-[10px]">2</span>
+            <span className="px-[10px]">{property.bedrooms}</span>
           </div>
-          <div className="grid grid-cols-2 ">
-            <div className="flex gap-[15px] justify-between">
-              <span>Bathrooms </span>
-              <span>:</span>
-            </div>
+          {property.bathroom !== "" && (
+            <div className="grid grid-cols-2 ">
+              <div className="flex gap-[15px] justify-between">
+                <span>Bathrooms </span>
+                <span>:</span>
+              </div>
 
-            <span className="px-[10px]">2</span>
-          </div>
-          <div className="grid grid-cols-2 ">
-            <div className="flex gap-[15px] justify-between">
-              <span>Car Parking </span>
-              <span>:</span>
+              <span className="px-[10px]">{property.bathroom}</span>
             </div>
+          )}
 
-            <span className="px-[10px]">Yes</span>
-          </div>
+          {property.car_parking !== "" && (
+            <div className="grid grid-cols-2 ">
+              <div className="flex gap-[15px] justify-between">
+                <span>Car Parking </span>
+                <span>:</span>
+              </div>
+
+              <span className="px-[10px]">{property.car_parking}</span>
+            </div>
+          )}
           <div className="grid grid-cols-2 ">
             <div className="flex gap-[15px] justify-between">
               <span>Construction Status </span>
@@ -250,23 +263,25 @@ const PropertyDescription = () => {
             <span className="px-[10px]">Individual House</span>
           </div>
 
-          <div className="grid grid-cols-2 ">
-            <div className="flex gap-[15px] justify-between">
-              <span>Maintainers Monthly Fees </span>
-              <span>:</span>
+          {property.car_parking !== "" && (
+            <div className="grid grid-cols-2 ">
+              <div className="flex gap-[15px] justify-between">
+                <span>Maintenance Type </span>
+                <span>:</span>
+              </div>
+
+              <span className="px-[10px]">{property.maintenance}</span>
             </div>
+          )}
 
-            <span className="px-[10px]">Rs : 1,500</span>
-          </div>
-
-          <div className="grid grid-cols-2 ">
+          {/* <div className="grid grid-cols-2 ">
             <div className="flex gap-[15px] justify-between">
               <span>Age of building</span>
               <span>:</span>
             </div>
 
             <span className="px-[10px]">Build on 2022</span>
-          </div>
+          </div> */}
         </div>
       </div>
     </>

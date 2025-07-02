@@ -179,6 +179,7 @@ const propertyFormSlice = createSlice({
     // },
 
     // Add this new reducer to manually update media_to_delete
+  
     updateMediaToDelete: (state, action) => {
       state.formData.media_to_delete = action.payload;
     },
@@ -195,10 +196,6 @@ const propertyFormSlice = createSlice({
         state.formData.media_to_delete = newIds;
       }
     },
-
-    // In your propertyFormSlice.js
-
-    // Add these reducers to your propertyFormSlice
 
     // Action to add specific media IDs to deletion list
     addToMediaDeleteList: (state, action) => {

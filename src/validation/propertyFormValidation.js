@@ -16,7 +16,13 @@ const commonFields = {
     .matches(/^[0-9]+(\.[0-9]{1,2})?$/, "Amount must be a valid number"),
   listedBy: Yup.string().required("Listed by is required"),
   buildingDirection: Yup.string().required("Building direction is required"),
-  images: Yup.array().required("Amount is required"),
+  images: Yup.array().required("images is required"),
+  videos: Yup.array().of(
+    Yup.mixed().test("fileType", "Only video files are allowed", (file) => {
+      if (!file) return true; // ✅ Skip validation if no file (not required)
+      return file && file.type.startsWith("video/");
+    })
+  ),
   // images: Yup.array()
   //   .required("At least one image is required")
   //   .min(1, "Please upload at least one image")

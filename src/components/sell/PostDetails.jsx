@@ -85,8 +85,16 @@ const PropertyCard = ({
     setShowStatusDropdown(false);
   };
 
+
+  // const handleCardClick = () => {
+  //   navigate(`/properties/${property.action_slug}`);
+  // };
+
   return (
-    <div className="flex items-start p-2 bg-white rounded-lg shadow-sm border border-gray-100 w-full">
+    <div
+      // onClick={handleCardClick}
+      className="cursor-pointer flex items-start p-2 bg-white rounded-lg shadow-sm border border-gray-100 w-full"
+    >
       {/* Property Image */}
       <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
         <img
@@ -356,9 +364,9 @@ const PostDetails = () => {
 
   return (
     <div className="max-w-7xl mx-auto md:px-4 px-0">
-      <h1 className="text-xl font-bold text-[#02487C] text-center mb-6">
+      {/* <h1 className="text-xl font-bold text-[#02487C] text-center mb-6">
         My Post Details
-      </h1>
+      </h1> */}
 
       <div className="mb-8">
         <div

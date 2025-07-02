@@ -7,16 +7,23 @@ import IMAGES from "@/utils/images.js";
 import { useMediaQuery } from "react-responsive"; // For detecting mobile devices
 import { useEffect, useState } from "react";
 import { api } from "@/api/axios"; // Adjust if your axios instance path is different
-
+import { useNavigate } from "react-router-dom";
 const PropertyCard = ({ property }) => {
+  const navigate = useNavigate();
   // Detect mobile devices
   const isMobile = useMediaQuery({ maxWidth: 767 });
 
+  const handleCardClick = () => {
+    navigate(`/properties/${property.action_slug}`);
+  };
+
+
   return (
     <Card
+      onClick={handleCardClick}
       className={`${
         isMobile ? " max-w-[300px]" : ""
-      }  max-w-[275px]  w-full rounded-lg shadow-md overflow-hidden hover:shadow-lg mx-auto`}
+      }  max-w-[275px]  w-full rounded-lg shadow-md overflow-hidden hover:shadow-lg mx-auto cursor-pointer`}
     >
       <div className="relative">
         <img
