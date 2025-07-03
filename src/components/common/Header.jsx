@@ -26,6 +26,7 @@ import { api } from "../../api/axios"; // Adjust the import path as needed
 import { Skeleton } from "@mui/material";
 import { useAuth } from "../../auth/AuthContext"; // Import the useAuth hook
 import { useLoadScript, Autocomplete } from "@react-google-maps/api";
+const GOOGLE_MAP_LIBRARIES = ["places"];
 const Header = () => {
   const navigate = useNavigate();
   const { isAuthenticated, user, logout, loading } = useAuth(); // Get auth state
@@ -150,7 +151,7 @@ const Header = () => {
 
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-    libraries: ["places"],
+    libraries: GOOGLE_MAP_LIBRARIES,
   });
 
   useEffect(() => {

@@ -42,7 +42,7 @@ import {
 
 import { useLoadScript } from "@react-google-maps/api";
 import { Autocomplete } from "@react-google-maps/api";
-const libraries = ["places"];
+const GOOGLE_MAP_LIBRARIES = ["places"];
 
 const PropertyForm = () => {
   const dispatch = useDispatch();
@@ -59,8 +59,8 @@ const PropertyForm = () => {
   }, [isEditMode]);
 
   const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: "AIzaSyB-T2GimiJHK0Ndb9RV02CUgIoR4dMU7q0",
-    libraries,
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+    libraries: GOOGLE_MAP_LIBRARIES,
   });
 
 
@@ -107,6 +107,7 @@ const PropertyForm = () => {
 
   const { formData, errors, touched, isLoading, apiError, autoPopulateData } =
     useSelector((state) => state.propertyform);
+  
 
   const focusedField = useSelector((state) => state.propertyform.focusedField);
   const [isDragging, setIsDragging] = useState(false);
@@ -866,7 +867,8 @@ const PropertyForm = () => {
         }
         // Clear deleted media IDs after successful submission
         setDeletedMediaIds({ images: [], videos: [] });
-      } else {
+      }
+      else {
         // Handle backend errors
         if (result.error || result.details) {
           dispatch(
@@ -896,7 +898,9 @@ const PropertyForm = () => {
           }
         }
       }
-    } catch (err) {
+    }
+    
+    catch (err) {
       // Handle validation errors
       if (err.name === "ValidationError" && err.inner) {
         console.log("❌ Validation failed:", err.inner);
@@ -1076,39 +1080,6 @@ const PropertyForm = () => {
     }
   };
 
-  // Remove a specific file
-  // const handleRemoveFile = async (type, index) => {
-  //   dispatch(removeFile({ type, index }));
-
-  //   console.log(`Removed file at index ${index} from ${type}`);
-
-  //   if (errors[type] && validationSchema) {
-  //     try {
-  //       const updatedFiles = [...formData[type]];
-  //       updatedFiles.splice(index, 1);
-  //       await validationSchema.validateAt(type, { [type]: updatedFiles });
-  //       dispatch(setErrors({ ...errors, [type]: "" }));
-  //     } catch (err) {
-  //       dispatch(setErrors({ ...errors, [type]: err.message }));
-  //     }
-  //   }
-  // };
-
-  // Clear all files for a specific type
-  // const handleClearFiles = (type) => {
-  //   // Use the clearFiles action to update Redux store
-  //   dispatch(clearFiles(type));
-
-  //   console.log(`Cleared all files from ${type}`);
-
-  //   // Clear any errors for this field
-  //   if (errors[type]) {
-  //     dispatch(setErrors({ ...errors, [type]: "" }));
-  //   }
-  // };
-
-  // In your PropertyForm component
-
   // Track deleted media IDs in state
   const [deletedMediaIds, setDeletedMediaIds] = useState({
     images: [],
@@ -1212,6 +1183,8 @@ const PropertyForm = () => {
       }
     }
   };
+
+  
 
   // Show loading state while dropdowns are loading
   if (loadingDropdowns) {

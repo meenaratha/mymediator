@@ -66,7 +66,7 @@ const PropertyCard = ({ property }) => {
 
         <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">
           <span className="text-sm text-gray-500">
-            {property.year || "2022"}
+            {property.post_year || "2022"}
           </span>
           <span className="font-bold text-lg">
             ₹ {property.amount?.toLocaleString() || 0}

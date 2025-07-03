@@ -4,6 +4,7 @@ import AppRoutes from "./routes/AppRoutes";
 import "./App.css";
 function App() {
   return (
+    
     <BrowserRouter
       // basename={import.meta.env.REACT_APP_BASENAME || "/mymediator"}
     >

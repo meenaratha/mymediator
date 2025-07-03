@@ -257,7 +257,9 @@ const [showEnquiryPopup , setShowEnquiryPopup ] = useState(false);
                   />
                 </div>
                 <div className="ml-3">
-                  <h3 className="font-semibold text-lg">Jayalakshmi</h3>
+                  <h3 className="font-semibold text-lg">
+                    {property.vendor_name}
+                  </h3>
                   <p className="text-sm text-gray-500">Owner</p>
                 </div>
                 <div className="ml-auto">
@@ -328,8 +330,12 @@ const [showEnquiryPopup , setShowEnquiryPopup ] = useState(false);
 
               {property.bhk !== "" && (
                 <div className="flex items-center mt-2 mb-2">
-                  <p className="mr-4">( {property.bhk || "N/A"} )</p>
-                  <p className="mr-4">2021</p>
+                  {property.bhk !== null ? (
+                    <p className="mr-4">( {property.bhk || "N/A"} )</p>
+                  ) : (
+                    ""
+                  )}
+                  <p className="mr-4">{property.post_year}</p>
                   <div className="flex items-center">
                     <StarIcon className="text-orange-500" />
                     <span className="ml-1">4.5</span>

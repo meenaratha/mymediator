@@ -20,6 +20,8 @@ import PasswordResetModel from "./PasswordResetModel";
 import { Loader } from "@googlemaps/js-api-loader";
 import { Autocomplete, LoadScript } from "@react-google-maps/api";
 import { useLoadScript } from "@react-google-maps/api";
+const GOOGLE_MAP_LIBRARIES = ["places"];
+
 const MobileHeader = ({ isFixed }) => {
    const navigate = useNavigate();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -38,7 +40,7 @@ const MobileHeader = ({ isFixed }) => {
 
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-    libraries: ["places"],
+    libraries: GOOGLE_MAP_LIBRARIES,
   });
   
   const categories = {
