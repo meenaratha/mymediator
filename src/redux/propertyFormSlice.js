@@ -3,12 +3,12 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
   formData: {
     // Basic Information
-    form_type: "",
+    form_type: "property",
     propertyName: "",
     mobileNumber: "",
     address: "",
     latitude: "",
-    longitude:"",
+    longitude: "",
     state: "",
     district: "",
     city: "",

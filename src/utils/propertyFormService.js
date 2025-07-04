@@ -84,7 +84,6 @@ class PropertyFormService {
   transformFormData(formData, slug, subcategoryId, urlId) {
     // Base payload structure
     const basePayload = {
-      form_type: "property",
       subcategory_id: subcategoryId,
       url_id: urlId, // ID from URL params
       action_id: formData.action_id,

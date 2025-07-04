@@ -8,6 +8,8 @@ const initialState = {
     year: "",
     kilometers: "",
     brand_id: "",
+    brand_name: "",
+    model_name:"",
     model_id: "",
     fuel_type_id: "",
     transmission_id: "",
