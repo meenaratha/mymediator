@@ -1,0 +1,502 @@
+import React, { useState, useEffect } from "react";
+import { useMediaQuery } from "react-responsive";
+import { useNavigate } from "react-router-dom";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import LocalGasStationIcon from "@mui/icons-material/LocalGasStation";
+import DriveEtaIcon from "@mui/icons-material/DriveEta";
+import SpeedIcon from "@mui/icons-material/Speed";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import LoadMoreButton from "../../components/common/LoadMoreButton";
+import { api } from "@/api/axios";
+import { toast } from "react-toastify";
+import IMAGES from "@/utils/images.js";
+
+const CarCard = ({
+  carImage,
+  carTitle,
+  location,
+  brand,
+  model,
+  year,
+  kilometers,
+  fuelType,
+  transmission,
+  price,
+  id,
+  status,
+  isPublished,
+  onStatusChange,
+  onDelete,
+}) => {
+  const navigate = useNavigate();
+  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+  const [adsEnabled, setAdsEnabled] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState(status);
+  const [currentPublishStatus, setCurrentPublishStatus] = useState(isPublished);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const toggleDropdown = () => {
+    setShowStatusDropdown(!showStatusDropdown);
+  };
+
+  const toggleAds = (e) => {
+    e.stopPropagation();
+    setAdsEnabled(!adsEnabled);
+  };
+
+  const handleEdit = (e) => {
+    e.stopPropagation();
+    navigate(`/car/${id}/edit`);
+  };
+
+  const handleDelete = async (e) => {
+    e.stopPropagation();
+    if (window.confirm("Are you sure you want to delete this car?")) {
+      setIsDeleting(true);
+      try {
+        await onDelete(id);
+        toast.success("Car deleted successfully");
+      } catch (error) {
+        toast.error("Failed to delete car");
+      } finally {
+        setIsDeleting(false);
+      }
+    }
+  };
+
+  const updateStatus = async (newStatus) => {
+    try {
+      await api.patch(`/car/status/${id}`, { status: newStatus });
+      setCurrentStatus(newStatus);
+      onStatusChange(id, newStatus);
+      toast.success(`Status updated to ${newStatus}`);
+    } catch (error) {
+      console.error("Failed to update status:", error);
+      toast.error("Failed to update status");
+    }
+  };
+
+  const updatePublishStatus = async (publishStatus) => {
+    try {
+      await api.patch(`/car/publish/${id}`, { is_published: publishStatus });
+      setCurrentPublishStatus(publishStatus);
+      toast.success(`Car ${publishStatus ? 'published' : 'unpublished'} successfully`);
+    } catch (error) {
+      console.error("Failed to update publish status:", error);
+      toast.error("Failed to update publish status");
+    }
+  };
+
+  const markAsSold = (e) => {
+    e.stopPropagation();
+    updateStatus("sold");
+    setShowStatusDropdown(false);
+  };
+
+  const markAsAvailable = (e) => {
+    e.stopPropagation();
+    updateStatus("available");
+    setShowStatusDropdown(false);
+  };
+
+  return (
+    <div className="cursor-pointer flex items-start p-2 bg-white rounded-lg shadow-sm border border-gray-100 w-full">
+      {/* Car Image */}
+      <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+        <img
+          src={carImage || IMAGES.propertybanner1}
+          alt={carTitle}
+          className="w-full h-full object-cover"
+        />
+      </div>
+
+      {/* Car Details */}
+      <div className="ml-3 flex-1 min-w-0">
+        {/* Car Title and Location */}
+        <div className="flex items-center flex-wrap md:flex-nowrap">
+          <h3 className="font-bold text-gray-900 truncate mr-1 md:mb-0 mb-2">
+            {carTitle}
+          </h3>
+          {/* Publish Status Indicator */}
+          <div className={`px-2 py-1 rounded-full text-xs font-medium mr-2 ${
+            currentPublishStatus 
+              ? 'bg-green-100 text-green-800' 
+              : 'bg-yellow-100 text-yellow-800'
+          }`}>
+            {currentPublishStatus ? 'Published' : 'Draft'}
+          </div>
+          <div className="flex items-center text-red-500 md:mb-0 mb-2">
+            <LocationOnIcon style={{ fontSize: 18 }} />
+            <span className="text-sm truncate max-w-[160px]">{location}</span>
+          </div>
+        </div>
+
+        {/* Car Specifications */}
+        <div className="flex items-center mt-1 text-gray-600 flex-wrap md:flex-nowrap gap-[8px] mb-2">
+          <span className="text-sm">{brand}</span>
+          <span className="text-sm">({model})</span>
+          <span className="text-sm">{year}</span>
+          {kilometers && (
+            <>
+              <SpeedIcon style={{ fontSize: 14 }} />
+              <span className="text-sm">{kilometers} km</span>
+            </>
+          )}
+        </div>
+
+        {/* Fuel Type and Transmission */}
+        <div className="flex items-center mt-1 text-gray-600 flex-wrap md:flex-nowrap gap-[8px] mb-2">
+          {fuelType && (
+            <>
+              <LocalGasStationIcon style={{ fontSize: 14 }} />
+              <span className="text-sm">{fuelType}</span>
+            </>
+          )}
+          {transmission && (
+            <>
+              <DriveEtaIcon style={{ fontSize: 14 }} />
+              <span className="text-sm">{transmission}</span>
+            </>
+          )}
+        </div>
+
+        {/* Price and Actions */}
+        <div className="flex items-center mt-1 justify-between flex-wrap gap-[10px] md:flex-nowrap">
+          <div className="flex items-center">
+            <span className="text-lg font-bold">₹</span>
+            <span className="text-lg font-bold ml-1 truncate max-w-[150px]">
+              {price}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            {/* Edit Icon */}
+            <button
+              onClick={handleEdit}
+              className="text-gray-600 hover:text-blue-600"
+              title="Edit car"
+            >
+              <EditIcon fontSize="small" />
+            </button>
+
+            {/* Delete Icon */}
+            <button
+              onClick={handleDelete}
+              className="text-gray-600 hover:text-red-600"
+              title="Delete car"
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <span className="text-sm">Deleting...</span>
+              ) : (
+                <DeleteIcon fontSize="small" />
+              )}
+            </button>
+
+            {/* Status Dropdown */}
+            <div className="relative">
+              {currentStatus === "sold" ? (
+                <div
+                  className="bg-[#0f1c5e] text-white px-4 py-1 rounded-md cursor-pointer"
+                  onClick={markAsAvailable}
+                >
+                  Sold out
+                </div>
+              ) : (
+                <>
+                  <button
+                    onClick={toggleDropdown}
+                    className="bg-[#0f1c5e] text-white px-4 py-1 rounded-md text-sm flex items-center"
+                  >
+                    Status
+                    {showStatusDropdown ? (
+                      <KeyboardArrowUpIcon style={{ fontSize: 18 }} />
+                    ) : (
+                      <KeyboardArrowDownIcon style={{ fontSize: 18 }} />
+                    )}
+                  </button>
+
+                  {/* Status Dropdown */}
+                  {showStatusDropdown && (
+                    <div className="absolute right-0 mt-1 w-40 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+                      {/* Sold/Available Status */}
+                      <button
+                        onClick={markAsSold}
+                        className="block w-full text-left px-4 py-2 text-sm text-blue-800 font-medium hover:bg-blue-50"
+                      >
+                        Mark as Sold
+                      </button>
+                      <button
+                        onClick={markAsAvailable}
+                        className="block w-full text-left px-4 py-2 text-sm text-green-800 font-medium hover:bg-green-50"
+                      >
+                        Mark as Available
+                      </button>
+                      
+                      {/* Publish/Unpublish */}
+                      <div className="border-t border-gray-100">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updatePublishStatus(1);
+                            setShowStatusDropdown(false);
+                          }}
+                          className="block w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-blue-50"
+                        >
+                          Publish Car
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updatePublishStatus(0);
+                            setShowStatusDropdown(false);
+                          }}
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
+                        >
+                          Unpublish Car
+                        </button>
+                      </div>
+
+                      {/* Ads Toggle */}
+                      <div className="px-4 py-2 border-t border-gray-100">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm">Ads</span>
+                          <div
+                            onClick={toggleAds}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                              adsEnabled ? "bg-[#0f1c5e]" : "bg-gray-300"
+                            }`}
+                          >
+                            <span
+                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                adsEnabled ? "translate-x-6" : "translate-x-1"
+                              }`}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const CarPostDetails = () => {
+  const isMobile = useMediaQuery({ maxWidth: 567 });
+  const isTablet = useMediaQuery({ minWidth: 568, maxWidth: 899 });
+  const navigate = useNavigate();
+
+  // Pagination states
+  const [cars, setCars] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMoreData, setHasMoreData] = useState(false);
+  const [total, setTotal] = useState(0);
+
+  // Update car status in local state
+  const handleStatusChange = (id, newStatus) => {
+    setCars((prevCars) =>
+      prevCars.map((car) =>
+        car.id === id ? { ...car, status: newStatus } : car
+      )
+    );
+  };
+
+  // Handle car deletion
+  const handleDeleteCar = async (id) => {
+    try {
+      await api.delete(`/car/${id}/delete`);
+      setCars((prevCars) => prevCars.filter((car) => car.id !== id));
+      setTotal((prev) => prev - 1);
+      return true;
+    } catch (error) {
+      console.error("Failed to delete car", error);
+      toast.error("Failed to delete car");
+      throw error;
+    }
+  };
+
+  // Fetch cars from API
+  const fetchCars = async (page = 1, loadMore = false) => {
+    if (loadMore) setLoadingMore(true);
+    else setLoading(true);
+
+    try {
+      const response = await api.get(`/car/list/vendor/web?page=${page}`);
+      const result = response.data?.data;
+
+      setCars((prev) =>
+        page === 1 ? result.data || [] : [...prev, ...(result.data || [])]
+      );
+      setCurrentPage(result.current_page);
+      setLastPage(result.last_page);
+      setTotal(result.total);
+      setHasMoreData(
+        result.next_page_url !== null &&
+          result.current_page < result.last_page &&
+          result.data &&
+          result.data.length > 0
+      );
+    } catch (err) {
+      console.error("Failed to load cars", err);
+      toast.error("Failed to load cars");
+      if (page === 1) setCars([]);
+      setHasMoreData(false);
+    } finally {
+      if (loadMore) setLoadingMore(false);
+      else setLoading(false);
+    }
+  };
+
+  // Initial load
+  useEffect(() => {
+    fetchCars(1);
+  }, []);
+
+  // Handle load more
+  const handleLoadMore = () => {
+    if (hasMoreData && !loadingMore && currentPage < lastPage) {
+      fetchCars(currentPage + 1, true);
+    }
+  };
+
+  // Auto-load on scroll with throttling
+  useEffect(() => {
+    let isScrolling = false;
+
+    const handleScroll = () => {
+      if (isScrolling) return;
+      const nearBottom =
+        window.innerHeight + window.scrollY >= document.body.offsetHeight - 500;
+
+      if (nearBottom && hasMoreData && !loadingMore && currentPage < lastPage) {
+        isScrolling = true;
+        handleLoadMore();
+        setTimeout(() => {
+          isScrolling = false;
+        }, 1000);
+      }
+    };
+
+    let scrollTimeout;
+    const throttledHandleScroll = () => {
+      if (scrollTimeout) return;
+      scrollTimeout = setTimeout(() => {
+        handleScroll();
+        scrollTimeout = null;
+      }, 100);
+    };
+
+    window.addEventListener("scroll", throttledHandleScroll);
+    return () => {
+      window.removeEventListener("scroll", throttledHandleScroll);
+      if (scrollTimeout) clearTimeout(scrollTimeout);
+    };
+  }, [currentPage, lastPage, loadingMore, hasMoreData]);
+
+  // Loading skeleton component
+  const LoadingSkeleton = () => (
+    <div className="flex items-center p-2 bg-white rounded-lg shadow-sm border border-gray-100 w-full">
+      <div className="w-20 h-20 rounded-lg flex-shrink-0 bg-gray-200 relative overflow-hidden">
+        <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/60 to-transparent"></div>
+      </div>
+      <div className="ml-3 flex-1">
+        <div className="h-4 bg-gray-200 rounded w-3/4 mb-2 relative overflow-hidden">
+          <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/60 to-transparent"></div>
+        </div>
+        <div className="h-3 bg-gray-200 rounded w-1/2 mb-2 relative overflow-hidden">
+          <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/60 to-transparent"></div>
+        </div>
+        <div className="flex items-center justify-between mt-3">
+          <div className="h-3 bg-gray-200 rounded w-1/4 relative overflow-hidden">
+            <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/60 to-transparent"></div>
+          </div>
+          <div className="h-8 bg-gray-200 rounded w-16 relative overflow-hidden">
+            <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/60 to-transparent"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="max-w-7xl mx-auto md:px-4 px-0">
+      <div className="mb-8">
+        <div
+          className={`grid gap-4 ${
+            isMobile ? "grid-cols-1" : isTablet ? "grid-cols-2" : "grid-cols-2"
+          }`}
+        >
+          {loading
+            ? Array.from({ length: 6 }).map((_, index) => (
+                <LoadingSkeleton key={index} />
+              ))
+            : cars.map((car) => (
+                <CarCard
+                  key={car.id}
+                  id={car.id}
+                  carImage={car.image_url || car.images?.[0]?.url}
+                  carTitle={car.title}
+                  location={`${car.city || ''}${
+                    car.district ? `, ${car.district}` : ""
+                  }`}
+                  brand={car.brand_name || car.brand}
+                  model={car.model_name || car.model}
+                  year={car.year}
+                  kilometers={car.kilometers}
+                  fuelType={car.fuel_type_name || car.fuel_type}
+                  transmission={car.transmission_name || car.transmission}
+                  price={
+                    car.price ? parseInt(car.price).toLocaleString() : ""
+                  }
+                  status={car.status || "available"}
+                  isPublished={car.is_published || 0}
+                  onStatusChange={handleStatusChange}
+                  onDelete={handleDeleteCar}
+                />
+              ))}
+        </div>
+
+        {!loading && hasMoreData && cars.length > 0 && (
+          <div className="mt-8 text-center">
+            <LoadMoreButton
+              onClick={handleLoadMore}
+              loading={loadingMore}
+              disabled={!hasMoreData || loadingMore}
+            />
+          </div>
+        )}
+
+        {!loading && cars.length > 0 && (
+          <div className="mt-4 text-center text-gray-600 text-sm">
+            Showing {cars.length} of {total} cars
+          </div>
+        )}
+
+        {!loading && !hasMoreData && cars.length > 0 && (
+          <div className="mt-4 text-center text-gray-500 text-sm">
+            No more cars to load
+          </div>
+        )}
+
+        {!loading && cars.length === 0 && (
+          <div className="text-center py-8">
+            <p className="text-gray-500">No cars found</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default CarPostDetails;

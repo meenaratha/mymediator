@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import IMAGES from "../../utils/images.js";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
+import CarPostDetails from "../../components/sell/CarPostDetails.jsx";
 
 const SellerPostDetailsPage = () => {
   // State to manage active tab
@@ -56,10 +57,10 @@ const SellerPostDetailsPage = () => {
         case "property":
           return <PostDetails />;
         case "electronics":
-          return <div>electronics Tab Content</div>;
+          return <CarPostDetails/>;
         case "car":
           // Add your car tab content component here
-          return <div>Car Tab Content</div>;
+          return <CarPostDetails/>;
         case "bike":
           // Add your bike tab content component here
           return <div>Bike Tab Content</div>;

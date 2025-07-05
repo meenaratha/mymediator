@@ -17,7 +17,7 @@ import { uploadCarFormSchema } from "../validation/uploadCarFormShema";
 
 // Import API services
 import { dropdownService } from "../utils/propertyDropdownService";
-import { submitPropertyForm } from "../utils/propertyFormService";
+import { submitCarForm } from "../utils/CarFormService";
 import { api, apiForFiles } from "../api/axios";
 
 import {
@@ -125,6 +125,7 @@ const UploadCarForm = () => {
     carModel: [],
     fuelTypes: [],
     transmissions: [],
+    numberOfOwners:[],
   });
   const [loadingDropdowns, setLoadingDropdowns] = useState(false);
   const [loadingDistricts, setLoadingDistricts] = useState(false);
@@ -158,6 +159,8 @@ const UploadCarForm = () => {
           fuelTypes: response.fuelTypes?.data || response.fuelTypes || [],
           transmissions:
             response.transmissions?.data || response.transmissions || [],
+          numberOfOwners:
+            response.numberOfOwners?.data || response.numberOfOwners || [],
         };
 
         console.log("✅ Processed dropdown data:", processedData);
@@ -216,52 +219,97 @@ const UploadCarForm = () => {
     console.log("🚙 Car models in state:", dropdownData.carModel);
   }, [dropdownData]);
 
+  
   // Load districts when state changes
-  useEffect(() => {
-    const loadDistricts = async () => {
-      if (formData.state_id) {
-        try {
-          const districts = await dropdownService.getDistricts(
-            formData.state_id
-          );
-          setDropdownData((prev) => ({
-            ...prev,
-            districts: districts || [],
-            cities: [], // Reset cities when state changes
-          }));
-          // Reset district and city in form if state changes
+useEffect(() => {
+  const loadDistricts = async () => {
+    // Check both state_id and state for compatibility
+    const stateId = formData.state_id || formData.state;
+    
+    if (stateId) {
+      console.log("🌍 Loading districts for state_id:", stateId);
+      try {
+        const districts = await dropdownService.getDistricts(stateId);
+        console.log("📦 Districts received:", districts);
+        
+        setDropdownData((prev) => ({
+          ...prev,
+          districts: districts || [],
+          cities: [], // Reset cities when state changes
+        }));
+        
+        // Only reset dependent fields if not auto-populating
+        if (!isAutoPopulating) {
           dispatch(updateFormField({ field: "district_id", value: "" }));
           dispatch(updateFormField({ field: "city_id", value: "" }));
-        } catch (error) {
-          console.error("Failed to load districts:", error);
         }
+      } catch (error) {
+        console.error("❌ Failed to load districts:", error);
+        setDropdownData((prev) => ({
+          ...prev,
+          districts: [],
+          cities: [],
+        }));
       }
-    };
+    } else {
+      // Clear districts and cities if no state selected
+      if (!isAutoPopulating) {
+        setDropdownData((prev) => ({
+          ...prev,
+          districts: [],
+          cities: [],
+        }));
+        dispatch(updateFormField({ field: "district_id", value: "" }));
+        dispatch(updateFormField({ field: "city_id", value: "" }));
+      }
+    }
+  };
 
-    loadDistricts();
-  }, [formData.state_id, dispatch]);
+  loadDistricts();
+}, [formData.state_id, formData.state, dispatch, isAutoPopulating]);
 
-  // Load cities when district changes
-  useEffect(() => {
-    const loadCities = async () => {
-      if (formData.district_id) {
-        try {
-          const cities = await dropdownService.getCities(formData.district_id);
-          setDropdownData((prev) => ({
-            ...prev,
-            cities: cities || [],
-          }));
-          // Reset city in form if district changes
+// Load cities when district changes
+useEffect(() => {
+  const loadCities = async () => {
+    // Check both district_id and district for compatibility
+    const districtId = formData.district_id || formData.district;
+    
+    if (districtId) {
+      console.log("🏙️ Loading cities for district_id:", districtId);
+      try {
+        const cities = await dropdownService.getCities(districtId);
+        console.log("📦 Cities received:", cities);
+        
+        setDropdownData((prev) => ({
+          ...prev,
+          cities: cities || [],
+        }));
+        
+        // Only reset city field if not auto-populating
+        if (!isAutoPopulating) {
           dispatch(updateFormField({ field: "city_id", value: "" }));
-        } catch (error) {
-          console.error("Failed to load cities:", error);
         }
+      } catch (error) {
+        console.error("❌ Failed to load cities:", error);
+        setDropdownData((prev) => ({
+          ...prev,
+          cities: [],
+        }));
       }
-    };
+    } else {
+      // Clear cities if no district selected
+      if (!isAutoPopulating) {
+        setDropdownData((prev) => ({
+          ...prev,
+          cities: [],
+        }));
+        dispatch(updateFormField({ field: "city_id", value: "" }));
+      }
+    }
+  };
 
-    loadCities();
-  }, [formData.district_id, dispatch]);
-
+  loadCities();
+}, [formData.district_id, formData.district, dispatch, isAutoPopulating]);
   // image videos
 
   useEffect(() => {
@@ -648,269 +696,84 @@ const UploadCarForm = () => {
     }
   };
 
-  // handle submit
-
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-
-  //   // Prevent double submission
-  //   if (isLoading) {
-  //     return;
-  //   }
-
-  //   if (!validationSchema) {
-  //     dispatch(
-  //       setApiError("Validation schema not loaded. Please refresh the page.")
-  //     );
-  //     return;
-  //   }
-  //   // Get isEditMode from the URL
-  //   const isEditMode = location.pathname.includes("edit");
-
-  //   // Clear any previous errors
-  //   dispatch(setErrors({}));
-  //   dispatch(setApiError(null));
-
-  //   try {
-  //     // Set loading state
-  //     dispatch(setLoading(true));
-  //     // Validate form data locally first
-  //     await validationSchema.validate(formData, { abortEarly: false });
-
-  //     // If validation passes, mark all fields as touched before submission
-  //     const allFieldsTouched = {};
-  //     Object.keys(formData).forEach((key) => {
-  //       allFieldsTouched[key] = true;
-  //     });
-  //     dispatch({
-  //       type: "uploadcarform/setAllTouched",
-  //       payload: allFieldsTouched,
-  //     });
-
-  //     console.log("✅ Client-side validation passed:", formData);
-
-  //     // Prepare media_to_delete string
-  //     const allDeletedMedia = [
-  //       ...deletedMediaIds.images,
-  //       ...deletedMediaIds.videos,
-  //     ].join(",");
-
-  //     // Prepare the media_to_delete string from deletedMediaIds state
-  //     const mediaToDeleteString = deletedMediaIds.images.join(",");
-
-  //     // Prepare submission data with URL params
-  //     const submissionData = {
-  //       ...formData,
-  //       media_to_delete: allDeletedMedia, // Formatted string
-  //       action_id: isEditMode ? formData.action_id : undefined,
-  //       subcategory_id: id, // Subcategory ID based on slug
-  //       slug: slug, // Current slug
-  //     };
-
-  //     console.log("Submitting form data:", submissionData);
-  //     // Submit form with edit mode flag
-  //     const result = await submitPropertyForm(submissionData, slug, isEditMode);
-
-  //     if (result.success) {
-  //       alert(
-  //         isEditMode
-  //           ? "car updated successfully!"
-  //           : "Form submitted successfully!"
-  //       );
-  //       if (!isEditMode) {
-  //         dispatch(resetForm());
-  //       }
-  //       // Clear deleted media IDs after successful submission
-  //       setDeletedMediaIds({ images: [], videos: [] });
-  //     } else {
-  //       // Handle backend errors
-  //       if (result.error || result.details) {
-  //         dispatch(
-  //           setApiError(result.error || result.details || "Submission failed")
-  //         );
-  //       }
-
-  //       if (
-  //         result.validationErrors &&
-  //         Object.keys(result.validationErrors).length > 0
-  //       ) {
-  //         dispatch(setErrors(result.validationErrors));
-
-  //         const firstErrorField = Object.keys(result.validationErrors)[0];
-  //         if (firstErrorField) {
-  //           dispatch(setFocusedField(firstErrorField));
-  //           setTimeout(() => {
-  //             const errorElement = document.getElementById(firstErrorField);
-  //             if (errorElement) {
-  //               errorElement.scrollIntoView({
-  //                 behavior: "smooth",
-  //                 block: "center",
-  //               });
-  //               errorElement.focus();
-  //             }
-  //           }, 100);
-  //         }
-  //       }
-  //     }
-  //   } catch (err) {
-  //     // Handle validation errors
-  //     if (err.name === "ValidationError" && err.inner) {
-  //       console.log("❌ Validation failed:", err.inner);
-
-  //       // Create error object
-  //       const formattedErrors = {};
-  //       const touchedFields = {};
-
-  //       err.inner.forEach((error) => {
-  //         formattedErrors[error.path] = error.message;
-  //         touchedFields[error.path] = true;
-  //       });
-
-  //       // Mark ALL fields as touched to show all errors
-  //       const allFields = Object.keys(formData).reduce((acc, key) => {
-  //         acc[key] = true;
-  //         return acc;
-  //       }, {});
-
-  //       // Dispatch both errors and touched state
-  //       dispatch(setErrors(formattedErrors));
-  //       dispatch({
-  //         type: "uploadcarform/setAllTouched",
-  //         payload: allFields,
-  //       });
-
-  //       // Focus on first error field
-  //       if (err.inner.length > 0) {
-  //         const firstErrorField = err.inner[0].path;
-
-  //         // Small delay to ensure DOM is updated
-  //         setTimeout(() => {
-  //           const errorElement = document.getElementById(firstErrorField);
-  //           if (errorElement) {
-  //             errorElement.scrollIntoView({
-  //               behavior: "smooth",
-  //               block: "center",
-  //             });
-  //             errorElement.focus();
-  //           }
-  //         }, 100);
-  //       }
-  //     } else {
-  //       dispatch(
-  //         setApiError(err.message || "An error occurred during validation")
-  //       );
-  //     }
-  //   } finally {
-  //     dispatch(setLoading(false));
-  //   }
-  // };
-
+  
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (isLoading) return;
+  if (isLoading) return;
 
-    if (!validationSchema) {
-      dispatch(
-        setApiError("Validation schema not loaded. Please refresh the page.")
+  if (!validationSchema) {
+    dispatch(
+      setApiError("Validation schema not loaded. Please refresh the page.")
+    );
+    return;
+  }
+
+  const isEditMode = location.pathname.includes("edit");
+
+  dispatch(setErrors({}));
+  dispatch(setApiError(null));
+
+  try {
+    dispatch(setLoading(true));
+    await validationSchema.validate(formData, { abortEarly: false });
+
+    const allFieldsTouched = {};
+    Object.keys(formData).forEach((key) => {
+      allFieldsTouched[key] = true;
+    });
+    dispatch({
+      type: "uploadcarform/setAllTouched",
+      payload: allFieldsTouched,
+    });
+
+    console.log("✅ Client-side validation passed:", formData);
+
+    const allDeletedMedia = [
+      ...deletedMediaIds.images,
+      ...deletedMediaIds.videos,
+    ].join(",");
+
+    const submissionData = {
+      ...formData,
+      media_to_delete: allDeletedMedia,
+      action_id: isEditMode ? formData.action_id : undefined,
+      subcategory_id: id, // ID from URL
+      slug: slug, // current slug
+      urlId: id, // URL ID for the backend
+    };
+
+    console.log("🚗 Submitting car form data:", submissionData);
+
+    // Use car form service instead of property form service
+    const result = await submitCarForm(submissionData, slug, isEditMode);
+
+    if (result.success) {
+      alert(
+        isEditMode
+          ? "Car updated successfully!"
+          : "Car submitted successfully!"
       );
-      return;
-    }
-
-    const isEditMode = location.pathname.includes("edit");
-
-    dispatch(setErrors({}));
-    dispatch(setApiError(null));
-
-    try {
-      dispatch(setLoading(true));
-      await validationSchema.validate(formData, { abortEarly: false });
-
-      const allFieldsTouched = {};
-      Object.keys(formData).forEach((key) => {
-        allFieldsTouched[key] = true;
-      });
-      dispatch({
-        type: "uploadcarform/setAllTouched",
-        payload: allFieldsTouched,
-      });
-
-      console.log("✅ Client-side validation passed:", formData);
-
-      const allDeletedMedia = [
-        ...deletedMediaIds.images,
-        ...deletedMediaIds.videos,
-      ].join(",");
-
-      const submissionData = {
-        ...formData,
-        media_to_delete: allDeletedMedia,
-        action_id: isEditMode ? formData.action_id : undefined,
-        subcategory_id: id, // ID from URL
-        slug: slug, // current slug
-        url_id: urlId, // add this if required by your backend
-      };
-
-      // 🟡 Important: Let the service decide if full or partial data should be sent
-      const result = await submitPropertyForm(submissionData, slug, isEditMode);
-
-      if (result.success) {
-        alert(
-          isEditMode
-            ? "Car updated successfully!"
-            : "Form submitted successfully!"
-        );
-        if (!isEditMode) {
-          dispatch(resetForm());
-        }
-        setDeletedMediaIds({ images: [], videos: [] });
-      } else {
-        if (result.error || result.details) {
-          dispatch(
-            setApiError(result.error || result.details || "Submission failed")
-          );
-        }
-
-        if (
-          result.validationErrors &&
-          Object.keys(result.validationErrors).length > 0
-        ) {
-          dispatch(setErrors(result.validationErrors));
-
-          const firstErrorField = Object.keys(result.validationErrors)[0];
-          if (firstErrorField) {
-            dispatch(setFocusedField(firstErrorField));
-            setTimeout(() => {
-              const errorElement = document.getElementById(firstErrorField);
-              if (errorElement) {
-                errorElement.scrollIntoView({
-                  behavior: "smooth",
-                  block: "center",
-                });
-                errorElement.focus();
-              }
-            }, 100);
-          }
-        }
+      if (!isEditMode) {
+        dispatch(resetForm());
       }
-    } catch (err) {
-      if (err.name === "ValidationError" && err.inner) {
-        console.log("❌ Validation failed:", err.inner);
-        const formattedErrors = {};
-        const touchedFields = {};
-        err.inner.forEach((error) => {
-          formattedErrors[error.path] = error.message;
-          touchedFields[error.path] = true;
-        });
-        const allFields = Object.keys(formData).reduce((acc, key) => {
-          acc[key] = true;
-          return acc;
-        }, {});
-        dispatch(setErrors(formattedErrors));
-        dispatch({ type: "uploadcarform/setAllTouched", payload: allFields });
+      setDeletedMediaIds({ images: [], videos: [] });
+    } else {
+      if (result.error || result.details) {
+        dispatch(
+          setApiError(result.error || result.details || "Submission failed")
+        );
+      }
 
-        if (err.inner.length > 0) {
-          const firstErrorField = err.inner[0].path;
+      if (
+        result.validationErrors &&
+        Object.keys(result.validationErrors).length > 0
+      ) {
+        dispatch(setErrors(result.validationErrors));
+
+        const firstErrorField = Object.keys(result.validationErrors)[0];
+        if (firstErrorField) {
+          dispatch(setFocusedField(firstErrorField));
           setTimeout(() => {
             const errorElement = document.getElementById(firstErrorField);
             if (errorElement) {
@@ -922,20 +785,52 @@ const UploadCarForm = () => {
             }
           }, 100);
         }
-      } else {
-        dispatch(
-          setApiError(err.message || "An error occurred during validation")
-        );
       }
-    } finally {
-      dispatch(setLoading(false));
     }
-  };
-  
+  } catch (err) {
+    if (err.name === "ValidationError" && err.inner) {
+      console.log("❌ Validation failed:", err.inner);
+      const formattedErrors = {};
+      const touchedFields = {};
+      err.inner.forEach((error) => {
+        formattedErrors[error.path] = error.message;
+        touchedFields[error.path] = true;
+      });
+      const allFields = Object.keys(formData).reduce((acc, key) => {
+        acc[key] = true;
+        return acc;
+      }, {});
+      dispatch(setErrors(formattedErrors));
+      dispatch({ type: "uploadcarform/setAllTouched", payload: allFields });
 
-  // Enhanced renderDropdownOptions with smart "Other" handling
+      if (err.inner.length > 0) {
+        const firstErrorField = err.inner[0].path;
+        setTimeout(() => {
+          const errorElement = document.getElementById(firstErrorField);
+          if (errorElement) {
+            errorElement.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+            });
+            errorElement.focus();
+          }
+        }, 100);
+      }
+    } else {
+      dispatch(
+        setApiError(err.message || "An error occurred during validation")
+      );
+    }
+  } finally {
+    dispatch(setLoading(false));
+  }
+};
+ 
+ 
+ 
+ 
   const renderDropdownOptionsWithOther = (options, fieldName = "") => {
-    console.log(`🔄 Rendering dropdown options for ${fieldName}:`, options);
+    // console.log(`🔄 Rendering dropdown options for ${fieldName}:`, options);
 
     // Handle nested API response structure
     let dataArray = options;
@@ -1014,7 +909,7 @@ const UploadCarForm = () => {
     }
 
     const processedOptions = dataArray.map((option, index) => {
-      console.log(`Processing option ${index}:`, option);
+      // console.log(`Processing option ${index}:`, option);
 
       return {
         value: option.id || option.value || option.key,
@@ -1022,7 +917,7 @@ const UploadCarForm = () => {
       };
     });
 
-    console.log("✅ Final processed options:", processedOptions);
+    // console.log("✅ Final processed options:", processedOptions);
     return processedOptions;
   };
 
@@ -1047,7 +942,7 @@ const UploadCarForm = () => {
   // Then use it in your useEffect:
   useEffect(() => {
     const loadDropdownData = async () => {
-      console.log("🔄 Loading dropdown data for slug:", slug);
+      // console.log("🔄 Loading dropdown data for slug:", slug);
       setLoadingDropdowns(true);
 
       try {
@@ -1055,7 +950,7 @@ const UploadCarForm = () => {
           slug || "car"
         );
 
-        console.log("📦 Raw API response:", response);
+        // console.log("📦 Raw API response:", response);
 
         const processedData = {
           states: extractDataFromResponse(response.states),
@@ -1065,9 +960,10 @@ const UploadCarForm = () => {
           carModel: [],
           fuelTypes: extractDataFromResponse(response.fuelTypes),
           transmissions: extractDataFromResponse(response.transmissions),
+           numberOfOwners: extractDataFromResponse(response.numberOfOwners), // Add this line
         };
 
-        console.log("✅ Processed dropdown data:", processedData);
+        // console.log("✅ Processed dropdown data:", processedData);
         setDropdownData(processedData);
         setLoadingDropdowns(false);
       } catch (error) {
@@ -1079,6 +975,223 @@ const UploadCarForm = () => {
 
     loadDropdownData();
   }, [slug, dispatch]);
+
+
+
+  // Add this useEffect for auto-populating car data in edit mode:
+
+useEffect(() => {
+  const loadCarDataForEdit = async () => {
+    // Only run in edit mode and when we have an ID
+    if (!isEditMode || !id) {
+      return;
+    }
+
+    console.log("🔄 Loading car data for edit mode, ID:", id);
+    
+    try {
+      dispatch(setLoading(true));
+      dispatch(setApiError(null));
+      
+      // Fetch car data from API
+      const response = await api.get(`/car/${id}/edit`);
+      const result = response.data;
+      
+      console.log("📦 Car API response:", result);
+      
+      if (result && (result.data || result.status)) {
+        const carData = result.data || result;
+        console.log("✅ Car data received:", carData);
+        
+        // Map API response to form fields
+        const formFields = {
+          // Basic Information
+          action_id: carData.id || carData.action_id,
+          form_type: "car",
+          title: carData.title || "",
+          subcategory_id: carData.subcategory_id || "",
+          year: carData.year || "",
+          kilometers: carData.kilometers || "",
+          price: carData.price || "",
+          description: carData.description || "",
+          mobile_number: carData.mobile_number || "",
+          
+          // Car specifications
+          brand_id: carData.brand_id || "",
+          brand_name: carData.brand_name || "",
+          model_id: carData.model_id || "",
+          model_name: carData.model_name || "",
+          fuel_type_id: carData.fuel_type_id || "",
+          transmission_id: carData.transmission_id || "",
+          number_of_owner_id: carData.number_of_owner_id || "",
+          
+          // Location
+          address: carData.address || "",
+          latitude: carData.latitude || "",
+          longitude: carData.longitude || "",
+          state_id: carData.state_id || "",
+          district_id: carData.district_id || "",
+          city_id: carData.city_id || "",
+          
+          // Status
+          status: carData.status || "available",
+          
+          // Media files
+          images: transformMediaFiles(carData.images || [], 'image'),
+          videos: transformMediaFiles(carData.videos || [], 'video'),
+          
+          // Media deletion tracking
+          media_to_delete: "",
+        };
+        
+        console.log("🔧 Transformed form fields:", formFields);
+        
+        // Populate form using Redux action
+        dispatch(populateFormFromApi(formFields));
+        
+        // Load dependent dropdowns after populating
+        setTimeout(() => {
+          if (carData.state_id) {
+            console.log("🌍 Loading districts for state:", carData.state_id);
+            // Will trigger the existing useEffect for loading districts
+          }
+        }, 100);
+        
+        console.log("✅ Car form populated successfully");
+      } else {
+        console.error("❌ Invalid car API response:", result);
+        dispatch(setApiError("Failed to load car data - invalid response"));
+      }
+    } catch (error) {
+      console.error("❌ Error loading car data:", error);
+      
+      if (error.response) {
+        const { status, data } = error.response;
+        switch (status) {
+          case 404:
+            dispatch(setApiError("Car not found"));
+            break;
+          case 403:
+            dispatch(setApiError("You don't have permission to edit this car"));
+            break;
+          case 500:
+            dispatch(setApiError("Server error occurred"));
+            break;
+          default:
+            dispatch(setApiError(data.message || "Failed to load car data"));
+        }
+      } else {
+        dispatch(setApiError("Failed to load car data for editing"));
+      }
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
+
+  loadCarDataForEdit();
+}, [isEditMode, id, dispatch]);
+
+// Add this helper function inside your component (before the return statement):
+
+const transformMediaFiles = (mediaArray, type) => {
+  if (!Array.isArray(mediaArray)) {
+    return [];
+  }
+
+  return mediaArray.map((media, index) => {
+    console.log(`📎 Processing ${type} ${index + 1}:`, media);
+    
+    // Create a file-like object that passes validation
+    const transformedMedia = {
+      // API data
+      [`media_${type}_id`]: media.id || media.media_image_id || media.media_video_id,
+      url: media.url || media.file_path,
+      name: media.name || `${type}_${index + 1}`,
+      
+      // Form validation requirements
+      type: type === 'image' ? 'image/jpeg' : 'video/mp4',
+      size: media.size || 0,
+      isFromApi: true,
+      
+      // Original API data for reference
+      originalData: media,
+    };
+
+    console.log(`✅ Transformed ${type}:`, transformedMedia);
+    return transformedMedia;
+  });
+};
+
+
+// Add this useEffect to handle "Other" brand/model detection in edit mode:
+
+useEffect(() => {
+  // Handle "Other" brand detection in edit mode
+  if (formData.brand_name && (!formData.brand_id || formData.brand_id === "")) {
+    // If we have brand_name but no brand_id, it's a custom brand
+    console.log("🏷️ Detected custom brand:", formData.brand_name);
+    setShowOtherBrand(true);
+    dispatch(updateFormField({ field: "brand_id", value: "other" }));
+  } else if (formData.brand_id === "other") {
+    setShowOtherBrand(true);
+  } else if (formData.brand_id && dropdownData.carBrand.length > 0) {
+    // Check if the brand_id exists in dropdown
+    const brandExists = dropdownData.carBrand.find(
+      brand => String(brand.id) === String(formData.brand_id)
+    );
+    if (!brandExists && formData.brand_name) {
+      console.log("🏷️ Brand ID not found in dropdown, showing custom:", formData.brand_name);
+      setShowOtherBrand(true);
+      dispatch(updateFormField({ field: "brand_id", value: "other" }));
+    } else {
+      setShowOtherBrand(false);
+    }
+  }
+
+  // Handle "Other" model detection in edit mode
+  if (formData.model_name && (!formData.model_id || formData.model_id === "")) {
+    // If we have model_name but no model_id, it's a custom model
+    console.log("🚗 Detected custom model:", formData.model_name);
+    setShowOtherModel(true);
+    dispatch(updateFormField({ field: "model_id", value: "other" }));
+  } else if (formData.model_id === "other") {
+    setShowOtherModel(true);
+  } else if (formData.model_id && dropdownData.carModel.length > 0) {
+    // Check if the model_id exists in dropdown
+    const modelExists = dropdownData.carModel.find(
+      model => String(model.id) === String(formData.model_id)
+    );
+    if (!modelExists && formData.model_name) {
+      console.log("🚗 Model ID not found in dropdown, showing custom:", formData.model_name);
+      setShowOtherModel(true);
+      dispatch(updateFormField({ field: "model_id", value: "other" }));
+    } else {
+      setShowOtherModel(false);
+    }
+  }
+}, [
+  formData.brand_id, 
+  formData.model_id, 
+  formData.brand_name, 
+  formData.model_name, 
+  dropdownData.carBrand,
+  dropdownData.carModel,
+  dispatch
+]);
+
+
+
+
+if (isEditMode && isLoading && !formData.title) {
+  return (
+    <div className="bg-gray-50 p-6 rounded-3xl w-full max-w-6xl shadow-[0_0_10px_rgba(176,_176,_176,_0.25)] mx-auto border border-[#b9b9b9] bg-[#f6f6f6]">
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <span className="ml-4 text-gray-600">Loading car data for editing...</span>
+      </div>
+    </div>
+  );
+}
 
   // Show loading state while dropdowns are loading
   if (loadingDropdowns) {
@@ -1173,7 +1286,7 @@ const UploadCarForm = () => {
               )}
 
               {showOtherBrand && (
-                <>
+                <div className="space-y-2">
                   <DynamicInputs
                     type="text"
                     name="brand_name"
@@ -1187,8 +1300,22 @@ const UploadCarForm = () => {
                     error={errors.brand_name}
                     touched={touched.brand_name}
                     focusedField={focusedField}
+                    disabled={isAutoPopulating}
                   />
-                </>
+                  {!isAutoPopulating && (
+        <button
+          type="button"
+          onClick={() => {
+            setShowOtherBrand(false);
+            dispatch(updateFormField({ field: "brand_id", value: "" }));
+            dispatch(updateFormField({ field: "brand_name", value: "" }));
+          }}
+          className="text-sm text-blue-600 hover:text-blue-800"
+        >
+          ← Back to brand selection
+        </button>
+      )}
+                </div>
               )}
             </div>
 
@@ -1214,12 +1341,12 @@ const UploadCarForm = () => {
                     dropdownData.carModel,
                     "model"
                   )}
-                  disabled={loadingDropdowns}
+                  disabled={!formData.brand_id || loadingDropdowns || isAutoPopulating}
                 />
               )}
 
               {showOtherModel && (
-                <>
+                <div className="space-y-2">
                   <DynamicInputs
                     type="text"
                     name="model_name"
@@ -1234,7 +1361,20 @@ const UploadCarForm = () => {
                     touched={touched.model_name}
                     focusedField={focusedField}
                   />
-                </>
+                  {!isAutoPopulating && (
+        <button
+          type="button"
+          onClick={() => {
+            setShowOtherModel(false);
+            dispatch(updateFormField({ field: "model_id", value: "" }));
+            dispatch(updateFormField({ field: "model_name", value: "" }));
+          }}
+          className="text-sm text-blue-600 hover:text-blue-800"
+        >
+          ← Back to model selection
+        </button>
+      )}
+                </div>
               )}
             </div>
           </div>
@@ -1340,7 +1480,7 @@ const UploadCarForm = () => {
                 className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border 
                 border-[#bfbfbf] bg-white focus:outline-none "
                 placeholder={
-                  !formData.state
+                  !formData.state_id
                     ? "Select state first"
                     : loadingDistricts || isAutoPopulating
                     ? "Loading..."
@@ -1434,16 +1574,16 @@ const UploadCarForm = () => {
                 error={errors.transmission_id}
                 touched={touched.transmission_id}
                 focusedField={focusedField}
-                options={renderDropdownOptions(dropdownData.fuelTypes)}
+               options={renderDropdownOptions(dropdownData.transmissions)}
               />
             </div>
 
             <div>
               <label className="block text-gray-800 font-medium mb-2 px-4">
-                Owner
+                Slect Owner
               </label>
               <DynamicInputs
-                type="text"
+                type="select"
                 name="number_of_owner_id"
                 id="number_of_owner_id"
                 className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border 
@@ -1455,6 +1595,7 @@ const UploadCarForm = () => {
                 error={errors.number_of_owner_id}
                 touched={touched.number_of_owner_id}
                 focusedField={focusedField}
+                options={renderDropdownOptions(dropdownData.numberOfOwners)}
               />
             </div>
           </div>
@@ -1663,12 +1804,13 @@ const UploadCarForm = () => {
 
           <div className="flex justify-center">
             <button
-              type="submit"
-              className="cursor-pointer bg-[#02487c] text-white
+            type="submit"
+            className="cursor-pointer bg-[#02487c] text-white
              text-lg font-medium rounded-full px-10 py-3 hover:bg-blue-900 focus:outline-none disabled:opacity-50"
-            >
-              Submit
-            </button>
+            disabled={isLoading}
+          >
+            {isLoading ? "Submitting..." : "Submit"}
+          </button>
           </div>
         </form>
       </div>

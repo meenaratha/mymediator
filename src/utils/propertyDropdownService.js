@@ -16,7 +16,8 @@ const DROPDOWN_ENDPOINTS = {
   carBrand: "/car/brands",
   carModel: "/car/models/by-brand",
   fuelTypes: "/car/fuel-types",
-  transmissions: "/car/owners",
+  transmissions: "/car/transmissions", // Fixed: was pointing to "/car/owners"
+  numberOfOwners: "/car/owners", // Add this if you need owners
 
 };
 
@@ -148,11 +149,15 @@ class DropdownService {
 }
 
   
-  async gettransmissions() {
- 
-    return this.fetchDropdownData(DROPDOWN_ENDPOINTS.transmissions);
-  }
-  
+  // Fix the gettransmissions method:
+async gettransmissions() {
+  return this.fetchDropdownData(DROPDOWN_ENDPOINTS.transmissions);
+}
+
+// Add getNumberOfOwners method if needed:
+async getNumberOfOwners() {
+  return this.fetchDropdownData(DROPDOWN_ENDPOINTS.numberOfOwners);
+}
 
 
   // Improved preloading with progress tracking
@@ -171,6 +176,7 @@ class DropdownService {
       { name: "carBrand", method: this.getcarBrand },
       { name: "fuelTypes", method: this.getfuelTypes },
       { name: "transmissions" , method:this.gettransmissions },
+       { name: "numberOfOwners", method: this.getNumberOfOwners },
     ];
 
     const results = {};
@@ -209,10 +215,11 @@ class DropdownService {
       ),
       bhkTypes: await this.getBHKTypes().catch(() => []),
 
-      // car
+     // car
       carBrand: await this.getcarBrand().catch(() => []),
       fuelTypes: await this.getfuelTypes().catch(() => []),
       transmissions: await this.gettransmissions().catch(()=>[]),
+       numberOfOwners: await this.getNumberOfOwners().catch(() => []), // Add this line
     };
 
 
@@ -224,7 +231,7 @@ class DropdownService {
       // Residential properties
       "for-rent-houses-apartments": {
         constructionStatuses: await this.getConstructionStatuses().catch(
-          () => []
+          () => [] 
         ),
         furnishingTypes: await this.getFurnishingTypes().catch(() => []),
         maintenanceFrequencies: await this.getMaintenanceFrequencies().catch(
@@ -239,6 +246,7 @@ class DropdownService {
       ...(typeSpecificDropdowns[slug] || {}),
     };
   }
+  
 
   // Clear cache with optional key
   clearCache(key) {
@@ -269,6 +277,7 @@ export const {
   getcarModel,
   getfuelTypes,
   gettransmissions,
+  getNumberOfOwners,
   preloadCommonDropdowns,
   getDropdownsForPropertyType,
 } = dropdownService;

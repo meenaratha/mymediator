@@ -234,16 +234,34 @@ const uploadcarformSlice = createSlice({
         videos: "videos",
       };
       // Process images array from API
-      if (apiData.images && Array.isArray(apiData.images)) {
-        state.formData.images = apiData.images.map((image) => ({
-          id: image.media_image_id,
-          url: image.url,
-          name: `image_${image.media_image_id}`,
-          isFromApi: true, // Mark as from API
-          type: "image/jpeg", // Add dummy type that passes validation
-          size: 0, // Add dummy size that passes validation
-        }));
-      }
+      // if (apiData.images && Array.isArray(apiData.images)) {
+      //   state.formData.images = apiData.images.map((image) => ({
+      //     id: image.media_image_id,
+      //     url: image.url,
+      //     name: `image_${image.media_image_id}`,
+      //     isFromApi: true, // Mark as from API
+      //     type: "image/jpeg", // Add dummy type that passes validation
+      //     size: 0, // Add dummy size that passes validation
+      //   }));
+      // }
+
+      // Handle images array from API
+  if (apiData.images && Array.isArray(apiData.images)) {
+    state.formData.images = apiData.images;
+    console.log("📸 Set images:", state.formData.images.length);
+  }
+
+  // Handle videos array from API  
+  if (apiData.videos && Array.isArray(apiData.videos)) {
+    state.formData.videos = apiData.videos;
+    console.log("🎥 Set videos:", state.formData.videos.length);
+  }
+
+  // Ensure action_id is set for edit mode
+  if (!state.formData.action_id && apiData.id) {
+    state.formData.action_id = String(apiData.id);
+    console.log("🆔 Action ID set from id:", state.formData.action_id);
+  }
 
       // Populate form fields using the mapping
       Object.keys(apiData).forEach((apiKey) => {

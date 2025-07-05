@@ -107,6 +107,15 @@ const UserRoutes = () => {
           }
         />
 
+         <Route
+          path="/car/:slug/:id/edit"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <UploadCarFormPage />
+            </ProtectedRoute>
+          }
+        />
+
         <Route
           path="/sale-house-apartment"
           element={
