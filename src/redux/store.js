@@ -8,6 +8,7 @@ import uploadmotorcycleformSlice from './uploadmotorcycleForm';
 import uploadbicycleformSlice from './uploadbicycleFormSlice';
 import uploadcarformSlice from './uploadcarFormSlice';
 import propertyFormSlice from './propertyFormSlice';
+import uploadBikeFormSlice from './uploadBikeFormSlice';
 const store = configureStore({
   reducer: {
     salehouseform: salehouseformReducer,
@@ -19,6 +20,7 @@ const store = configureStore({
     uploadbicycleformSlice: uploadbicycleformSlice,
     uploadcarform: uploadcarformSlice,
     propertyform: propertyFormSlice ,
+    uploadbikeform: uploadBikeFormSlice,
   },
 });
 

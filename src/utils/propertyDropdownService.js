@@ -19,6 +19,11 @@ const DROPDOWN_ENDPOINTS = {
   transmissions: "/car/transmissions", // Fixed: was pointing to "/car/owners"
   numberOfOwners: "/car/owners", // Add this if you need owners
 
+
+  // bike
+
+  bikeBrand :"/bike/brands",
+  bikeModel:"/bike/models/by-brand",
 };
 
 class DropdownService {
@@ -144,6 +149,23 @@ class DropdownService {
     );
   }
 
+   async getbikeBrand() {
+    return this.fetchDropdownData(DROPDOWN_ENDPOINTS.bikeBrand);
+  }
+
+  async getbikeModel(bikeBrandId) {
+    if (!bikeBrandId) {
+      throw new Error("car brand is required to fetch cities");
+    }
+    return this.fetchDropdownData(
+      DROPDOWN_ENDPOINTS.bikeModel,
+      { brand_id: bikeBrandId },
+      "POST" // Specify POST method
+    );
+  }
+
+
+
   async getfuelTypes() {
     return this.fetchDropdownData(DROPDOWN_ENDPOINTS.fuelTypes);
 }
@@ -174,6 +196,7 @@ async getNumberOfOwners() {
       { name: "states", method: this.getStates },
       { name: "bhkTypes", method: this.getBHKTypes },
       { name: "carBrand", method: this.getcarBrand },
+       { name: "bikeBrand", method: this.getcarBrand },
       { name: "fuelTypes", method: this.getfuelTypes },
       { name: "transmissions" , method:this.gettransmissions },
        { name: "numberOfOwners", method: this.getNumberOfOwners },
@@ -217,6 +240,7 @@ async getNumberOfOwners() {
 
      // car
       carBrand: await this.getcarBrand().catch(() => []),
+        bikeBrand: await this.getcarBrand().catch(() => []),
       fuelTypes: await this.getfuelTypes().catch(() => []),
       transmissions: await this.gettransmissions().catch(()=>[]),
        numberOfOwners: await this.getNumberOfOwners().catch(() => []), // Add this line
@@ -275,6 +299,8 @@ export const {
   // car dropdowns
   getcarBrand,
   getcarModel,
+  getbikeBrand,
+  getbikeModel,
   getfuelTypes,
   gettransmissions,
   getNumberOfOwners,
