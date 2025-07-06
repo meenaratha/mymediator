@@ -6,7 +6,7 @@ class PropertyFormService {
   fieldMapping = {
     // Reverse mapping for error handling
     media_to_delete: "",
-    form_type:"",
+            form_type: "property",
     property_name: "propertyName",
     mobile_number: "mobileNumber",
     listed_by: "listedBy",
@@ -84,6 +84,8 @@ class PropertyFormService {
   transformFormData(formData, slug, subcategoryId, urlId) {
     // Base payload structure
     const basePayload = {
+              form_type: "property",
+
       subcategory_id: subcategoryId,
       url_id: urlId, // ID from URL params
       action_id: formData.action_id,

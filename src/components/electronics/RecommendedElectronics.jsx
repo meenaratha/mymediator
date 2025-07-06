@@ -1,143 +1,138 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useMediaQuery } from "react-responsive";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination } from "swiper/modules";
+import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import StarIcon from "@mui/icons-material/Star";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import IMAGES from "@/utils/images.js";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { Card, CardContent } from "@mui/material";
+import { red } from "@mui/material/colors";
+import { api } from "@/api/axios"; // Adjust if your axios instance path is different
 
-const LaptopCard = ({ laptop }) => {
+const LaptopCard = ({ laptop, onClick }) => {
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden h-full transition-transform hover:scale-[1.02] cursor-pointer">
+    <Card
+      onClick={onClick}
+      className="cursor-pointer max-w-[275px] w-full rounded-lg shadow-md overflow-hidden hover:shadow-lg mx-auto transition-transform hover:scale-[1.02]"
+    >
       <div className="relative">
         <img 
-          src={laptop.image} 
-          alt={`${laptop.brand} ${laptop.model}`} 
-          className="w-full h-40 object-cover"
+          src={laptop.image_url || IMAGES.mac1} 
+          alt={`${laptop.title} ${laptop.model}`} 
+          className="w-full h-36 object-cover"
         />
         <div className="absolute top-2 right-2 bg-white rounded-lg px-2 py-1 text-xs font-semibold">
-          {laptop.year}
+          {laptop.year || laptop.post_year}
         </div>
       </div>
-      <div className="p-3">
-        <div className="flex items-center justify-between mb-1">
-          <h3 className="font-semibold text-base truncate">{laptop.brand} {laptop.model}</h3>
-          <span className="text-gray-700 font-bold">₹{laptop.price.toLocaleString()}</span>
+      <CardContent className="p-3">
+        <h3 className="font-bold text-lg truncate">
+          { laptop.title || laptop.brand} 
+        </h3>
+        
+        <div className="flex items-center text-sm text-gray-500 mt-1">
+          <LocationOnIcon sx={{ color: red[500] }} />
+          <span className="truncate">
+            {laptop.city}, {laptop.district}
+          </span>
         </div>
-        <div className="flex items-center text-xs text-gray-500 mb-2">
-          <LocationOnIcon fontSize="small" className="text-red-500 mr-1" sx={{ fontSize: 14 }} />
-          <span className="truncate">{laptop.location}</span>
+        
+        <div className="flex items-center mt-2">
+          <span className="text-sm text-gray-600 truncate">
+            {laptop.brand }
+          </span>
         </div>
-        <div className="flex items-center justify-between text-xs">
-          <span className="text-gray-600">{laptop.specs}</span>
+        
+        <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">
           <div className="flex items-center">
             <StarIcon className="text-yellow-400 mr-1" sx={{ fontSize: 14 }} />
-            <span>{laptop.rating}</span>
+            <span className="text-sm">{laptop.rating || 4.5}</span>
           </div>
+          <span className="font-bold text-lg">
+            ₹ {laptop.price || laptop.amount}
+          </span>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 
 const RecommendedLaptops = () => {
+  const navigate = useNavigate();
   const isMobile = useMediaQuery({ maxWidth: 767 });
-  
-  // Sample laptop data - replace with your actual data
-  const recommendedLaptops = [
-    {
-      id: 1,
-      brand: "Apple",
-      model: "MacBook Air",
-      year: 2022,
-      specs: "M1, 8GB, 256GB",
-      price: 79000,
-      rating: 4.8,
-      location: "Anna Nagar, Chennai",
-      image: IMAGES.mac1,
-    },
-    {
-      id: 2,
-      brand: "Acer",
-      model: "Nitro 5",
-      year: 2021,
-      specs: "i5, 16GB, 512GB",
-      price: 65000,
-      rating: 4.7,
-      location: "Adyar, Chennai",
-      image: IMAGES.mac2,
-    },
-    {
-      id: 3,
-      brand: "ASUS",
-      model: "ROG Strix",
-      year: 2023,
-      specs: "Ryzen 7, 16GB, 1TB",
-      price: 115000,
-      rating: 4.9,
-      location: "T. Nagar, Chennai",
-      image: IMAGES.mac3,
-    },
-    {
-      id: 4,
-      brand: "Microsoft",
-      model: "Surface Laptop",
-      year: 2022,
-      specs: "i5, 8GB, 256GB",
-      price: 82000,
-      rating: 4.6,
-      location: "Velachery, Chennai",
-      image: IMAGES.mac4,
-    },
-    {
-      id: 5,
-      brand: "ASUS",
-      model: "VivoBook",
-      year: 2022,
-      specs: "i3, 8GB, 512GB",
-      price: 45000,
-      rating: 4.5,
-      location: "Porur, Chennai",
-      image: IMAGES.mac5,
-    },
-  ];
+  const [laptops, setLaptops] = useState([]);
+
+  useEffect(() => {
+    const fetchLaptops = async () => {
+      try {
+        const selectedLocation = JSON.parse(
+          localStorage.getItem("selectedLocation")
+        );
+        const latitude = selectedLocation?.latitude;
+        const longitude = selectedLocation?.longitude;
+
+        if (!latitude || !longitude) return;
+
+        const response = await api.get(
+          `/gelectronics/populer/list`,
+          { params: { latitude, longitude } }
+        );
+
+        setLaptops(response.data.data || []);
+        console.log("recommended electronics list", response.data.data);
+      } catch (error) {
+        console.error("API error:", error);
+      }
+    };
+
+    fetchLaptops();
+  }, []);
+
+  const handleCardClick = (laptop) => {
+    navigate(`/electronic/${laptop.action_slug}`);
+  };
 
   return (
-    <div className="my-8">
-      <h2 className="text-xl font-bold mb-4">Recommended Laptops</h2>
-      
-      {/* Mobile Swiper */}
-      {isMobile ? (
+    <>
+      <div className="h-[40px]"></div>
+      <h1 className="text-left text-black text-[24px] font-semibold px-3">
+        Recommended Electronics
+      </h1>
+      <div className="py-8">
         <Swiper
-          slidesPerView={1.2}
-          spaceBetween={12}
-          pagination={{ clickable: true }}
-          modules={[Pagination]}
-          className="w-full"
+          modules={[Autoplay]}
+          autoplay={{ delay: 3000, disableOnInteraction: false }}
+          spaceBetween={20}
+          breakpoints={{
+            320: {
+              slidesPerView: 1,
+            },
+            640: {
+              slidesPerView: 2,
+            },
+            768: {
+              slidesPerView: 3,
+            },
+            1024: {
+              slidesPerView: 4,
+            },
+          }}
         >
-          {recommendedLaptops.map((laptop) => (
+          {laptops.map((laptop) => (
             <SwiperSlide key={laptop.id}>
-              <Link to="/electronics-details">
-                <LaptopCard laptop={laptop} />
-              </Link>
+              <LaptopCard 
+                laptop={laptop} 
+                onClick={() => handleCardClick(laptop)}
+              />
             </SwiperSlide>
           ))}
         </Swiper>
-      ) : (
-        /* Desktop Grid */
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          {recommendedLaptops.map((laptop) => (
-            <Link key={laptop.id} to="/electronics-details">
-              <LaptopCard laptop={laptop} />
-            </Link>
-          ))}
-        </div>
-      )}
-    </div>
+      </div>
+    </>
   );
 };
 

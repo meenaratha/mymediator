@@ -3,15 +3,15 @@ import { useMediaQuery } from "react-responsive";
 import { useNavigate } from "react-router-dom";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import SquareFootIcon from "@mui/icons-material/SquareFoot";
+import HomeIcon from "@mui/icons-material/Home";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import LoadMoreButton from "../../components/common/LoadMoreButton";
+import LoadMoreButton from "../common/LoadMoreButton";
 import { api } from "@/api/axios";
 import { toast } from "react-toastify";
 import IMAGES from "@/utils/images.js";
-
 
 const PropertyCard = ({
   propertyImage,
@@ -20,10 +20,13 @@ const PropertyCard = ({
   propertyType,
   bhkType,
   area,
+  plotArea,
   price,
   id,
   slug,
   status,
+  isPublished,
+  buildingDirection,
   onStatusChange,
   onDelete,
 }) => {
@@ -31,6 +34,7 @@ const PropertyCard = ({
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [adsEnabled, setAdsEnabled] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(status);
+  const [currentPublishStatus, setCurrentPublishStatus] = useState(isPublished);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const toggleDropdown = () => {
@@ -64,12 +68,28 @@ const PropertyCard = ({
 
   const updateStatus = async (newStatus) => {
     try {
-      await api.put(`/properties/${id}/status`, { status: newStatus });
+      await api.patch(`/property/status/${id}`, { status: newStatus });
       setCurrentStatus(newStatus);
       onStatusChange(id, newStatus);
       toast.success(`Status updated to ${newStatus}`);
     } catch (error) {
+      console.error("Failed to update status:", error);
       toast.error("Failed to update status");
+    }
+  };
+
+  const updatePublishStatus = async (publishStatus) => {
+    try {
+      await api.patch(`/property/publish/${id}`, {
+        is_published: publishStatus,
+      });
+      setCurrentPublishStatus(publishStatus);
+      toast.success(
+        `Property ${publishStatus ? "published" : "unpublished"} successfully`
+      );
+    } catch (error) {
+      console.error("Failed to update publish status:", error);
+      toast.error("Failed to update publish status");
     }
   };
 
@@ -85,16 +105,8 @@ const PropertyCard = ({
     setShowStatusDropdown(false);
   };
 
-
-  // const handleCardClick = () => {
-  //   navigate(`/properties/${property.action_slug}`);
-  // };
-
   return (
-    <div
-      // onClick={handleCardClick}
-      className="cursor-pointer flex items-start p-2 bg-white rounded-lg shadow-sm border border-gray-100 w-full"
-    >
+    <div className="cursor-pointer flex items-start p-2 bg-white rounded-lg shadow-sm border border-gray-100 w-full">
       {/* Property Image */}
       <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
         <img
@@ -111,23 +123,57 @@ const PropertyCard = ({
           <h3 className="font-bold text-gray-900 truncate mr-1 md:mb-0 mb-2">
             {propertyName}
           </h3>
+          {/* Publish Status Indicator */}
+          <div
+            className={`px-2 py-1 rounded-full text-xs font-medium mr-2 ${
+              currentPublishStatus
+                ? "bg-green-100 text-green-800"
+                : "bg-yellow-100 text-yellow-800"
+            }`}
+          >
+            {currentPublishStatus ? "Published" : "Draft"}
+          </div>
           <div className="flex items-center text-red-500 md:mb-0 mb-2">
             <LocationOnIcon style={{ fontSize: 18 }} />
             <span className="text-sm truncate max-w-[160px]">{location}</span>
           </div>
         </div>
 
-        {/* Property Type */}
-        <div className="flex items-center mt-1 text-gray-600 flex-wrap md:flex-nowrap gap-[10px] mb-2">
-          <span className="text-sm">{propertyType}</span>
-          <span className="mx-1 text-sm">( {bhkType} )</span>
-          <SquareFootIcon
-            style={{ fontSize: 16, marginLeft: 4, marginRight: 2 }}
-          />
-          <span className="text-sm">{area}</span>
+        {/* Property Type and BHK */}
+        <div className="flex items-center mt-1 text-gray-600 flex-wrap md:flex-nowrap gap-[8px] mb-2">
+          {propertyType && (
+            <>
+              <HomeIcon style={{ fontSize: 14 }} />
+              <span className="text-sm">{propertyType}</span>
+            </>
+          )}
+          {bhkType && (
+            <span className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+              {bhkType}
+            </span>
+          )}
+          {buildingDirection && (
+            <span className="text-sm text-gray-500">({buildingDirection})</span>
+          )}
         </div>
 
-        {/* Price and Status */}
+        {/* Area Information */}
+        <div className="flex items-center mt-1 text-gray-600 flex-wrap md:flex-nowrap gap-[8px] mb-2">
+          {area && (
+            <>
+              <SquareFootIcon style={{ fontSize: 14 }} />
+              <span className="text-sm">{area}</span>
+            </>
+          )}
+          {plotArea && (
+            <>
+              <SquareFootIcon style={{ fontSize: 14 }} />
+              <span className="text-sm">Plot: {plotArea}</span>
+            </>
+          )}
+        </div>
+
+        {/* Price and Actions */}
         <div className="flex items-center mt-1 justify-between flex-wrap gap-[10px] md:flex-nowrap">
           <div className="flex items-center">
             <span className="text-lg font-bold">₹</span>
@@ -184,13 +230,46 @@ const PropertyCard = ({
 
                   {/* Status Dropdown */}
                   {showStatusDropdown && (
-                    <div className="absolute right-0 mt-1 w-32 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+                    <div className="absolute right-0 mt-1 w-40 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+                      {/* Sold/Available Status */}
                       <button
                         onClick={markAsSold}
                         className="block w-full text-left px-4 py-2 text-sm text-blue-800 font-medium hover:bg-blue-50"
                       >
-                        Sold out
+                        Mark as Sold
                       </button>
+                      <button
+                        onClick={markAsAvailable}
+                        className="block w-full text-left px-4 py-2 text-sm text-green-800 font-medium hover:bg-green-50"
+                      >
+                        Mark as Available
+                      </button>
+
+                      {/* Publish/Unpublish */}
+                      <div className="border-t border-gray-100">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updatePublishStatus(1);
+                            setShowStatusDropdown(false);
+                          }}
+                          className="block w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-blue-50"
+                        >
+                          Publish Property
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updatePublishStatus(0);
+                            setShowStatusDropdown(false);
+                          }}
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
+                        >
+                          Unpublish Property
+                        </button>
+                      </div>
+
+                      {/* Ads Toggle */}
                       <div className="px-4 py-2 border-t border-gray-100">
                         <div className="flex justify-between items-center">
                           <span className="text-sm">Ads</span>
@@ -220,7 +299,7 @@ const PropertyCard = ({
   );
 };
 
-const PostDetails = () => {
+const PropertyPostDetails = () => {
   const isMobile = useMediaQuery({ maxWidth: 567 });
   const isTablet = useMediaQuery({ minWidth: 568, maxWidth: 899 });
   const navigate = useNavigate();
@@ -246,7 +325,7 @@ const PostDetails = () => {
   // Handle property deletion
   const handleDeleteProperty = async (id) => {
     try {
-      await api.delete(`/properties/${id}`);
+      await api.delete(`/property/${id}/delete`);
       setProperties((prevProperties) =>
         prevProperties.filter((property) => property.id !== id)
       );
@@ -265,7 +344,9 @@ const PostDetails = () => {
     else setLoading(true);
 
     try {
-      const response = await api.get(`/properties/list/vendor/web?page=${page}`);
+      const response = await api.get(
+        `/properties/list/vendor/web?page=${page}`
+      );
       const result = response.data?.data;
 
       setProperties((prev) =>
@@ -364,10 +445,6 @@ const PostDetails = () => {
 
   return (
     <div className="max-w-7xl mx-auto md:px-4 px-0">
-      {/* <h1 className="text-xl font-bold text-[#02487C] text-center mb-6">
-        My Post Details
-      </h1> */}
-
       <div className="mb-8">
         <div
           className={`grid gap-4 ${
@@ -383,22 +460,35 @@ const PostDetails = () => {
                   key={property.id}
                   id={property.id}
                   slug={property.slug || "property"}
-                  propertyImage={property.image_url}
-                  propertyName={property.property_name}
-                  location={`${property.city}${
+                  propertyImage={
+                    property.image_url || property.images?.[0]?.url
+                  }
+                  propertyName={property.property_name || property.title}
+                  plotArea={
+                    property.plot_area ? `${property.plot_area} Sq.ft` : null
+                  }
+                  location={`${property.city || ""}${
                     property.district ? `, ${property.district}` : ""
-                  }`}
-                  propertyType={property.building_direction}
-                  bhkType={property.bhk ? `${property.bhk}` : ""}
+                  }${property.state ? `, ${property.state}` : ""}`}
+                  propertyType={property.property_type || property.subcategory}
+                  buildingDirection={property.building_direction}
+                  bhkType={property.bhk ? `${property.bhk} BHK` : ""}
                   area={
                     property.super_builtup_area
                       ? `${property.super_builtup_area} Sq.ft`
-                      : ""
+                      : property.area
+                      ? `${property.area} Sq.ft`
+                      : null
                   }
                   price={
-                    property.amount ? property.amount.toLocaleString() : ""
+                    property.amount
+                      ? property.amount.toLocaleString()
+                      : property.price
+                      ? parseFloat(property.price).toLocaleString()
+                      : ""
                   }
                   status={property.status || "available"}
+                  isPublished={property.is_published || 0}
                   onStatusChange={handleStatusChange}
                   onDelete={handleDeleteProperty}
                 />
@@ -437,4 +527,4 @@ const PostDetails = () => {
   );
 };
 
-export default PostDetails;
+export default PropertyPostDetails;

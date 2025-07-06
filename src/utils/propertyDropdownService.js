@@ -26,8 +26,8 @@ const DROPDOWN_ENDPOINTS = {
   bikeModel:"/bike/models/by-brand",
 
   // electronics
-  electronicBrand :"/electronics/brands",
- electronicModel:"/electronics/models/by-brand",
+  electronicsBrand: "/electronics/brands", // Fixed: was electronicsModel
+  electronicsModel: "/electronics/models/by-brand", // Fixed: duplicate key resolved
 };
 
 class DropdownService {
@@ -186,6 +186,35 @@ async getNumberOfOwners() {
 }
 
 
+// ELECTRONICS METHODS
+ // FIXED ELECTRONICS METHODS
+  async getelectronicsBrand() {
+    console.log("📱 Calling electronics brands API:", DROPDOWN_ENDPOINTS.electronicsBrand);
+    return this.fetchDropdownData(DROPDOWN_ENDPOINTS.electronicsBrand);
+  }
+
+  async getelectronicsModel(electronicsBrandId) {
+    if (!electronicsBrandId || electronicsBrandId === "other") {
+      throw new Error("Electronics brand ID is required to fetch models");
+    }
+    
+    console.log("📱 Calling electronics models API:", DROPDOWN_ENDPOINTS.electronicsModel, "with brand_id:", electronicsBrandId);
+    
+    try {
+      const response = await this.fetchDropdownData(
+        DROPDOWN_ENDPOINTS.electronicsModel,
+        { brand_id: electronicsBrandId },
+        "POST"
+      );
+      
+      console.log("📱 Raw model response:", response);
+      return response;
+    } catch (error) {
+      console.error("❌ Error in getelectronicsModel:", error);
+      throw error;
+    }
+  }
+
   // Improved preloading with progress tracking
   async preloadCommonDropdowns() {
     const dropdownsToPreload = [
@@ -204,6 +233,7 @@ async getNumberOfOwners() {
       { name: "fuelTypes", method: this.getfuelTypes },
       { name: "transmissions" , method:this.gettransmissions },
        { name: "numberOfOwners", method: this.getNumberOfOwners },
+        { name: "electronicsBrand", method: this.getelectronicsBrand },
     ];
 
     const results = {};
@@ -245,6 +275,11 @@ async getNumberOfOwners() {
      // car
       carBrand: await this.getcarBrand().catch(() => []),
         bikeBrand: await this.getbikeBrand().catch(() => []),
+         // FIXED: Electronics dropdowns properly included
+      electronicsBrand: await this.getelectronicsBrand().catch((error) => {
+        console.error("Failed to load electronics brands:", error);
+        return [];
+      }),
       fuelTypes: await this.getfuelTypes().catch(() => []),
       transmissions: await this.gettransmissions().catch(()=>[]),
        numberOfOwners: await this.getNumberOfOwners().catch(() => []), // Add this line
@@ -266,6 +301,14 @@ async getNumberOfOwners() {
           () => []
         ),
         bhkTypes: await this.getBHKTypes().catch(() => []),
+      },
+
+      // ADDED: Electronics specific dropdowns
+      "electronics": {
+        electronicsBrand: await this.getelectronicsBrand().catch((error) => {
+          console.error("Failed to load electronics brands for electronics category:", error);
+          return [];
+        }),
       },
     };
 
@@ -308,6 +351,10 @@ export const {
   getfuelTypes,
   gettransmissions,
   getNumberOfOwners,
+ // FIXED: Electronics dropdowns properly exported
+  getelectronicsBrand,
+  getelectronicsModel,
   preloadCommonDropdowns,
   getDropdownsForPropertyType,
+   
 } = dropdownService;

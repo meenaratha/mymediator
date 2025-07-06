@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useMediaQuery } from "react-responsive";
 import { useNavigate } from "react-router-dom";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
-import LocalGasStationIcon from "@mui/icons-material/LocalGasStation";
-import DriveEtaIcon from "@mui/icons-material/DriveEta";
+import TwoWheelerIcon from "@mui/icons-material/TwoWheeler";
 import SpeedIcon from "@mui/icons-material/Speed";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import EditIcon from "@mui/icons-material/Edit";
@@ -14,21 +14,21 @@ import { api } from "@/api/axios";
 import { toast } from "react-toastify";
 import IMAGES from "@/utils/images.js";
 
-const CarCard = ({
-  carImage,
-  carTitle,
+const BikeCard = ({
+  bikeImage,
+  bikeTitle,
   location,
   brand,
   model,
   year,
   kilometers,
-  fuelType,
-  transmission,
+  engineCC,
   price,
   id,
   slug,
   status,
   isPublished,
+  subcategory,
   onStatusChange,
   onDelete,
 }) => {
@@ -50,18 +50,18 @@ const CarCard = ({
 
   const handleEdit = (e) => {
     e.stopPropagation();
-    navigate(`/car/${slug}/${id}/edit`);
+    navigate(`/bike/${slug}/${id}/edit`);
   };
 
   const handleDelete = async (e) => {
     e.stopPropagation();
-    if (window.confirm("Are you sure you want to delete this car?")) {
+    if (window.confirm("Are you sure you want to delete this bike?")) {
       setIsDeleting(true);
       try {
         await onDelete(id);
-        toast.success("Car deleted successfully");
+        toast.success("Bike deleted successfully");
       } catch (error) {
-        toast.error("Failed to delete car");
+        toast.error("Failed to delete bike");
       } finally {
         setIsDeleting(false);
       }
@@ -70,7 +70,7 @@ const CarCard = ({
 
   const updateStatus = async (newStatus) => {
     try {
-      await api.patch(`/car/status/${id}`, { status: newStatus });
+      await api.patch(`/bike/status/${id}`, { status: newStatus });
       setCurrentStatus(newStatus);
       onStatusChange(id, newStatus);
       toast.success(`Status updated to ${newStatus}`);
@@ -82,9 +82,9 @@ const CarCard = ({
 
   const updatePublishStatus = async (publishStatus) => {
     try {
-      await api.patch(`/car/publish/${id}`, { is_published: publishStatus });
+      await api.patch(`/bike/publish/${id}`, { is_published: publishStatus });
       setCurrentPublishStatus(publishStatus);
-      toast.success(`Car ${publishStatus ? 'published' : 'unpublished'} successfully`);
+      toast.success(`Bike ${publishStatus ? 'published' : 'unpublished'} successfully`);
     } catch (error) {
       console.error("Failed to update publish status:", error);
       toast.error("Failed to update publish status");
@@ -105,21 +105,21 @@ const CarCard = ({
 
   return (
     <div className="cursor-pointer flex items-start p-2 bg-white rounded-lg shadow-sm border border-gray-100 w-full">
-      {/* Car Image */}
+      {/* Bike Image */}
       <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
         <img
-          src={carImage || IMAGES.propertybanner1}
-          alt={carTitle}
+          src={bikeImage || IMAGES.propertybanner1}
+          alt={bikeTitle}
           className="w-full h-full object-cover"
         />
       </div>
 
-      {/* Car Details */}
+      {/* Bike Details */}
       <div className="ml-3 flex-1 min-w-0">
-        {/* Car Title and Location */}
+        {/* Bike Title and Location */}
         <div className="flex items-center flex-wrap md:flex-nowrap">
           <h3 className="font-bold text-gray-900 truncate mr-1 md:mb-0 mb-2">
-            {carTitle}
+            {bikeTitle}
           </h3>
           {/* Publish Status Indicator */}
           <div className={`px-2 py-1 rounded-full text-xs font-medium mr-2 ${
@@ -135,31 +135,35 @@ const CarCard = ({
           </div>
         </div>
 
-        {/* Car Specifications */}
+        {/* Bike Specifications */}
         <div className="flex items-center mt-1 text-gray-600 flex-wrap md:flex-nowrap gap-[8px] mb-2">
           <span className="text-sm">{brand}</span>
           <span className="text-sm">({model})</span>
-          <span className="text-sm">{year}</span>
+          {subcategory && (
+            <span className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+              {subcategory}
+            </span>
+          )}
+        </div>
+
+        {/* Year, Kilometers, and Engine CC */}
+        <div className="flex items-center mt-1 text-gray-600 flex-wrap md:flex-nowrap gap-[8px] mb-2">
+          {year && (
+            <>
+              <CalendarTodayIcon style={{ fontSize: 14 }} />
+              <span className="text-sm">{year}</span>
+            </>
+          )}
           {kilometers && (
             <>
               <SpeedIcon style={{ fontSize: 14 }} />
               <span className="text-sm">{kilometers} km</span>
             </>
           )}
-        </div>
-
-        {/* Fuel Type and Transmission */}
-        <div className="flex items-center mt-1 text-gray-600 flex-wrap md:flex-nowrap gap-[8px] mb-2">
-          {fuelType && (
+          {engineCC && (
             <>
-              <LocalGasStationIcon style={{ fontSize: 14 }} />
-              <span className="text-sm">{fuelType}</span>
-            </>
-          )}
-          {transmission && (
-            <>
-              <DriveEtaIcon style={{ fontSize: 14 }} />
-              <span className="text-sm">{transmission}</span>
+              <TwoWheelerIcon style={{ fontSize: 14 }} />
+              <span className="text-sm">{engineCC} CC</span>
             </>
           )}
         </div>
@@ -177,7 +181,7 @@ const CarCard = ({
             <button
               onClick={handleEdit}
               className="text-gray-600 hover:text-blue-600"
-              title="Edit car"
+              title="Edit bike"
             >
               <EditIcon fontSize="small" />
             </button>
@@ -186,7 +190,7 @@ const CarCard = ({
             <button
               onClick={handleDelete}
               className="text-gray-600 hover:text-red-600"
-              title="Delete car"
+              title="Delete bike"
               disabled={isDeleting}
             >
               {isDeleting ? (
@@ -246,7 +250,7 @@ const CarCard = ({
                           }}
                           className="block w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-blue-50"
                         >
-                          Publish Car
+                          Publish Bike
                         </button>
                         <button
                           onClick={(e) => {
@@ -256,7 +260,7 @@ const CarCard = ({
                           }}
                           className="block w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
                         >
-                          Unpublish Car
+                          Unpublish Bike
                         </button>
                       </div>
 
@@ -290,13 +294,13 @@ const CarCard = ({
   );
 };
 
-const CarPostDetails = () => {
+const BikePostDetails = () => {
   const isMobile = useMediaQuery({ maxWidth: 567 });
   const isTablet = useMediaQuery({ minWidth: 568, maxWidth: 899 });
   const navigate = useNavigate();
 
   // Pagination states
-  const [cars, setCars] = useState([]);
+  const [bikes, setBikes] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -304,39 +308,39 @@ const CarPostDetails = () => {
   const [hasMoreData, setHasMoreData] = useState(false);
   const [total, setTotal] = useState(0);
 
-  // Update car status in local state
+  // Update bike status in local state
   const handleStatusChange = (id, newStatus) => {
-    setCars((prevCars) =>
-      prevCars.map((car) =>
-        car.id === id ? { ...car, status: newStatus } : car
+    setBikes((prevBikes) =>
+      prevBikes.map((bike) =>
+        bike.id === id ? { ...bike, status: newStatus } : bike
       )
     );
   };
 
-  // Handle car deletion
-  const handleDeleteCar = async (id) => {
+  // Handle bike deletion
+  const handleDeleteBike = async (id) => {
     try {
-      await api.delete(`/car/${id}/delete`);
-      setCars((prevCars) => prevCars.filter((car) => car.id !== id));
+      await api.delete(`/bike/${id}/delete`);
+      setBikes((prevBikes) => prevBikes.filter((bike) => bike.id !== id));
       setTotal((prev) => prev - 1);
       return true;
     } catch (error) {
-      console.error("Failed to delete car", error);
-      toast.error("Failed to delete car");
+      console.error("Failed to delete bike", error);
+      toast.error("Failed to delete bike");
       throw error;
     }
   };
 
-  // Fetch cars from API
-  const fetchCars = async (page = 1, loadMore = false) => {
+  // Fetch bikes from API
+  const fetchBikes = async (page = 1, loadMore = false) => {
     if (loadMore) setLoadingMore(true);
     else setLoading(true);
 
     try {
-      const response = await api.get(`/car/vendorlist/web?page=${page}`);
+      const response = await api.get(`/bike/list/web?page=${page}`);
       const result = response.data?.data;
 
-      setCars((prev) =>
+      setBikes((prev) =>
         page === 1 ? result.data || [] : [...prev, ...(result.data || [])]
       );
       setCurrentPage(result.current_page);
@@ -349,9 +353,9 @@ const CarPostDetails = () => {
           result.data.length > 0
       );
     } catch (err) {
-      console.error("Failed to load cars", err);
-      toast.error("Failed to load cars");
-      if (page === 1) setCars([]);
+      console.error("Failed to load bikes", err);
+      toast.error("Failed to load bikes");
+      if (page === 1) setBikes([]);
       setHasMoreData(false);
     } finally {
       if (loadMore) setLoadingMore(false);
@@ -361,13 +365,13 @@ const CarPostDetails = () => {
 
   // Initial load
   useEffect(() => {
-    fetchCars(1);
+    fetchBikes(1);
   }, []);
 
   // Handle load more
   const handleLoadMore = () => {
     if (hasMoreData && !loadingMore && currentPage < lastPage) {
-      fetchCars(currentPage + 1, true);
+      fetchBikes(currentPage + 1, true);
     }
   };
 
@@ -442,34 +446,34 @@ const CarPostDetails = () => {
             ? Array.from({ length: 6 }).map((_, index) => (
                 <LoadingSkeleton key={index} />
               ))
-            : cars.map((car) => (
-                <CarCard
-                  key={car.id}
-                  id={car.id}
-                  slug={car.form_type}
-                  carImage={car.image_url || car.images?.[0]?.url}
-                  carTitle={car.title}
-                  location={`${car.city || ''}${
-                    car.district ? `, ${car.district}` : ""
+            : bikes.map((bike) => (
+                <BikeCard
+                  key={bike.id}
+                  id={bike.id}
+                    slug={bike.form_type }
+                  bikeImage={bike.image_url || bike.images?.[0]?.url}
+                  bikeTitle={bike.title}
+                  location={`${bike.city || ''}${
+                    bike.district ? `, ${bike.district}` : ""
                   }`}
-                  brand={car.brand_name || car.brand}
-                  model={car.model_name || car.model}
-                  year={car.year}
-                  kilometers={car.kilometers}
-                  fuelType={car.fuel_type_name || car.fuel_type}
-                  transmission={car.transmission_name || car.transmission}
+                  brand={bike.brand_name || bike.brand}
+                  model={bike.model_name || bike.model}
+                  year={bike.year}
+                  kilometers={bike.kilometers}
+                  engineCC={bike.engine_cc}
                   price={
-                    car.price ? parseInt(car.price).toLocaleString() : ""
+                    bike.price ? parseInt(bike.price).toLocaleString() : ""
                   }
-                  status={car.status || "available"}
-                  isPublished={car.is_published || 0}
+                  status={bike.status || "available"}
+                  isPublished={bike.is_published || 0}
+                  subcategory={bike.subcategory}
                   onStatusChange={handleStatusChange}
-                  onDelete={handleDeleteCar}
+                  onDelete={handleDeleteBike}
                 />
               ))}
         </div>
 
-        {!loading && hasMoreData && cars.length > 0 && (
+        {!loading && hasMoreData && bikes.length > 0 && (
           <div className="mt-8 text-center">
             <LoadMoreButton
               onClick={handleLoadMore}
@@ -479,21 +483,21 @@ const CarPostDetails = () => {
           </div>
         )}
 
-        {!loading && cars.length > 0 && (
+        {!loading && bikes.length > 0 && (
           <div className="mt-4 text-center text-gray-600 text-sm">
-            Showing {cars.length} of {total} cars
+            Showing {bikes.length} of {total} bikes
           </div>
         )}
 
-        {!loading && !hasMoreData && cars.length > 0 && (
+        {!loading && !hasMoreData && bikes.length > 0 && (
           <div className="mt-4 text-center text-gray-500 text-sm">
-            No more cars to load
+            No more bikes to load
           </div>
         )}
 
-        {!loading && cars.length === 0 && (
+        {!loading && bikes.length === 0 && (
           <div className="text-center py-8">
-            <p className="text-gray-500">No cars found</p>
+            <p className="text-gray-500">No bikes found</p>
           </div>
         )}
       </div>
@@ -501,4 +505,4 @@ const CarPostDetails = () => {
   );
 };
 
-export default CarPostDetails;
+export default BikePostDetails;

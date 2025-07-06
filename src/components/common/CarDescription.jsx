@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import {useParams, Link } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import IMAGES from "@/utils/images.js";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import {
-  TwoWheelerOutlined,
+  DirectionsCarOutlined,
   SpeedOutlined,
   LocalGasStationOutlined,
   CalendarTodayOutlined,
@@ -15,8 +15,7 @@ import {
   ReportProblemOutlined,
   CheckCircleOutline,
 } from "@mui/icons-material";
-import axios from "axios";
-import BikeDetails from "./BikeDetails";
+import CarDetails from "./CarDetails";
 import L from "leaflet";
 import { api } from "../../api/axios";
 
@@ -28,9 +27,9 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-const BikeDescription = () => {
- const { slug } = useParams();
-  const [bike, setBike] = useState(null);
+const CarDescription = () => {
+  const { slug } = useParams();
+  const [car, setCar] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -40,8 +39,8 @@ const BikeDescription = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await api.get(`/gbike/${slug}`);
-        setBike(response.data.data);
+        const response = await api.get(`/gcar/${slug}`);
+        setCar(response.data.data);
         setIsLoading(false);
       } catch (error) {
         setError(error);
@@ -53,23 +52,27 @@ const BikeDescription = () => {
   }, [slug]);
   
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        <span className="ml-2">Loading...</span>
+      </div>
+    );
   }
 
-  if (!bike) return <div>Property not found.</div>;
+  if (!car) return <div className="text-center py-8">Car not found.</div>;
 
   if (error) {
-    return <div>Error: {error.message}</div>;
+    return <div className="text-center py-8 text-red-500">Error: {error.message}</div>;
   }
 
   // Get map coordinates - use Chennai as default if null
   const mapCenter = {
-    lat: bike.latitude || defaultLocation.lat,
-    lng: bike.longtitude || defaultLocation.lng, // Note: API uses 'longtitude' (typo)
+    lat: car.latitude || defaultLocation.lat,
+    lng: car.longitude || defaultLocation.lng,
   };
 
-
-   // Function to open Google Maps in new tab
+  // Function to open Google Maps in new tab
   const openGoogleMaps = () => {
     const { lat, lng } = mapCenter;
     const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lng}&z=15`;
@@ -78,7 +81,7 @@ const BikeDescription = () => {
 
   return (
     <>
-      <BikeDetails bike={bike} />
+      <CarDetails car={car} />
 
       <div className="p-4">
         {/* Container for the two-column layout */}
@@ -89,21 +92,21 @@ const BikeDescription = () => {
               {/* Upper section with icons and details */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 border-b border-[#E1E1E1] pb-4">
                 <div className="flex items-center space-x-2">
-                  <TwoWheelerOutlined className="text-gray-500" />
+                  <DirectionsCarOutlined className="text-gray-500" />
                   <span className="text-sm font-medium text-gray-600">
-                    {bike.engine_cc}
+                    {car.transmission }
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <SpeedOutlined className="text-gray-500" />
                   <span className="text-sm font-medium text-gray-600">
-                    {bike.kilometers} km
+                    {car.kilometers} km
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <LocalGasStationOutlined className="text-gray-500" />
                   <span className="text-sm font-medium text-gray-600">
-                    {bike.fuelType}
+                    {car.fuel_type || car.fuelType || 'Petrol'}
                   </span>
                 </div>
               </div>
@@ -113,19 +116,19 @@ const BikeDescription = () => {
                 <div className="flex items-center space-x-2">
                   <PersonOutlined className="text-gray-500" />
                   <span className="text-sm font-medium text-gray-600">
-                    Owner {bike.ownerNumber}
+                    Owner {car.owner_number || car.ownerNumber || '1'}
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <LocationOnOutlined className="text-gray-500" />
                   <span className="text-sm font-medium text-gray-600">
-                    {bike.address}
+                    {car.city}, {car.district}
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <CalendarTodayOutlined className="text-gray-500" />
                   <span className="text-sm font-medium text-gray-600">
-                    {bike.year}
+                    {car.year}
                   </span>
                 </div>
               </div>
@@ -134,7 +137,7 @@ const BikeDescription = () => {
               <div className="pt-4">
                 <h3 className="text-lg font-bold mb-2">Description</h3>
                 <p className="text-gray-700 text-sm">
-               {bike.description}
+                  {car.description || `This ${car.manufacturing_year || car.year} ${car.brand} ${car.model} is in excellent condition. Well-maintained and ready for its next owner.`}
                 </p>
               </div>
             </div>
@@ -148,11 +151,13 @@ const BikeDescription = () => {
                 <div className="flex items-center">
                   <img
                     className="w-10 h-10 rounded-full object-cover"
-                    src={IMAGES.profile}
+                    src={car.profile_image || IMAGES.profile}
                     alt="Profile"
                   />
                   <div className="ml-3">
-                    <h2 className="text-lg font-semibold">{bike.vendor_name}</h2>
+                    <h2 className="text-lg font-semibold">
+                      {car.vendor_name || "Car Owner"}
+                    </h2>
                     <p className="text-sm text-gray-500">Seller</p>
                   </div>
                 </div>
@@ -163,14 +168,9 @@ const BikeDescription = () => {
 
               {/* Location Section */}
               <div className="my-4">
-                <div className="flex flex-col justify-center items-center max-w-sm mx-auto gap-[10px]"
-                onClick={openGoogleMaps}
-                >
+                <div className="flex flex-col justify-center items-center max-w-sm mx-auto gap-[10px]">
                   <MapContainer
-                    center={[
-                      bike.latitude,
-                      bike.latitude,
-                    ]}
+                    center={[mapCenter.lat, mapCenter.lng]}
                     zoom={13}
                     scrollWheelZoom={false}
                     className="w-[150px] h-[150px] rounded-[10px]"
@@ -178,14 +178,9 @@ const BikeDescription = () => {
                     <TileLayer
                       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
-                    <Marker
-                      position={[
-                        bike.latitude,
-                        bike.latitude,
-                      ]}
-                    >
+                    <Marker position={[mapCenter.lat, mapCenter.lng]}>
                       <Popup>
-                        {bike.brand} {bike.model} <br /> {bike.year}
+                        {car.brand} {car.model} <br /> {car.manufacturing_year || car.year}
                       </Popup>
                     </Marker>
                   </MapContainer>
@@ -193,7 +188,7 @@ const BikeDescription = () => {
                   <div className="flex items-center space-x-2">
                     <LocationOnOutlined className="text-gray-500" />
                     <span className="text-sm font-medium text-gray-600">
-                      {bike.address}
+                      {car.city}, {car.district}
                     </span>
                   </div>
                 </div>
@@ -202,7 +197,7 @@ const BikeDescription = () => {
               {/* Ad ID and Report Section */}
               <div className="flex justify-between items-center text-gray-600 pt-4 border-t">
                 <div className="text-sm">
-                  <span className="font-semibold">ADS ID :</span> {bike.id}
+                  <span className="font-semibold">ADS ID :</span> {car.unique_code || car.id}
                 </div>
                 <div className="flex items-center text-blue-600 cursor-pointer" aria-label="report">
                   <ReportProblemOutlined fontSize="small" />
@@ -214,75 +209,59 @@ const BikeDescription = () => {
         </div>
       </div>
 
+      {/* Car Specifications */}
       <div className="p-4 rounded-xl shadow-lg bg-white w-full mb-6">
+        <h3 className="text-lg font-bold mb-4">Car Specifications</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm sm:text-base">
           <div className="grid grid-cols-2">
             <div className="flex gap-[15px] justify-between">
               <span>Brand </span>
               <span>:</span>
             </div>
-            <span className="px-[10px]">{bike.brand}</span>
+            <span className="px-[10px]">{car.brand}</span>
           </div>
           <div className="grid grid-cols-2">
             <div className="flex gap-[15px] justify-between">
               <span>Model </span>
               <span>:</span>
             </div>
-            <span className="px-[10px]">{bike.model}</span>
+            <span className="px-[10px]">{car.model}</span>
           </div>
           <div className="grid grid-cols-2">
             <div className="flex gap-[15px] justify-between">
               <span>Year </span>
               <span>:</span>
             </div>
-            <span className="px-[10px]">{bike.year}</span>
+            <span className="px-[10px]">{car.manufacturing_year || car.year}</span>
           </div>
-          <div className="grid grid-cols-2">
-            <div className="flex gap-[15px] justify-between">
-              <span>Engine </span>
-              <span>:</span>
-            </div>
-            <span className="px-[10px]">{bike.engineCapacity}</span>
-          </div>
-          <div className="grid grid-cols-2">
-            <div className="flex gap-[15px] justify-between">
-              <span>Mileage </span>
-              <span>:</span>
-            </div>
-            <span className="px-[10px]">{bike.mileage}</span>
-          </div>
+          
           <div className="grid grid-cols-2">
             <div className="flex gap-[15px] justify-between">
               <span>Fuel Type </span>
               <span>:</span>
             </div>
-            <span className="px-[10px]">{bike.fuelType}</span>
+            <span className="px-[10px]">{car.fuel_type || car.fuelType || 'Petrol'}</span>
           </div>
           <div className="grid grid-cols-2">
             <div className="flex gap-[15px] justify-between">
-              <span>Condition </span>
+              <span>Transmission </span>
               <span>:</span>
             </div>
-            <span className="px-[10px]">{bike.condition}</span>
+            <span className="px-[10px]">{car.transmission || 'Manual'}</span>
           </div>
           <div className="grid grid-cols-2">
             <div className="flex gap-[15px] justify-between">
               <span>Kilometers </span>
               <span>:</span>
             </div>
-            <span className="px-[10px]">{bike.kilometers} km</span>
+            <span className="px-[10px]">{ car.kilometers || 'N/A'} km</span>
           </div>
-          <div className="grid grid-cols-2">
-            <div className="flex gap-[15px] justify-between">
-              <span>Color</span>
-              <span>:</span>
-            </div>
-            <span className="px-[10px]">{bike.color}</span>
-          </div>
+         
+          
         </div>
       </div>
     </>
   );
 };
 
-export default BikeDescription;
+export default CarDescription;

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useParams , Link } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import IMAGES from "@/utils/images.js";
-// import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import {
   Home,
   Bathtub,
@@ -18,15 +17,19 @@ import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
 import ReportIcon from "@mui/icons-material/Report";
-import { api } from "@/api/axios"; // Adjust if your axios instance path is different
-// import "leaflet/dist/leaflet.css";
+import { api } from "@/api/axios";
 import PropertyDetails from "./PropertyDetails";
-import {
-  GoogleMap,
-  LoadScript,
-  Marker,
-  InfoWindow,
-} from "@react-google-maps/api";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+
+// Fix for default markers in React Leaflet
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
 const PropertyDescription = () => {
   const { slug } = useParams();
@@ -34,11 +37,14 @@ const PropertyDescription = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Default Chennai coordinates
+  const defaultLocation = { lat: 13.0827, lng: 80.2707 };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await api.get(`/properties/${slug}`);
-        setProperty(response.data.data); // assuming your API returns { success, message, data }
+        setProperty(response.data.data);
         setIsLoading(false);
       } catch (error) {
         setError(error);
@@ -58,45 +64,57 @@ const PropertyDescription = () => {
   if (error) {
     return <div>Error: {error.message}</div>;
   }
+
+  // Get map coordinates - use Chennai as default if null
+  const mapCenter = {
+    lat: property.latitude || defaultLocation.lat,
+    lng: property.longtitude || defaultLocation.lng, // Note: API uses 'longtitude' (typo)
+  };
+
+
+   // Function to open Google Maps in new tab
+  const openGoogleMaps = () => {
+    const { lat, lng } = mapCenter;
+    const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lng}&z=15`;
+    window.open(googleMapsUrl, '_blank');
+  };
   return (
     <>
       <PropertyDetails property={property} />
 
-      <div className=" p-4">
+      <div className="p-4">
         {/* Container for the two-column layout */}
         <div className="flex flex-col md:flex-row md:items-stretch">
           {/* Left Column (65%) */}
           <div className="md:w-2/3 w-full md:pr-4 mb-4 md:mb-0">
-            <div className="bg-white p-6 shadow-lg rounded-lg h-full border border-gray-200 ">
+            <div className="bg-white p-6 shadow-lg rounded-lg h-full border border-gray-200">
               {/* Upper section with icons and details */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 border-b border-[#E1E1E1] pb-4">
-                {property.super_builtup_area !== "" ? (
+                {property.super_builtup_area && (
                   <div className="flex items-center space-x-2">
                     <HomeOutlinedIcon className="text-gray-500" />
                     <span className="text-sm font-medium text-gray-600">
                       {property.super_builtup_area} Sq. Ft
                     </span>
                   </div>
-                ) : (
-                  ""
                 )}
 
-                <div className="flex items-center space-x-2">
-                  <CompassCalibrationOutlinedIcon className="text-gray-500" />
-                  <span className="text-sm font-medium text-gray-600">
-                    {property.building_direction}
-                  </span>
-                </div>
+                {property.building_direction && (
+                  <div className="flex items-center space-x-2">
+                    <CompassCalibrationOutlinedIcon className="text-gray-500" />
+                    <span className="text-sm font-medium text-gray-600">
+                      {property.building_direction}
+                    </span>
+                  </div>
+                )}
 
-                {property.bhk !== null ? (
+                {property.bhk && (
                   <div className="flex items-center space-x-2">
                     <BedOutlinedIcon className="text-gray-500" />
                     <span className="text-sm font-medium text-gray-600">
                       {property.bhk}
                     </span>
                   </div>
-                ) : (
-                  ""
                 )}
               </div>
 
@@ -138,11 +156,11 @@ const PropertyDescription = () => {
                 <div className="flex items-center">
                   <img
                     className="w-10 h-10 rounded-full object-cover"
-                    src={IMAGES.profile}
+                    src={property.profile_image || IMAGES.profile}
                     alt="Profile"
                   />
                   <div className="ml-3">
-                    <h2 className="text-lg font-semibold">Jayalakshmi</h2>
+                    <h2 className="text-lg font-semibold">{property.vendor_name}</h2>
                     <p className="text-sm text-gray-500">Owner</p>
                   </div>
                 </div>
@@ -154,43 +172,30 @@ const PropertyDescription = () => {
                 </Link>
               </div>
 
-              {/* Location Section */}
+              {/* Location Section with Leaflet Map */}
               <div className="my-4">
                 <div className="flex flex-col justify-center items-center max-w-sm mx-auto gap-[10px]">
-                  <LoadScript
-                    googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
+                  <div className="w-[150px] h-[150px] rounded-lg overflow-hidden"
+                   onClick={openGoogleMaps}
                   >
-                    <GoogleMap
-                      mapContainerStyle={{
-                        width: "150px",
-                        height: "150px",
-                        borderRadius: "10px",
-                      }}
-                      center={{
-                        lat: property.latitude ?? 13.0827,
-                        lng: property.longitude ?? 80.2707,
-                      }}
+                    <MapContainer
+                      center={[mapCenter.lat, mapCenter.lng]}
                       zoom={15}
-                      options={{
-                        disableDefaultUI: true,
-                        scrollwheel: false,
-                      }}
+                      scrollWheelZoom={false}
+                      className="w-[150px] h-[150px] rounded-[10px]"
+                      style={{ height: "150px", width: "150px" }}
                     >
-                      <Marker
-                        position={{
-                          lat: property.latitude ?? 13.0827,
-                          lng: property.longitude ?? 80.2707,
-                        }}
-                      >
-                        <InfoWindow>
-                          <div>
-                            <p>{property.subcategory}</p>
-                            <p>{property.city}</p>
-                          </div>
-                        </InfoWindow>
+                      <TileLayer 
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                      />
+                      <Marker position={[mapCenter.lat, mapCenter.lng]}>
+                        <Popup>
+                          {property.subcategory} <br /> {property.city}
+                        </Popup>
                       </Marker>
-                    </GoogleMap>
-                  </LoadScript>
+                    </MapContainer>
+                  </div>
 
                   <div className="flex items-center space-x-2 mt-2">
                     <CompassCalibrationOutlinedIcon className="text-gray-500" />
@@ -207,7 +212,7 @@ const PropertyDescription = () => {
                   <span className="font-semibold">ADS ID :</span>{" "}
                   {property.unique_code}
                 </div>
-                <div className="text-blue-600" aria-label="report">
+                <div className="text-blue-600 cursor-pointer flex items-center" aria-label="report">
                   <ReportIcon />
                   <span className="ml-1">Report Ad</span>
                 </div>
@@ -217,144 +222,106 @@ const PropertyDescription = () => {
         </div>
       </div>
 
-      <div className="p-4 rounded-xl shadow-lg bg-white w-full ">
+      <div className="p-4 rounded-xl shadow-lg bg-white w-full">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm sm:text-base">
-          {/* <div className="grid grid-cols-2 ">
-            <div className="flex gap-[15px] justify-between">
-              <span>Type </span>
-              <span>:</span>
-            </div>
-
-            <span className="px-[10px]">Individual House</span>
-          </div> */}
-
-          {property.building_direction !== null ? (
+          {property.building_direction && (
             <div className="grid grid-cols-2 sm:grid-cols-2">
               <div className="flex gap-[15px] justify-between">
                 <span>Facing </span>
                 <span>:</span>
               </div>
-
               <span className="px-[10px]">{property.building_direction}</span>
             </div>
-          ) : (
-            ""
           )}
-          {property.total_floors !== null ? (
-            <div className="grid grid-cols-2 ">
+
+          {property.total_floors && (
+            <div className="grid grid-cols-2">
               <div className="flex gap-[15px] justify-between">
                 <span>Total Floors </span>
                 <span>:</span>
               </div>
-
               <span className="px-[10px]">{property.total_floors}</span>
             </div>
-          ) : (
-            ""
           )}
 
-          {property.bedrooms !== null ? (
-            <div className="grid grid-cols-2 ">
+          {property.bedrooms && (
+            <div className="grid grid-cols-2">
               <div className="flex gap-[15px] justify-between">
                 <span>Bedrooms </span>
                 <span>:</span>
               </div>
-
               <span className="px-[10px]">{property.bedrooms}</span>
             </div>
-          ) : (
-            ""
           )}
 
-          {property.bathroom !== null ? (
-            <div className="grid grid-cols-2 ">
+          {property.bathroom && (
+            <div className="grid grid-cols-2">
               <div className="flex gap-[15px] justify-between">
                 <span>Bathrooms </span>
                 <span>:</span>
               </div>
-
               <span className="px-[10px]">{property.bathroom}</span>
             </div>
-          ) : (
-            ""
           )}
 
-          {property.car_parking !== null ? (
-            <div className="grid grid-cols-2 ">
+          {property.car_parking && (
+            <div className="grid grid-cols-2">
               <div className="flex gap-[15px] justify-between">
                 <span>Car Parking </span>
                 <span>:</span>
               </div>
-
               <span className="px-[10px]">{property.car_parking}</span>
             </div>
-          ) : (
-            ""
           )}
 
-          {property.maintenance !== null ? (
-            <div className="grid grid-cols-2 ">
+          {property.maintenance && (
+            <div className="grid grid-cols-2">
               <div className="flex gap-[15px] justify-between">
                 <span>Maintenance Type </span>
                 <span>:</span>
               </div>
-
               <span className="px-[10px]">{property.maintenance}</span>
             </div>
-          ) : (
-            ""
           )}
 
-          {property.length !== null ? (
-            <div className="grid grid-cols-2 ">
+          {property.length && (
+            <div className="grid grid-cols-2">
               <div className="flex gap-[15px] justify-between">
                 <span>Length</span>
                 <span>:</span>
               </div>
-
               <span className="px-[10px]">{property.length}</span>
             </div>
-          ) : (
-            ""
           )}
 
-          {property.breadth !== null ? (
-            <div className="grid grid-cols-2 ">
+          {property.breadth && (
+            <div className="grid grid-cols-2">
               <div className="flex gap-[15px] justify-between">
-                <span>breadth</span>
+                <span>Breadth</span>
                 <span>:</span>
               </div>
-
               <span className="px-[10px]">{property.breadth}</span>
             </div>
-          ) : (
-            ""
           )}
 
-          {property.plot_area !== null ? (
-            <div className="grid grid-cols-2 ">
+          {property.plot_area && (
+            <div className="grid grid-cols-2">
               <div className="flex gap-[15px] justify-between">
                 <span>Plot Area</span>
                 <span>:</span>
               </div>
-
               <span className="px-[10px]">{property.plot_area}</span>
             </div>
-          ) : (
-            ""
           )}
 
-          {property.post_year !== null ? (
-            <div className="grid grid-cols-2 ">
+          {property.post_year && (
+            <div className="grid grid-cols-2">
               <div className="flex gap-[15px] justify-between">
                 <span>Year</span>
                 <span>:</span>
               </div>
-
               <span className="px-[10px]">{property.post_year}</span>
             </div>
-          ) : (
-            ""
           )}
         </div>
       </div>

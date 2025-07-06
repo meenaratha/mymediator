@@ -4,6 +4,8 @@ import { useMediaQuery } from "react-responsive";
 import BikeDescription from "../../components/common/BikeDescription";
 import BikeDetails from "../../components/common/BikeDetails";
 import RecommendedBikes from "../../components/common/RecommendedBikes";
+import { api } from "../../api/axios";
+
 
 const BikeDetailPage = () => {
   const isMobile = useMediaQuery({ maxWidth: 767 });

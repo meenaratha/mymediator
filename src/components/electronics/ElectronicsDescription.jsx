@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { useParams, Link } from "react-router-dom";
 import IMAGES from "@/utils/images.js";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import L from "leaflet";
 import {
-  LaptopMacOutlined,
+  TvOutlined,
   MemoryOutlined,
   StorageOutlined,
   BatteryFullOutlined,
@@ -11,71 +13,87 @@ import {
   PersonOutlined,
   LocationOnOutlined,
   ReportProblemOutlined,
-  ScreenRotationOutlined
+  ScreenRotationOutlined,
+  PhoneAndroidOutlined,
+  ComputerOutlined
 } from "@mui/icons-material";
-import axios from "axios";
-import LaptopDetails from "../electronics/ElectronicsDetails";
-import { Link, useLocation } from "react-router-dom";
+import { api } from "@/api/axios";
+import ElectronicsDetails from "./ElectronicsDetails";
 
-const LaptopDescription = () => {
-  const [laptop, setLaptop] = useState(null);
+// Fix for default markers in React Leaflet
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+const ElectronicsDescription = () => {
+  const { slug } = useParams();
+  const [electronics, setElectronics] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Default Chennai coordinates
+  const defaultLocation = { lat: 13.0827, lng: 80.2707 };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Replace with your laptop data API endpoint
-        const response = await axios.get(
-          "https://raw.githubusercontent.com/yourusername/laptops-data/main/laptops.json"
-        );
-        const data = response.data;
-        setLaptop(data.laptop);
+        const response = await api.get(`/gelectronics/${slug}`);
+        setElectronics(response.data.data);
         setIsLoading(false);
       } catch (error) {
-        // If API fails, use fallback data
-        console.log("Using fallback data due to API error:", error);
-        setLaptop({
-          id: "L12345",
-          brand: "Microsoft",
-          model: "Surface Pro 8",
-          processor: "Intel Core i5-1135G7",
-          ram: "8 GB",
-          storage: "256 GB SSD",
-          displaySize: "13.0 inches",
-          displayResolution: "2880 x 1920",
-          graphicsCard: "Intel Iris Xe Graphics",
-          batteryLife: "Up to 16 hours",
-          operatingSystem: "Windows 11",
-          weight: "1.96 lbs",
-          condition: "Excellent",
-          purchaseYear: 2022,
-          warranty: "4 months remaining",
-          price: 80000,
-          additionalFeatures: ["Touchscreen", "Detachable Keyboard", "Surface Pen Compatible", "USB-C ports"],
-          location: {
-            address: "West Mambalam, Chennai",
-            latitude: 13.0419,
-            longitude: 80.2338
-          }
-        });
+        setError(error);
         setIsLoading(false);
       }
     };
+
     fetchData();
-  }, []);
+  }, [slug]);
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
+  if (!electronics) return <div>Electronics item not found.</div>;
+
   if (error) {
     return <div>Error: {error.message}</div>;
   }
 
+  // Get map coordinates - use Chennai as default if null
+  const mapCenter = {
+    lat: electronics.latitude || defaultLocation.lat,
+    lng: electronics.longitude || defaultLocation.lng,
+  };
+
+  // Function to open Google Maps in new tab
+  const openGoogleMaps = () => {
+    const { lat, lng } = mapCenter;
+    const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lng}&z=15`;
+    window.open(googleMapsUrl, '_blank');
+  };
+
+  // Get appropriate icon based on subcategory
+  const getCategoryIcon = () => {
+    switch (electronics.subcategory?.toLowerCase()) {
+      case 'tv':
+        return <TvOutlined className="text-gray-500" />;
+      case 'laptop':
+      case 'computer':
+        return <ComputerOutlined className="text-gray-500" />;
+      case 'mobile':
+      case 'phone':
+        return <PhoneAndroidOutlined className="text-gray-500" />;
+      default:
+        return <TvOutlined className="text-gray-500" />;
+    }
+  };
+
   return (
     <>
-      <LaptopDetails laptop={laptop} />
+      <ElectronicsDetails electronics={electronics} />
 
       <div className="p-4">
         {/* Container for the two-column layout */}
@@ -87,74 +105,71 @@ const LaptopDescription = () => {
               <div className="mb-4">
                 <h3 className="text-lg font-bold mb-2">Description</h3>
                 <p className="text-gray-700 text-sm">
-                  Microsoft Surface Laptop Pro 8 used 8 month old in perfect condition-256GB SSD, 8GB RAM, 
-                  Intel Core i5 11th Gen, 13-inch PixelSense Flow display with 120Hz refresh rate. The device 
-                  comes with the Surface Pro Type Cover (keyboard), charger, and Surface Pen. Battery life is 
-                  still excellent with up to 16 hours of use. Perfect for students or professionals on the go. 
-                  Original Microsoft warranty valid until June 24.
+                  {electronics.description || "No description available."}
                 </p>
               </div>
 
               {/* Key Specs in Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4 border-b border-[#E1E1E1]">
                 <div className="flex items-center space-x-2">
-                  <LaptopMacOutlined className="text-gray-500" />
+                  {getCategoryIcon()}
                   <div className="text-sm">
-                    <span className="font-medium text-gray-600">Processor:</span>
-                    <div className="text-gray-700">{laptop.processor}</div>
+                    <span className="font-medium text-gray-600">Brand:</span>
+                    <div className="text-gray-700">{electronics.brand}</div>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
                   <MemoryOutlined className="text-gray-500" />
                   <div className="text-sm">
-                    <span className="font-medium text-gray-600">Memory:</span>
-                    <div className="text-gray-700">{laptop.ram}</div>
+                    <span className="font-medium text-gray-600">Model:</span>
+                    <div className="text-gray-700">{electronics.model}</div>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
                   <StorageOutlined className="text-gray-500" />
                   <div className="text-sm">
-                    <span className="font-medium text-gray-600">Storage:</span>
-                    <div className="text-gray-700">{laptop.storage}</div>
+                    <span className="font-medium text-gray-600">Category:</span>
+                    <div className="text-gray-700">{electronics.subcategory}</div>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
                   <ScreenRotationOutlined className="text-gray-500" />
                   <div className="text-sm">
-                    <span className="font-medium text-gray-600">Display:</span>
-                    <div className="text-gray-700">{laptop.displaySize}</div>
+                    <span className="font-medium text-gray-600">Price:</span>
+                    <div className="text-gray-700">₹ {electronics.price}</div>
                   </div>
                 </div>
               </div>
 
-              {/* Ownership and Purchase Information */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4 border-b border-[#E1E1E1]">
+              {/* Features and Specifications */}
+              {electronics.features && (
+                <div className="py-4 border-b border-[#E1E1E1]">
+                  <h4 className="font-semibold text-gray-600 mb-2">Features:</h4>
+                  <p className="text-gray-700 text-sm">{electronics.features}</p>
+                </div>
+              )}
+
+              {electronics.specifications && (
+                <div className="pt-4">
+                  <h4 className="font-semibold text-gray-600 mb-2">Specifications:</h4>
+                  <p className="text-gray-700 text-sm">{electronics.specifications}</p>
+                </div>
+              )}
+
+              {/* Location and Contact Information */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4 border-t border-[#E1E1E1] mt-4">
                 <div className="flex items-center space-x-2">
                   <PersonOutlined className="text-gray-500" />
                   <div className="text-sm">
-                    <span className="font-medium text-gray-600">Condition:</span>
-                    <div className="text-gray-700">{laptop.condition}</div>
+                    <span className="font-medium text-gray-600">Status:</span>
+                    <div className="text-gray-700 capitalize">{electronics.status}</div>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
                   <LocationOnOutlined className="text-gray-500" />
                   <div className="text-sm">
                     <span className="font-medium text-gray-600">Location:</span>
-                    <div className="text-gray-700">{laptop.location.address}</div>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <CalendarTodayOutlined className="text-gray-500" />
-                  <div className="text-sm">
-                    <span className="font-medium text-gray-600">Purchase Year:</span>
-                    <div className="text-gray-700">{laptop.purchaseYear}</div>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <BatteryFullOutlined className="text-gray-500" />
-                  <div className="text-sm">
-                    <span className="font-medium text-gray-600">Battery Life:</span>
-                    <div className="text-gray-700">{laptop.batteryLife}</div>
+                    <div className="text-gray-700">{electronics.city}, {electronics.district}</div>
                   </div>
                 </div>
               </div>
@@ -173,8 +188,8 @@ const LaptopDescription = () => {
                     alt="Profile"
                   />
                   <div className="ml-3">
-                    <h2 className="text-lg font-semibold">Jessamyn</h2>
-                    <p className="text-sm text-gray-500">Seller</p>
+                    <h2 className="text-lg font-semibold">Seller</h2>
+                    <p className="text-sm text-gray-500">Owner</p>
                   </div>
                 </div>
                 <Link to="/seller-profile" className="text-blue-600 font-semibold text-sm">
@@ -182,37 +197,47 @@ const LaptopDescription = () => {
                 </Link>
               </div>
 
-              {/* Location Section */}
+              {/* Location Section with Clickable Map */}
               <div className="my-4">
                 <div className="flex flex-col justify-center items-center max-w-sm mx-auto gap-[10px]">
-                  <MapContainer
-                    center={[
-                      laptop.location.latitude,
-                      laptop.location.longitude,
-                    ]}
-                    zoom={13}
-                    scrollWheelZoom={false}
-                    className="w-[150px] h-[150px] rounded-[10px]"
+                  <div 
+                    className="w-[150px] h-[150px] rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity duration-200 relative group"
+                    onClick={openGoogleMaps}
+                    title="Click to open in Google Maps"
                   >
-                    <TileLayer
-                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    />
-                    <Marker
-                      position={[
-                        laptop.location.latitude,
-                        laptop.location.longitude,
-                      ]}
+                    <MapContainer
+                      center={[mapCenter.lat, mapCenter.lng]}
+                      zoom={13}
+                      scrollWheelZoom={false}
+                      className="w-[150px] h-[150px] rounded-[10px]"
+                      style={{ height: "150px", width: "150px" }}
                     >
-                      <Popup>
-                        {laptop.brand} {laptop.model} <br /> {laptop.purchaseYear}
-                      </Popup>
-                    </Marker>
-                  </MapContainer>
+                      <TileLayer 
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                      />
+                      <Marker position={[mapCenter.lat, mapCenter.lng]}>
+                        <Popup>
+                          {electronics.brand} {electronics.model} <br /> {electronics.subcategory}
+                        </Popup>
+                      </Marker>
+                    </MapContainer>
+
+                    {/* Overlay with Google Maps icon - appears on hover */}
+                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <div className="text-white text-center">
+                        <svg className="w-8 h-8 mx-auto mb-1" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                        </svg>
+                        <span className="text-xs">Open in Google Maps</span>
+                      </div>
+                    </div>
+                  </div>
 
                   <div className="flex items-center space-x-2">
                     <LocationOnOutlined className="text-gray-500" />
                     <span className="text-sm font-medium text-gray-600">
-                      {laptop.location.address}
+                      {electronics.city}, {electronics.district}
                     </span>
                   </div>
                 </div>
@@ -221,7 +246,7 @@ const LaptopDescription = () => {
               {/* Ad ID and Report Section */}
               <div className="flex justify-between items-center text-gray-600 pt-4 border-t">
                 <div className="text-sm">
-                  <span className="font-semibold">ADS ID :</span> {laptop.id}
+                  <span className="font-semibold">ADS ID :</span> {electronics.unique_code}
                 </div>
                 <div className="flex items-center text-blue-600 cursor-pointer" aria-label="report">
                   <ReportProblemOutlined fontSize="small" />
@@ -236,73 +261,99 @@ const LaptopDescription = () => {
       {/* Detailed Specifications Table */}
       <div className="p-4 rounded-xl shadow-lg bg-white w-full mb-6">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm sm:text-base">
-          <div className="grid grid-cols-2">
-            <div className="flex gap-[15px] justify-between">
-              <span>Processor Type </span>
-              <span>:</span>
+          {electronics.brand && (
+            <div className="grid grid-cols-2">
+              <div className="flex gap-[15px] justify-between">
+                <span>Brand </span>
+                <span>:</span>
+              </div>
+              <span className="px-[10px]">{electronics.brand}</span>
             </div>
-            <span className="px-[10px]">Core i5</span>
-          </div>
-          <div className="grid grid-cols-2">
-            <div className="flex gap-[15px] justify-between">
-              <span>Processor Gen </span>
-              <span>:</span>
+          )}
+
+          {electronics.model && (
+            <div className="grid grid-cols-2">
+              <div className="flex gap-[15px] justify-between">
+                <span>Model </span>
+                <span>:</span>
+              </div>
+              <span className="px-[10px]">{electronics.model}</span>
             </div>
-            <span className="px-[10px]">11th</span>
-          </div>
-          <div className="grid grid-cols-2">
-            <div className="flex gap-[15px] justify-between">
-              <span>RAM </span>
-              <span>:</span>
+          )}
+
+          {electronics.subcategory && (
+            <div className="grid grid-cols-2">
+              <div className="flex gap-[15px] justify-between">
+                <span>Category </span>
+                <span>:</span>
+              </div>
+              <span className="px-[10px]">{electronics.subcategory}</span>
             </div>
-            <span className="px-[10px]">8 GB</span>
-          </div>
-          <div className="grid grid-cols-2">
-            <div className="flex gap-[15px] justify-between">
-              <span>Storage Type </span>
-              <span>:</span>
+          )}
+
+          {electronics.state && (
+            <div className="grid grid-cols-2">
+              <div className="flex gap-[15px] justify-between">
+                <span>State </span>
+                <span>:</span>
+              </div>
+              <span className="px-[10px]">{electronics.state}</span>
             </div>
-            <span className="px-[10px]">SSD</span>
-          </div>
-          <div className="grid grid-cols-2">
-            <div className="flex gap-[15px] justify-between">
-              <span>Storage Size </span>
-              <span>:</span>
+          )}
+
+          {electronics.district && (
+            <div className="grid grid-cols-2">
+              <div className="flex gap-[15px] justify-between">
+                <span>District </span>
+                <span>:</span>
+              </div>
+              <span className="px-[10px]">{electronics.district}</span>
             </div>
-            <span className="px-[10px]">256 GB</span>
-          </div>
-          <div className="grid grid-cols-2">
-            <div className="flex gap-[15px] justify-between">
-              <span>Graphics Card </span>
-              <span>:</span>
+          )}
+
+          {electronics.city && (
+            <div className="grid grid-cols-2">
+              <div className="flex gap-[15px] justify-between">
+                <span>City </span>
+                <span>:</span>
+              </div>
+              <span className="px-[10px]">{electronics.city}</span>
             </div>
-            <span className="px-[10px]">Intel Iris Xe</span>
-          </div>
-          <div className="grid grid-cols-2">
-            <div className="flex gap-[15px] justify-between">
-              <span>Display Size </span>
-              <span>:</span>
+          )}
+
+          {electronics.mobile_number && (
+            <div className="grid grid-cols-2">
+              <div className="flex gap-[15px] justify-between">
+                <span>Contact </span>
+                <span>:</span>
+              </div>
+              <span className="px-[10px]">{electronics.mobile_number}</span>
             </div>
-            <span className="px-[10px]">13.0"</span>
-          </div>
-          <div className="grid grid-cols-2">
-            <div className="flex gap-[15px] justify-between">
-              <span>Operating System </span>
-              <span>:</span>
+          )}
+
+          {electronics.view_count && (
+            <div className="grid grid-cols-2">
+              <div className="flex gap-[15px] justify-between">
+                <span>Views </span>
+                <span>:</span>
+              </div>
+              <span className="px-[10px]">{electronics.view_count}</span>
             </div>
-            <span className="px-[10px]">{laptop.operatingSystem}</span>
-          </div>
-          <div className="grid grid-cols-2">
-            <div className="flex gap-[15px] justify-between">
-              <span>Warranty</span>
-              <span>:</span>
+          )}
+
+          {electronics.status && (
+            <div className="grid grid-cols-2">
+              <div className="flex gap-[15px] justify-between">
+                <span>Status </span>
+                <span>:</span>
+              </div>
+              <span className="px-[10px] capitalize">{electronics.status}</span>
             </div>
-            <span className="px-[10px]">{laptop.warranty}</span>
-          </div>
+          )}
         </div>
       </div>
     </>
   );
 };
 
-export default LaptopDescription;
+export default ElectronicsDescription;

@@ -18,69 +18,7 @@ const RecommendedProperty = () => {
   const navigate = useNavigate();
 
   const isMobile = useMediaQuery({ maxWidth: 767 });
-  // const properties = [
-  //   {
-  //     id: 1,
-  //     name: "Luxury Villa",
-  //     image: IMAGES.property1,
-  //     location: "T. Nagar, Chennai",
-  //     size: "3500 sqft",
-  //     room: "4 Beds",
-  //     year: "2021",
-  //     price: "2.5",
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "Modern Apartment",
-  //     image: IMAGES.property2,
-  //     location: "Anna Nagar, Chennai",
-  //     size: "1200 sqft",
-  //     room: "3 Beds",
-  //     year: "2019",
-  //     price: "1.8",
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "Modern Apartment",
-  //     image: IMAGES.property3,
-  //     location: "Anna Nagar, Chennai",
-  //     size: "1200 sqft",
-  //     room: "3 Beds",
-  //     year: "2019",
-  //     price: "1.8",
-  //   },
-  //   {
-  //     id: 4,
-  //     name: "Modern Apartment",
-  //     image: IMAGES.property4,
-  //     location: "Anna Nagar, Chennai",
-  //     size: "1200 sqft",
-  //     room: "3 Beds",
-  //     year: "2019",
-  //     price: "1.8",
-  //   },
-  //   {
-  //     id: 5,
-  //     name: "Modern Apartment",
-  //     image: IMAGES.property5,
-  //     location: "Anna Nagar, Chennai",
-  //     size: "1200 sqft",
-  //     room: "3 Beds",
-  //     year: "2019",
-  //     price: "1.8",
-  //   },
-  //   {
-  //     id: 6,
-  //     name: "Modern Apartment",
-  //     image: IMAGES.property6,
-  //     location: "Anna Nagar, Chennai",
-  //     size: "1200 sqft",
-  //     room: "3 Beds",
-  //     year: "2019",
-  //     price: "1.8",
-  //   },
-  // ];
-  
+ 
   const [properties, setProperties] = useState([]);
 
   useEffect(() => {
@@ -109,9 +47,9 @@ const RecommendedProperty = () => {
     fetchProperties();
   }, []);
 
-  const handleCardClick = () => {
-    navigate(`/properties/${properties.action_slug}`);
-}
+ const handleCardClick = (property) => {
+    navigate(`/properties/${property.action_slug}`);
+  };
 
 
   return (
@@ -143,7 +81,7 @@ const RecommendedProperty = () => {
           {properties.map((property) => (
             <SwiperSlide key={property.id}>
               <Card
-                onClick={handleCardClick}
+             onClick={() => handleCardClick(property)}
                 className="cursor-pointer max-w-[275px] w-full rounded-lg shadow-md overflow-hidden hover:shadow-lg mx-auto"
               >
                 <div className="relative">

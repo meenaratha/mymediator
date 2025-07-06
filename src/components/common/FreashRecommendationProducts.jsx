@@ -1,617 +1,350 @@
+// Updated FreashRecommendationProducts component using your LoadMoreButton
+
 import { Card, CardContent } from "@mui/material";
 import SquareFootIcon from "@mui/icons-material/SquareFoot";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import BedIcon from "@mui/icons-material/Bed";
+import TwoWheelerIcon from "@mui/icons-material/TwoWheeler";
+import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
+import DevicesIcon from "@mui/icons-material/Devices";
+import SpeedIcon from "@mui/icons-material/Speed";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import { red } from "@mui/material/colors";
 import { useMediaQuery } from "react-responsive";
 import { useState, useEffect } from "react";
-// import axiosInstance from "../../services/axiosInstance.js";
-import IMAGES from "../../utils/images";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { api } from "@/api/axios";
+import { toast } from "react-toastify";
+import IMAGES from "@/utils/images";
+import LoadMoreButton from "@/components/common/LoadMoreButton"; // Your existing component
+
 const PropertyCard = ({ item, category }) => {
   const isMobile = useMediaQuery({ maxWidth: 767 });
   const navigate = useNavigate();
-  const handlePropertyClick = () => {
-    navigate("/property-details");
+
+  const handleClick = () => {
+    switch (category) {
+      case "property":
+        navigate(`/properties/${item.action_slug || item.id}`);
+        break;
+      case "bike":
+        navigate(`/bike/${item.action_slug || item.id}`);
+        break;
+      case "car":
+        navigate(`/car/${item.action_slug || item.id}`);
+        break;
+      case "electronics":
+        navigate(`/electronic/${item.action_slug || item.id}`);
+        break;
+      default:
+        console.warn("Unknown category:", category);
+    }
   };
-  const handleBikeClick = () => {
-    navigate("/bike-details");
+
+  const formatPrice = (price) => {
+    if (!price) return "Price on request";
+    
+    const numPrice = parseFloat(price);
+    if (numPrice >= 10000000) {
+      return `₹${(numPrice / 10000000).toFixed(1)}Cr`;
+    } else if (numPrice >= 100000) {
+      return `₹${(numPrice / 100000).toFixed(1)}L`;
+    } else if (numPrice >= 1000) {
+      return `₹${(numPrice / 1000).toFixed(1)}K`;
+    }
+    return `₹${numPrice.toLocaleString()}`;
   };
-  const handleCarClick = ()=>{
-    navigate("/car-details");
-  }
-  const handleElectronicsClick = ()=>{
-    navigate("/electronics-details");
-  }
+
+  const getLocation = () => {
+    const parts = [item.city, item.district, item.state].filter(Boolean);
+    return parts.join(", ") || "Location not specified";
+  };
+
+  const getFallbackImage = () => {
+    switch (category) {
+      case "property":
+        return IMAGES.property1;
+      case "bike":
+        return IMAGES.bike1;
+      case "car":
+        return IMAGES.car1;
+      case "electronics":
+        return IMAGES.mac1;
+      default:
+        return IMAGES.propertybanner1;
+    }
+  };
+
   return (
-    <>
-      {category === "properties" && (
-        <Card
-          className={`${
-            isMobile ? " max-w-[300px]" : ""
-          }  max-w-[275px]  w-full rounded-lg shadow-md overflow-hidden hover:shadow-lg mx-auto cursor-pointer`}
-          onClick={handlePropertyClick}
-        >
-          <div className="relative">
-            <img
-              src={item.image}
-              alt={item.productname}
-              className="w-full h-36 object-cover"
-            />
+    <Card
+      className={`${
+        isMobile ? "max-w-[300px]" : ""
+      } max-w-[275px] w-full rounded-lg shadow-md overflow-hidden hover:shadow-lg mx-auto cursor-pointer transition-shadow duration-200`}
+      onClick={handleClick}
+    >
+      <div className="relative">
+        <img
+          src={item.image_url || getFallbackImage()}
+          alt={item.title || item.property_name}
+          className="w-full h-36 object-cover"
+          onError={(e) => {
+            e.target.src = getFallbackImage();
+          }}
+        />
+        <div className="absolute top-2 left-2">
+          <span className="bg-blue-600 text-white px-2 py-1 rounded-full text-xs font-medium capitalize">
+            {item.subcategory || category}
+          </span>
+        </div>
+        {item.status === "sold" && (
+          <div className="absolute top-2 right-2">
+            <span className="bg-red-600 text-white px-2 py-1 rounded-full text-xs font-medium">
+              Sold
+            </span>
           </div>
+        )}
+      </div>
 
-          <CardContent className="p-3">
-            <h3 className="font-bold text-lg">{item.productname}</h3>
+      <CardContent className="p-3">
+        <h3 className="font-bold text-lg truncate" title={item.title || item.property_name}>
+          {item.title || item.property_name}
+        </h3>
 
-            <div className="flex items-center text-sm text-gray-500 mt-1">
-              <LocationOnIcon sx={{ color: red[500] }} />
-              <span>{item.location}</span>
-            </div>
+        <div className="flex items-center text-sm text-gray-500 mt-1">
+          <LocationOnIcon sx={{ color: red[500], fontSize: 16 }} />
+          <span className="truncate ml-1">{getLocation()}</span>
+        </div>
 
-            <div className="flex items-center mt-2 space-x-4">
+        {/* Category-specific details */}
+        {category === "property" && (
+          <div className="flex items-center mt-2 space-x-4">
+            {item.super_builtup_area && (
               <div className="flex items-center">
-                <SquareFootIcon />
-                <span className="ml-1 text-sm">{item.size}</span>
+                <SquareFootIcon style={{ fontSize: 14 }} />
+                <span className="ml-1 text-sm">{item.super_builtup_area} Sq.ft</span>
               </div>
-
+            )}
+            {item.plot_area && (
               <div className="flex items-center">
-                <BedIcon />
-                <span className="ml-1 text-sm">{item.room}</span>
+                <SquareFootIcon style={{ fontSize: 14 }} />
+                <span className="ml-1 text-sm">{item.plot_area} Sq.ft</span>
               </div>
-            </div>
-
-            <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">
-              <span className="text-sm text-gray-500">{item.year}</span>
-              <span className="font-bold text-lg">₹ {item.price}L</span>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {category === "electronics" && (
-        <Card
-          className={`${
-            isMobile ? " max-w-[300px]" : ""
-          }  max-w-[275px]  w-full rounded-lg shadow-md overflow-hidden hover:shadow-lg mx-auto cursor-pointer`}
-        onClick={handleElectronicsClick}
-        >
-          <div className="relative">
-            <img
-              src={item.image}
-              alt={item.productname}
-              className="w-full h-36 object-cover"
-            />
+            )}
+            {item.bhk && (
+              <div className="flex items-center">
+                <BedIcon style={{ fontSize: 14 }} />
+                <span className="ml-1 text-sm">{item.bhk} BHK</span>
+              </div>
+            )}
           </div>
+        )}
 
-          <CardContent className="p-3">
-            <h3 className="font-bold text-lg">{item.productname}</h3>
-
-            <div className="flex items-center text-sm text-gray-500 mt-1">
-              <LocationOnIcon sx={{ color: red[500] }} />
-              <span>{item.location}</span>
-            </div>
-
-            <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">
-              <span className="text-sm text-gray-500">{item.year}</span>
-              <span className="font-bold text-lg">₹ {item.price}L</span>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {category === "cars" && (
-        <Card
-          className={`${
-            isMobile ? " max-w-[300px]" : ""
-          }  max-w-[275px]  w-full rounded-lg shadow-md overflow-hidden hover:shadow-lg mx-auto cursor-pointer`}
-       onClick={handleCarClick}
-       >
-          <div className="relative">
-            <img
-              src={item.image}
-              alt={item.productname}
-              className="w-full h-36 object-cover"
-            />
+        {(category === "bike" || category === "car") && (
+          <div className="flex items-center mt-2 space-x-4 text-sm text-gray-600 flex-wrap gap-2">
+            {item.brand && <span className="font-medium">{item.brand}</span>}
+            {item.model && <span>({item.model})</span>}
+            {item.year && (
+              <div className="flex items-center">
+                <CalendarTodayIcon style={{ fontSize: 14 }} />
+                <span className="ml-1">{item.year}</span>
+              </div>
+            )}
+            {item.kilometers && (
+              <div className="flex items-center">
+                <SpeedIcon style={{ fontSize: 14 }} />
+                <span className="ml-1">{item.kilometers}k km</span>
+              </div>
+            )}
           </div>
+        )}
 
-          <CardContent className="p-3">
-            <h3 className="font-bold text-lg">{item.productname}</h3>
-
-            <div className="flex items-center text-sm text-gray-500 mt-1">
-              <LocationOnIcon sx={{ color: red[500] }} />
-              <span>{item.location}</span>
-            </div>
-
-            <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">
-              <span className="text-sm text-gray-500">
-                {item.year} - {item.distance}
-              </span>
-              <span className="font-bold text-lg">₹ {item.price}L</span>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-      {category === "bikes" && (
-        <Card
-          className={`${
-            isMobile ? " max-w-[300px]" : ""
-          }  max-w-[275px]  w-full rounded-lg shadow-md overflow-hidden hover:shadow-lg mx-auto cursor-pointer`}
-          onClick={handleBikeClick}
-        >
-          <div className="relative">
-            <img
-              src={item.image}
-              alt={item.productname}
-              className="w-full h-36 object-cover"
-            />
+        {category === "electronics" && (
+          <div className="flex items-center mt-2 space-x-4 text-sm text-gray-600">
+            {item.brand && <span className="font-medium">{item.brand}</span>}
+            {item.model && <span>({item.model})</span>}
+            {item.features && (
+              <div className="flex items-center">
+                <DevicesIcon style={{ fontSize: 14 }} />
+                <span className="ml-1 truncate">{item.features}</span>
+              </div>
+            )}
           </div>
+        )}
 
-          <CardContent className="p-3">
-            <h3 className="font-bold text-lg">{item.productname}</h3>
-
-            <div className="flex items-center text-sm text-gray-500 mt-1">
-              <LocationOnIcon sx={{ color: red[500] }} />
-              <span>{item.location}</span>
-            </div>
-
-            <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">
-              <span className="text-sm text-gray-500">
-                {item.year} - {item.distance}
-              </span>
-              <span className="font-bold text-lg">₹ {item.price}L</span>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-    </>
+        <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">
+          <span className="text-sm text-gray-500">
+            {item.building_direction || 
+             (item.fuel_type && `${item.fuel_type}`) ||
+             (item.engine_cc && `${item.engine_cc} CC`) ||
+             ""}
+          </span>
+          <span className="font-bold text-lg">
+            {formatPrice(item.price || item.amount)}
+          </span>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
 const FreashRecommendationProducts = () => {
-  //    const [cardData, setCardData] = useState({
-  //     properties: [],
-  //     electronics: [],
-  //     cars: [],
-  //   });
-
+  const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [hasMoreData, setHasMoreData] = useState(false);
+  const [error, setError] = useState(null);
 
-  //   const fetchDatas = async () => {
-  //     setLoading(true);
-  //     try {
-  //       const response = await axiosInstance.get("/productcarddata.json");
-  //       const newDatas = response.data || {
-  //         properties: [],
-  //         electronics: [],
-  //         cars: [],
-  //       };
-  //       setCardData(newDatas);
-  //       console.log("New Data:", newDatas);
-  //     } catch (error) {
-  //       console.error("Error fetching data:", error);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
+  // Fetch listings from API
+  const fetchListings = async (page = 1, loadMore = false) => {
+    if (loadMore) setLoadingMore(true);
+    else setLoading(true);
+    
+    setError(null);
 
-  //   useEffect(() => {
-  //     fetchDatas();
-  //   }, [page]);
+    try {
+      const response = await api.get(`/all-listings?page=${page}`);
+      const result = response.data?.data;
 
-  const cardData = {
-    properties: [
-      {
-        id: 1,
-        productname: "Minsod House",
-        image: IMAGES.property1,
-        location: "West Mambalam, Chennai",
-        year: 2022,
-        size: "800 Sq . Ft",
-        room: "3 BHK",
-        price: "65",
-        label: "Featured",
-      },
-      {
-        id: 2,
-        productname: "Green Villa",
-        image: IMAGES.property2,
-        location: "Anna Nagar, Chennai",
-        year: 2021,
-        size: "1200 Sq . Ft",
-        room: "4 BHK",
-        price: "85",
-        label: "New",
-      },
-      {
-        id: 3,
-        productname: "Luxury Apartment",
-        image: IMAGES.property3,
-        location: "T Nagar, Chennai",
-        year: 2023,
-        size: "950 Sq . Ft",
-        room: "3 BHK",
-        price: "75",
-        label: "Exclusive",
-      },
-      {
-        id: 4,
-        productname: "Lake View Condo",
-        image: IMAGES.property4,
-        location: "Besant Nagar, Chennai",
-        year: 2022,
-        size: "1100 Sq . Ft",
-        room: "3 BHK",
-        price: "70",
-        label: "Premium",
-      },
-      {
-        id: 5,
-        productname: "Seaside Cottage",
-        image: IMAGES.property5,
-        location: "ECR, Chennai",
-        year: 2021,
-        size: "1500 Sq . Ft",
-        room: "5 BHK",
-        price: "120",
-        label: "Luxury",
-      },
-      {
-        id: 6,
-        productname: "Urban Studio",
-        image: IMAGES.property6,
-        location: "Velachery, Chennai",
-        year: 2020,
-        size: "600 Sq . Ft",
-        room: "2 BHK",
-        price: "50",
-        label: "Affordable",
-      },
-      {
-        id: 7,
-        productname: "Heritage Bungalow",
-        image: IMAGES.property7,
-        location: "Mylapore, Chennai",
-        year: 2019,
-        size: "1800 Sq . Ft",
-        room: "4 BHK",
-        price: "140",
-        label: "Classic",
-      },
-      {
-        id: 8,
-        productname: "City Center Apartment",
-        image: IMAGES.property7,
-        location: "Egmore, Chennai",
-        year: 2023,
-        size: "900 Sq . Ft",
-        room: "3 BHK",
-        price: "80",
-        label: "New",
-      },
-      {
-        id: 9,
-        productname: "Garden Mansion",
-        image: IMAGES.property6,
-        location: "Kilpauk, Chennai",
-        year: 2021,
-        size: "1300 Sq . Ft",
-        room: "4 BHK",
-        price: "95",
-        label: "Exclusive",
-      },
-      {
-        id: 10,
-        productname: "Downtown Loft",
-        image: IMAGES.property5,
-        location: "Nungambakkam, Chennai",
-        year: 2022,
-        size: "700 Sq . Ft",
-        room: "2 BHK",
-        price: "60",
-        label: "Featured",
-      },
-    ],
-    electronics: [
-      {
-        id: 1,
-        productname: "Smart TV",
-        location: "West Mambalam, Chennai",
-        image: IMAGES.mac1,
-        year: "2023",
-        brand: "Samsung",
-        price: "500",
-        label: "New",
-      },
-      {
-        id: 2,
-        productname: "Laptop",
-        location: "Anna Nagar, Chennai",
-        image: IMAGES.mac2,
-        year: "2022",
-        brand: "Dell",
-        price: "800",
-        label: "Featured",
-      },
-      {
-        id: 3,
-        productname: "Smartphone",
-        location: "Adyar, Chennai",
-        image: IMAGES.mac3,
-        year: "2023",
-        brand: "Apple",
-        price: "1200",
-        label: "Latest",
-      },
-      {
-        id: 4,
-        productname: "Home Theater",
-        location: "T Nagar, Chennai",
-        image: IMAGES.mac4,
-        year: "2021",
-        brand: "Sony",
-        price: "600",
-        label: "Premium",
-      },
-      {
-        id: 5,
-        productname: "Gaming Console",
-        location: "Besant Nagar, Chennai",
-        image: IMAGES.mac5,
-        year: "2023",
-        brand: "Microsoft",
-        price: "450",
-        label: "New",
-      },
-      {
-        id: 6,
-        productname: "Refrigerator",
-        location: "Velachery, Chennai",
-        image: IMAGES.mac6,
-        year: "2022",
-        brand: "LG",
-        price: "900",
-        label: "Energy Efficient",
-      },
-      {
-        id: 7,
-        productname: "Smart Watch",
-        location: "Guindy, Chennai",
-        image: IMAGES.mac7,
-        year: "2023",
-        brand: "Fitbit",
-        price: "300",
-        label: "Trending",
-      },
-    ],
-    cars: [
-      {
-        id: 1,
-        productname: "Tesla Model S",
-        location: "West Mambalam, Chennai",
-        image: IMAGES.car1,
-        distance: "100 km",
-        year: "2023",
-        model: "2023",
-        price: "79990",
-        label: "Electric",
-      },
-      {
-        id: 2,
-        productname: "BMW X5",
-        location: "West Mambalam, Chennai",
-        image: IMAGES.car2,
-        distance: "200 km",
-        year: "2022",
-        model: "2022",
-        price: "70990",
-        label: "Luxury",
-      },
-      {
-        id: 3,
-        productname: "Audi Q7",
-        image: IMAGES.car3,
-        location: "West Mambalam, Chennai",
-        distance: "150 km",
-        year: "2023",
-        model: "2023",
-        price: "65990",
-        label: "New",
-      },
-      {
-        id: 4,
-        productname: "Ford Mustang",
-        image: IMAGES.car4,
-        location: "West Mambalam, Chennai",
-        distance: "300 km",
-        year: "2021",
-        model: "2021",
-        price: "55990",
-        label: "Sport",
-      },
-      {
-        id: 5,
-        productname: "Mercedes-Benz E-Class",
-        image: IMAGES.car5,
-        location: "West Mambalam, Chennai",
-        distance: "500 km",
-        year: "2020",
-        model: "2020",
-        price: "50990",
-        label: "Luxury",
-      },
-      {
-        id: 6,
-        productname: "Honda Civic",
-        image: IMAGES.car6,
-        location: "West Mambalam, Chennai",
-        distance: "400 km",
-        year: "2021",
-        model: "2021",
-        price: "30990",
-        label: "Affordable",
-      },
-      {
-        id: 7,
-        productname: "Jaguar F-Type",
-        image: IMAGES.car7,
-        location: "West Mambalam, Chennai",
-        distance: "250 km",
-        year: "2023",
-        model: "2023",
-        price: "85990",
-        label: "Premium",
-      },
-      {
-        id: 8,
-        productname: "Porsche Cayenne",
-        image: IMAGES.car8,
-        location: "West Mambalam, Chennai",
-        distance: "600 km",
-        year: "2022",
-        model: "2022",
-        price: "99990",
-        label: "Luxury",
-      },
-    ],
-    bikes: [
-      {
-        id: 1,
-        productname: "Norton Commando",
-        location: "West Mambalam, Chennai",
-        image: IMAGES.bike1,
-        distance: "500 km",
-        year: "2022",
-        price: "12000",
-        label: "Classic",
-      },
-      {
-        id: 2,
-        productname: "Harley-Davidson Street 750",
-        location: "West Mambalam, Chennai",
-        image: IMAGES.bike2,
-        distance: "300 km",
-        year: "2021",
-        price: "10000",
-        label: "Cruiser",
-      },
-      {
-        id: 3,
-        productname: "Ducati Monster",
-        location: "West Mambalam, Chennai",
-        image: IMAGES.bike3,
-        distance: "200 km",
-        year: "2023",
-        price: "15000",
-        label: "Sport",
-      },
-      {
-        id: 4,
-        productname: "BMW R 1250 GS",
-        image: IMAGES.bike4,
-        location: "West Mambalam, Chennai",
-        distance: "400 km",
-        year: "2023",
-        price: "18000",
-        label: "Adventure",
-      },
-      {
-        id: 5,
-        productname: "Royal Enfield Interceptor",
-        image: IMAGES.bike5,
-        location: "West Mambalam, Chennai",
-        distance: "100 km",
-        year: "2022",
-        price: "7000",
-        label: "Retro",
-      },
-      {
-        id: 6,
-        productname: "Kawasaki Ninja 650",
-        image: IMAGES.bike6,
-        location: "West Mambalam, Chennai",
-        distance: "150 km",
-        year: "2021",
-        price: "12000",
-        label: "Sport",
-      },
-      {
-        id: 7,
-        productname: "Honda CBR 1000RR",
-        image: IMAGES.bike7,
-        location: "West Mambalam, Chennai",
-        distance: "600 km",
-        year: "2023",
-        price: "16000",
-        label: "Superbike",
-      },
-      {
-        id: 8,
-        productname: "Triumph Tiger 900",
-        image: IMAGES.bike8,
-        location: "West Mambalam, Chennai",
-        distance: "250 km",
-        year: "2022",
-        price: "19000",
-        label: "Adventure",
-      },
-      {
-        id: 9,
-        productname: "Yamaha YZF R1",
-        image: IMAGES.bike9,
-        location: "West Mambalam, Chennai",
-        distance: "350 km",
-        year: "2023",
-        price: "14000",
-        label: "Sport",
-      },
-      {
-        id: 10,
-        productname: "Suzuki Hayabusa",
-        image: IMAGES.bike10,
-        location: "West Mambalam, Chennai",
-        distance: "200 km",
-        year: "2023",
-        price: "16000",
-        label: "Superbike",
-      },
-    ],
+      if (result) {
+        const newListings = result.data || [];
+        
+        setListings(prev => 
+          page === 1 ? newListings : [...prev, ...newListings]
+        );
+        
+        setCurrentPage(result.current_page || page);
+        setLastPage(result.last_page || 1);
+        setTotal(result.total || 0);
+        setHasMoreData(
+          result.next_page_url !== null &&
+          result.current_page < result.last_page &&
+          newListings.length > 0
+        );
+
+        console.log(`✅ Loaded ${newListings.length} listings from page ${page}`);
+      } else {
+        throw new Error("Invalid response format");
+      }
+    } catch (err) {
+      console.error("❌ Failed to fetch listings:", err);
+      setError(err.message || "Failed to load listings");
+      
+      if (page === 1) {
+        setListings([]);
+      }
+      setHasMoreData(false);
+      
+      if (page === 1 || !err.response) {
+        toast.error("Failed to load fresh recommendations");
+      }
+    } finally {
+      if (loadMore) setLoadingMore(false);
+      else setLoading(false);
+    }
   };
 
-  const combinedData = [
-    ...(cardData.properties
-      ? cardData.properties.map((item) => ({ ...item, category: "properties" }))
-      : []),
-    ...(cardData.electronics
-      ? cardData.electronics.map((item) => ({
-          ...item,
-          category: "electronics",
-        }))
-      : []),
-    ...(cardData.cars
-      ? cardData.cars.map((item) => ({ ...item, category: "cars" }))
-      : []),
-    ...(cardData.bikes
-      ? cardData.bikes.map((item) => ({ ...item, category: "bikes" }))
-      : []),
-  ];
-  console.log("combined ata", combinedData);
+  useEffect(() => {
+    fetchListings(1);
+  }, []);
+
+  const handleLoadMore = () => {
+    if (hasMoreData && !loadingMore && currentPage < lastPage) {
+      fetchListings(currentPage + 1, true);
+    }
+  };
+
+  const handleRetry = () => {
+    setListings([]);
+    setCurrentPage(1);
+    fetchListings(1);
+  };
+
+  // Loading skeleton component
+  const LoadingSkeleton = ({ count = 10 }) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 justify-items-center">
+      {Array.from({ length: count }).map((_, index) => (
+        <div key={index} className="max-w-[275px] w-full">
+          <div className="bg-white rounded-lg shadow-md overflow-hidden animate-pulse">
+            <div className="h-36 bg-gray-200"></div>
+            <div className="p-3">
+              <div className="h-4 bg-gray-200 rounded mb-2"></div>
+              <div className="h-3 bg-gray-200 rounded w-3/4 mb-2"></div>
+              <div className="h-3 bg-gray-200 rounded w-1/2 mb-3"></div>
+              <div className="flex justify-between items-center pt-3 border-t border-gray-200">
+                <div className="h-3 bg-gray-200 rounded w-1/4"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <div className="container mx-auto px-4 py-10 pt-[10px]">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 justify-items-center">
-        {combinedData.length > 0 ? (
-          combinedData.map((item) => (
-            <PropertyCard
-              key={`${item.category}-${item.id}`}
-              item={item}
-              category={item.category}
+      {loading ? (
+        <LoadingSkeleton />
+      ) : error && listings.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
+            <h3 className="text-lg font-medium text-red-800 mb-2">
+              Failed to Load Recommendations
+            </h3>
+            <p className="text-red-600 mb-4">{error}</p>
+            <button
+              onClick={handleRetry}
+              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      ) : listings.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-gray-500 text-lg">No listings available at the moment.</p>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 justify-items-center">
+            {listings.map((item) => (
+              <PropertyCard
+                key={`${item.type}-${item.id}`}
+                item={item}
+                category={item.type}
+              />
+            ))}
+          </div>
+
+          {/* Using your LoadMoreButton component */}
+          {hasMoreData && (
+            <LoadMoreButton
+              onClick={handleLoadMore}
+              loading={loadingMore}
+              disabled={!hasMoreData}
+              loadingText="Loading ..."
+              // buttonText={`Load More (${total - listings.length} remaining)`}
+              buttonText="Load More"
+              className="mt-8"
             />
-          ))
-        ) : (
-          <p>No data available.</p>
-        )}
-      </div>
+          )}
+
+          {/* Stats */}
+          <div className="text-center mt-4 text-gray-600 text-sm">
+            Showing {listings.length} of {total} listings
+          </div>
+
+          {/* End message */}
+          {!hasMoreData && listings.length > 0 && (
+            <div className="text-center mt-4 text-gray-500 text-sm">
+              🎉 You've seen all available listings!
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 };

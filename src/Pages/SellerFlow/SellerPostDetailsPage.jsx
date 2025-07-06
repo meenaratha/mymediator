@@ -1,9 +1,12 @@
-import { PostDetails } from "@/components";
+// import { PostDetails } from "@/components";
 import React, { useState } from "react";
 import IMAGES from "../../utils/images.js";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import CarPostDetails from "../../components/sell/CarPostDetails.jsx";
+import BikePostDetails from "../../components/sell/BikePostDetails.jsx";
+import ElectronicsPostDetails from "../../components/sell/ElectronicsPostDetails.jsx";
+import PropertyPostDetails from "../../components/sell/PostDetails.jsx";
 
 const SellerPostDetailsPage = () => {
   // State to manage active tab
@@ -51,24 +54,23 @@ const SellerPostDetailsPage = () => {
     setPropertyTypes(updatedPropertyTypes);
   };
 
-    // Function to render the appropriate tab content based on active tab
-    const renderTabContent = () => {
-      switch (activeTab) {
-        case "property":
-          return <PostDetails />;
-        case "electronics":
-          return <CarPostDetails/>;
-        case "car":
-          // Add your car tab content component here
-          return <CarPostDetails/>;
-        case "bike":
-          // Add your bike tab content component here
-          return <div>Bike Tab Content</div>;
-        default:
-          return <PostDetails />;
-      }
+  // Function to render the appropriate tab content based on active tab
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "property":
+        return <PropertyPostDetails />;
+      case "electronics":
+        return <ElectronicsPostDetails />;
+      case "car":
+        // Add your car tab content component here
+        return <CarPostDetails />;
+      case "bike":
+        // Add your bike tab content component here
+        return <BikePostDetails />;
+      default:
+        return <PostDetails />;
+    }
   };
-  
 
   return (
     <>

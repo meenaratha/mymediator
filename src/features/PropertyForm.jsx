@@ -849,7 +849,7 @@ const PropertyForm = () => {
         urlId: getSubcategoryId(), // ID from URL params
         subcategory_id: id, // Subcategory ID based on slug
         slug: slug, // Current slug
-        // form_type: "property",
+        form_type: "property",
       };
 
       console.log("Submitting form data:", submissionData);

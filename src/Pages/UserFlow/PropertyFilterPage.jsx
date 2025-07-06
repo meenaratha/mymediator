@@ -28,12 +28,57 @@ const PropertyFilterPage = () => {
     setIsFilterOpen(!isFilterOpen);
   };
 
+  // Helper function to get location from localStorage
+  const getLocationFromStorage = () => {
+    try {
+      const selectedLocationStr = localStorage.getItem('selectedLocation');
+      
+      if (!selectedLocationStr) {
+        return null;
+      }
+      
+      const selectedLocation = JSON.parse(selectedLocationStr);
+      
+      // Check if the parsed object has required coordinates
+      if (!selectedLocation.latitude || !selectedLocation.longitude) {
+        return null;
+      }
+      
+      return {
+        latitude: parseFloat(selectedLocation.latitude),
+        longitude: parseFloat(selectedLocation.longitude),
+        // address: selectedLocation.address || '',
+        // city: selectedLocation.city || '',
+        // state: selectedLocation.state || '',
+        // country: selectedLocation.country || ''
+      };
+    } catch (error) {
+      console.error("Error reading selectedLocation from localStorage:", error);
+      return null;
+    }
+  };
+
   const fetchProperties = async (page = 1, loadMore = false) => {
     if (loadMore) setLoadingMore(true);
     else setLoading(true);
 
     try {
-      const response = await api.get(`/properties/list?page=${page}`);
+
+      // Get location from localStorage
+      const location = getLocationFromStorage();
+
+       // Build API parameters
+      const params = new URLSearchParams({
+        page: page.toString()
+      });
+      
+      // Add location parameters if available
+      if (location) {
+        params.append('latitude', location.latitude.toString());
+        params.append('longitude', location.longitude.toString());
+        
+      }
+      const response = await api.get(`/properties/list?${params.toString()}`);
       const result = response.data?.data;
 
       // Debug: Log API response

@@ -1,4 +1,4 @@
-import React, { useState ,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import "swiper/css";
@@ -12,9 +12,11 @@ import SpeedIcon from "@mui/icons-material/Speed";
 import { red } from "@mui/material/colors";
 import StarIcon from "@mui/icons-material/Star";
 import { api } from "@/api/axios";
+import { useNavigate } from "react-router-dom";
 
-const RecommendedBikes = () => {
-  const [recommendedBikes, setRecommendedBikes] = useState([]);
+const RecommendedCars = () => {
+  const navigate = useNavigate();
+  const [recommendedCars, setRecommendedCars] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Helper function to get location from localStorage
@@ -43,47 +45,60 @@ const RecommendedBikes = () => {
   };
 
   useEffect(() => {
-    const fetchRecommendedBikes = async () => {
+    const fetchRecommendedCars = async () => {
       try {
-        const location = getLocationFromStorage();
-        
-        // Build API parameters
-        const params = new URLSearchParams();
-        
-        if (location) {
-          params.append('latitude', location.latitude.toString());
-          params.append('longitude', location.longitude.toString());
-        }
+        const selectedLocation = JSON.parse(
+          localStorage.getItem("selectedLocation")
+        );
+        const latitude = selectedLocation?.latitude;
+        const longitude = selectedLocation?.longitude;
 
-        const response = await api.get(`/gbike/populer/list?${params.toString()}`);
-        const result = response.data?.data;
+        if (!latitude || !longitude) return;
 
-        setRecommendedBikes(result?.data || []);
+        const response = await api.get(
+          `/gcar/populer/list`,
+          { params: { latitude, longitude } }
+        );
+
+        setRecommendedCars(response.data.data || []);
+        console.log("recommended cars list", response.data.data);
       } catch (error) {
-        console.error('Failed to load recommended bikes:', error);
-        setRecommendedBikes([]);
+        console.error('Failed to load recommended cars:', error);
+        setRecommendedCars([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchRecommendedBikes();
+    fetchRecommendedCars();
   }, []);
 
+  const handleCardClick = (car) => {
+    navigate(`/car/${car.action_slug}`);
+  };
+
   if (loading) {
-    return <div className="text-center py-8">Loading recommended bikes...</div>;
+    return (
+      <div className="text-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+        <p className="mt-2">Loading recommended cars...</p>
+      </div>
+    );
   }
 
-  if (recommendedBikes.length === 0) {
-    return <div className="text-center py-8">No recommended bikes available</div>;
+  if (recommendedCars.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p>No recommended cars available</p>
+      </div>
+    );
   }
 
- 
   return (
     <>
       <div className="h-[40px]"></div>
       <h1 className="text-left text-black text-[24px] font-semibold px-3">
-        Recommended Bikes
+        Recommended Cars
       </h1>
       <div className="py-8">
         <Swiper
@@ -105,18 +120,21 @@ const RecommendedBikes = () => {
             },
           }}
         >
-         {recommendedBikes.map((bike) => (
-            <SwiperSlide key={bike.id}>
-              <Card className="max-w-[275px] w-full rounded-lg shadow-md overflow-hidden hover:shadow-lg mx-auto">
+          {recommendedCars.map((car) => (
+            <SwiperSlide key={car.id}>
+              <Card 
+                onClick={() => handleCardClick(car)}
+                className="cursor-pointer max-w-[275px] w-full rounded-lg shadow-md overflow-hidden hover:shadow-lg mx-auto transition-transform hover:scale-[1.02]"
+              >
                 <div className="relative">
                   <img
-                    src={bike.image_url}
-                    alt={bike.title}
+                    src={car.image_url || IMAGES.car1}
+                    alt={car.title || `${car.brand} ${car.model}`}
                     className="w-full h-36 object-cover"
                   />
                   <div className="absolute top-2 right-2 bg-white rounded-md px-1 py-0.5 flex items-center">
                     <span className="text-xs font-semibold mr-0.5">
-                      {bike.average_rating || "4.5"}
+                      {car.average_rating || "4.5"}
                     </span>
                     <StarIcon sx={{ color: "#FFD700" }} fontSize="small" />
                   </div>
@@ -124,25 +142,35 @@ const RecommendedBikes = () => {
 
                 <CardContent className="p-3">
                   <h3 className="font-bold text-lg truncate">
-                    {bike.title || `${bike.brand} ${bike.model}`}
+                    {car.title || `${car.brand} ${car.model}`}
                   </h3>
 
                   <div className="flex items-center text-sm text-gray-500 mt-1">
                     <LocationOnIcon sx={{ color: red[500] }} fontSize="small" />
-                    <span className="truncate">{bike.city}, {bike.district}</span>
+                    <span className="truncate">
+                      {car.city}, {car.district}
+                    </span>
                   </div>
 
                   <div className="flex items-center mt-2">
                     <SpeedIcon fontSize="small" className="text-gray-600" />
                     <span className="ml-1 text-sm text-gray-600">
-                      {bike.kilometers_driven || 'N/A'} km
+                      {car.kilometers_driven || 'N/A'} km
                     </span>
                   </div>
 
                   <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">
-                    <span className="text-sm text-gray-500">{bike.manufacturing_year}</span>
+                    <span className="text-sm text-gray-500">
+                      {car.post_year ||car.manufacturing_year }
+                    </span>
                     <span className="font-bold text-lg">
-                      ₹ {bike.price ? (parseFloat(bike.price) / 100000).toFixed(2) : "N/A"}L
+                      ₹ {car.price ? 
+                        (parseFloat(car.price) >= 100000 ? 
+                          (parseFloat(car.price) / 100000).toFixed(2) + "L" : 
+                          parseFloat(car.price).toLocaleString()
+                        ) : 
+                        car.amount || "N/A"
+                      }
                     </span>
                   </div>
                 </CardContent>
@@ -155,4 +183,4 @@ const RecommendedBikes = () => {
   );
 };
 
-export default RecommendedBikes;
+export default RecommendedCars;

@@ -5,6 +5,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import "swiper/css/thumbs";
+import { IconButton, Snackbar, Alert } from "@mui/material";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import ShareIcon from "@mui/icons-material/Share";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
@@ -12,20 +13,24 @@ import StarIcon from "@mui/icons-material/Star";
 import CallIcon from "@mui/icons-material/Call";
 import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
 import VerifiedIcon from "@mui/icons-material/Verified";
+import ZoomInIcon from "@mui/icons-material/ZoomIn";
+import CloseIcon from "@mui/icons-material/Close";
+import { red } from "@mui/material/colors";
 import IMAGES from "../../utils/images.js";
 import { useMediaQuery } from "react-responsive";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import ZoomInIcon from "@mui/icons-material/ZoomIn";
-import CloseIcon from "@mui/icons-material/Close";
 import EnquiryForm from "../../features/EnquiryForm.jsx";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { api } from "@/api/axios";
+import ShareModal from "../../components/common/ShareModal"; // Import reusable ShareModal
 
 const PropertyDetails = ({ property }) => {
   const isMobile = useMediaQuery({ maxWidth: 767 });
-  const [isFavorite, setIsFavorite] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(property.is_wishlisted || false);
+  const [isWishlistLoading, setIsWishlistLoading] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
   const [mainSwiper, setMainSwiper] = useState(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -34,10 +39,14 @@ const PropertyDetails = ({ property }) => {
   const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
   const [zoomLevel, setZoomLevel] = useState(2);
   const mainImageRef = useRef(null);
-  // For touch support on mobile devices
   const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
-  // Image arrays
-  const dummyimages = [
+  const [showEnquiryPopup, setShowEnquiryPopup] = useState(false);
+
+  // Default Chennai coordinates
+  const defaultLocation = { lat: 13.0827, lng: 80.2707 };
+
+  // Prepare images - handle both single image and array, fallback to dummy images
+  const dummyImages = [
     IMAGES.property1,
     IMAGES.property2,
     IMAGES.property3,
@@ -47,13 +56,66 @@ const PropertyDetails = ({ property }) => {
     IMAGES.propertydetails,
   ];
 
-  const images = Array.isArray(property.image_url)
-    ? property.image_url
-    : property.image_url
-    ? [property.image_url]
-    : [];
+  const images = property.image_url 
+    ? (Array.isArray(property.image_url) ? property.image_url : [property.image_url])
+    : dummyImages;
 
+  // Map coordinates
+  const mapCenter = {
+    lat: property.latitude || defaultLocation.lat,
+    lng: property.longtitude || defaultLocation.lng, // Note: API uses 'longtitude'
+  };
 
+  // Wishlist functionality
+  const handleWishlistClick = async (e) => {
+    e.stopPropagation();
+    setIsWishlistLoading(true);
+
+    try {
+      if (isFavorite) {
+        // Remove from wishlist
+        await api.delete('/wishlist', {
+          data: {
+            wishable_type: "property",
+            wishable_id: property.id.toString()
+          }
+        });
+        setIsFavorite(false);
+        setSnackbar({ open: true, message: 'Removed from wishlist', severity: 'info' });
+      } else {
+        // Add to wishlist
+        await api.post('/wishlist', {
+          wishable_type: "property",
+          wishable_id: property.id
+        });
+        setIsFavorite(true);
+        setSnackbar({ open: true, message: 'Added to wishlist', severity: 'success' });
+      }
+    } catch (error) {
+      console.error('Wishlist error:', error);
+      setSnackbar({ open: true, message: 'Failed to update wishlist', severity: 'error' });
+    } finally {
+      setIsWishlistLoading(false);
+    }
+  };
+
+  // Share functionality
+  const handleShareClick = (e) => {
+    e.stopPropagation();
+    setShowShareModal(true);
+  };
+
+  const handleShareClose = () => {
+    setShowShareModal(false);
+  };
+
+  const getCurrentUrl = () => {
+    return window.location.href;
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
 
   // Handle touch events for mobile zoom
   const handleTouchStart = (e) => {
@@ -68,7 +130,6 @@ const PropertyDetails = ({ property }) => {
     const container = e.currentTarget;
     const rect = container.getBoundingClientRect();
     
-    // Calculate position in percentage
     const x = ((touch.clientX - rect.left) / rect.width) * 100;
     const y = ((touch.clientY - rect.top) / rect.height) * 100;
     
@@ -79,7 +140,6 @@ const PropertyDetails = ({ property }) => {
     setZoomedImageSrc(imageSrc);
     setShowZoom(true);
     
-    // Make sure we're showing the same index in both main swiper and thumbnails
     if (mainSwiper && !mainSwiper.destroyed) {
       mainSwiper.slideToLoop(index);
     }
@@ -89,44 +149,41 @@ const PropertyDetails = ({ property }) => {
     setShowZoom(false);
   };
 
-  // Handle zoom mouse movement for the zoom modal
   const handleZoomMouseMove = (e) => {
     if (!showZoom) return;
     
     const container = e.currentTarget;
     const rect = container.getBoundingClientRect();
     
-    // Calculate position in percentage
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
     
     setZoomPosition({ x, y });
   };
 
-  // Synchronize the main image with thumbnails
   const handleSlideChange = (swiper) => {
     const newIndex = swiper.realIndex;
     setActiveIndex(newIndex);
 
-    // Ensure the active thumbnail is scrolled into view
     if (thumbsSwiper && !thumbsSwiper.destroyed) {
       thumbsSwiper.slideToLoop(newIndex);
     }
 
-    // Update zoomed image to match current main image if zoom is open
     if (showZoom) {
       setZoomedImageSrc(images[newIndex]);
     }
   };
-  const handleImageLeave = () => {
-    setIsZooming(false);
+
+   // Function to open Google Maps in new tab
+  const openGoogleMaps = () => {
+    const { lat, lng } = mapCenter;
+    const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lng}&z=15`;
+    window.open(googleMapsUrl, '_blank');
   };
 
-const [showEnquiryPopup , setShowEnquiryPopup ] = useState(false);
   return (
     <>
-      {/* enquiry model */}
-
+      {/* Enquiry Modal */}
       {showEnquiryPopup && (
         <EnquiryForm
           onClose={() => {
@@ -215,26 +272,60 @@ const [showEnquiryPopup , setShowEnquiryPopup ] = useState(false);
                           alt={`Property view ${index + 1}`}
                           className="w-full h-[300px] object-cover"
                         />
-                        <div className="absolute top-2 right-2 flex space-x-2">
-                          <button className="bg-white p-2 rounded-full">
-                            <ShareIcon className="text-gray-600" />
-                          </button>
-                          <button
-                            className="bg-white p-2 rounded-full"
-                            onClick={() => setIsFavorite(!isFavorite)}
+                        <div className="absolute top-2 right-2 flex flex-col gap-2">
+                          <IconButton
+                            size="small"
+                            onClick={handleShareClick}
+                            className="bg-white bg-opacity-80 hover:bg-opacity-100"
+                            sx={{ 
+                              width: 36, 
+                              height: 36,
+                              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                              '&:hover': {
+                                backgroundColor: 'rgba(255, 255, 255, 1)',
+                              }
+                            }}
+                          >
+                            <ShareIcon sx={{ fontSize: 20, color: 'gray' }} />
+                          </IconButton>
+
+                          <IconButton
+                            size="small"
+                            onClick={handleWishlistClick}
+                            disabled={isWishlistLoading}
+                            className="bg-white bg-opacity-80 hover:bg-opacity-100"
+                            sx={{ 
+                              width: 36, 
+                              height: 36,
+                              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                              '&:hover': {
+                                backgroundColor: 'rgba(255, 255, 255, 1)',
+                              }
+                            }}
                           >
                             <FavoriteBorderIcon
-                              className={
-                                isFavorite ? "text-red-500" : "text-gray-600"
-                              }
+                              sx={{ 
+                                fontSize: 20,
+                                color: isFavorite ? red[500] : 'gray'
+                              }}
                             />
-                          </button>
-                          <button
-                            className="bg-white p-2 rounded-full"
-                            onClick={() => handleZoomIn(image)}
+                          </IconButton>
+
+                          <IconButton
+                            size="small"
+                            onClick={() => handleZoomIn(image, index)}
+                            className="bg-white bg-opacity-80 hover:bg-opacity-100"
+                            sx={{ 
+                              width: 36, 
+                              height: 36,
+                              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                              '&:hover': {
+                                backgroundColor: 'rgba(255, 255, 255, 1)',
+                              }
+                            }}
                           >
-                            <ZoomInIcon className="text-gray-600" />
-                          </button>
+                            <ZoomInIcon sx={{ fontSize: 20, color: 'gray' }} />
+                          </IconButton>
                         </div>
                       </div>
                     </SwiperSlide>
@@ -251,7 +342,7 @@ const [showEnquiryPopup , setShowEnquiryPopup ] = useState(false);
               <div className="flex items-center mb-4 p-3 bg-gray-50 rounded-lg">
                 <div className="w-12 h-12 rounded-full overflow-hidden">
                   <img
-                    src={IMAGES.profile}
+                    src={property.profile_image || IMAGES.profile}
                     alt="Owner"
                     className="w-full h-full object-cover"
                   />
@@ -280,29 +371,23 @@ const [showEnquiryPopup , setShowEnquiryPopup ] = useState(false);
                     sx={{ color: "red" }}
                   />
                   <div className="ml-2">
-                    <p className="text-sm text-gray-500"> {property.city}</p>
+                    <p className="text-sm text-gray-500">{property.city}</p>
                     <p className="font-semibold text-xl">{property.district}</p>
                   </div>
                   <div className="ml-auto">
-                    <div className="w-[150px] h-[150px] rounded-lg overflow-hidden">
+                    <div className="w-[150px] h-[150px] rounded-lg overflow-hidden cursor-pointer"
+                     onClick={openGoogleMaps}
+                    >
                       <MapContainer
-                        // center={[
-                        //   property.location.latitude,
-                        //   property.location.longitude,
-                        // ]}
+                        center={[mapCenter.lat, mapCenter.lng]}
                         zoom={13}
                         scrollWheelZoom={false}
                         className="w-[150px] h-[150px] rounded-[10px]"
                       >
                         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                        <Marker
-                        // position={[
-                        //   property.location.latitude,
-                        //   property.location.longitude,
-                        // ]}
-                        >
+                        <Marker position={[mapCenter.lat, mapCenter.lng]}>
                           <Popup>
-                            {/* {property.type} <br /> {property.facing} */}
+                            {property.subcategory} <br /> {property.city}
                           </Popup>
                         </Marker>
                       </MapContainer>
@@ -328,17 +413,15 @@ const [showEnquiryPopup , setShowEnquiryPopup ] = useState(false);
                 </div>
               </div>
 
-              {property.bhk !== "" && (
+              {property.bhk && (
                 <div className="flex items-center mt-2 mb-2">
-                  {property.bhk !== null ? (
-                    <p className="mr-4">( {property.bhk || "N/A"} )</p>
-                  ) : (
-                    ""
-                  )}
+                  <p className="mr-4">({property.bhk})</p>
                   <p className="mr-4">{property.post_year}</p>
                   <div className="flex items-center">
                     <StarIcon className="text-orange-500" />
-                    <span className="ml-1">4.5</span>
+                    <span className="ml-1">
+                      {property.average_rating || "4.5"}
+                    </span>
                   </div>
                 </div>
               )}
@@ -380,13 +463,40 @@ const [showEnquiryPopup , setShowEnquiryPopup ] = useState(false);
         </div>
       </div>
 
+      {/* Reusable Share Modal */}
+      <ShareModal
+        isOpen={showShareModal}
+        onClose={handleShareClose}
+        url={getCurrentUrl()}
+        title={`Check out this ${property.property_name} in ${property.city} - ₹${property.amount}`}
+        description={property.description || `Beautiful ${property.bhk} property in ${property.city}`}
+        modalTitle="Share this property"
+        showPlatforms={['whatsapp','pinterest', 'twitter', 'instagram', 'facebook', 'telegram', 'linkedin',]}
+      />
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+
       {/* Zoom Modal */}
       {showZoom && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 z-999 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
           <div className="relative w-full max-w-4xl h-[80vh] bg-white rounded-lg overflow-hidden">
             <button
               onClick={handleZoomOut}
-              className="absolute top-4 right-4 bg-white rounded-full  z-10 w-[30px] h-[30px] flex items-center justify-center cursor-pointer"
+              className="absolute top-4 right-4 bg-white rounded-full z-10 w-[30px] h-[30px] flex items-center justify-center cursor-pointer"
             >
               <CloseIcon className="text-gray-600" />
             </button>
@@ -409,7 +519,6 @@ const [showEnquiryPopup , setShowEnquiryPopup ] = useState(false);
             </div>
 
             {/* Thumbnail navigation in zoom view */}
-            {/* Thumbnail navigation in zoom view - responsive for mobile */}
             <div className="absolute bottom-4 left-0 right-0 px-4">
               <div className="overflow-x-auto pb-2 max-w-full scrollbar-hide">
                 <div
@@ -426,7 +535,6 @@ const [showEnquiryPopup , setShowEnquiryPopup ] = useState(false);
                       }`}
                       onClick={() => {
                         setZoomedImageSrc(img);
-                        // Also synchronize main swiper to this image
                         if (mainSwiper && !mainSwiper.destroyed) {
                           mainSwiper.slideToLoop(idx);
                         }

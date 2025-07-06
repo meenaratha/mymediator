@@ -31,6 +31,7 @@ import { ProtectedRoute } from "../auth/ProtectedRoute";
 import PropertyFormPage from "../Pages/UserFlow/PropertyFormPage";
 import ElectronicsFormPage from "../Pages/UserFlow/ElectronicsFormPage";
 import BikeFormPage from "../Pages/UserFlow/BikeFormPage";
+import CarDetailPage from "../Pages/UserFlow/CarDetailPage";
 const UserRoutes = () => {
   return (
     <>
@@ -38,12 +39,12 @@ const UserRoutes = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/property" element={<PropertyFilterPage />} />
         <Route path="/properties/:slug" element={<ProductDetailPage />} />
+        <Route path="/electronic/:slug" element={<LaptopDetailPage />} />
+        <Route path="/car/:slug" element={<CarDetailPage />} />
+        <Route path="/bike/:slug" element={<BikeDetailPage />} />
         <Route path="/electronics" element={<ElectronicsPage />} />
         <Route path="/car" element={<CarsPage />} />
         <Route path="/bike" element={<BikesPage />} />
-        <Route path="/bike-details" element={<BikeDetailPage />} />
-        <Route path="/electronics-details" element={<LaptopDetailPage />} />
-        <Route path="/car-details" element={<BikeDetailPage />} />
         {/* Authendication Routes */}
       </Route>
 

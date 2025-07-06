@@ -1,138 +1,173 @@
 import React from "react";
-import { Card, CardContent } from "@mui/material";
+import { Card, CardContent, Skeleton } from "@mui/material";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
+import SpeedIcon from "@mui/icons-material/Speed";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import LocalGasStationIcon from "@mui/icons-material/LocalGasStation";
+import SettingsIcon from "@mui/icons-material/Settings";
 import { red } from "@mui/material/colors";
-import IMAGES from "@/utils/images.js";
 import { useMediaQuery } from "react-responsive";
+import { useNavigate } from "react-router-dom";
 
 const CarCard = ({ item }) => {
+  const navigate = useNavigate();
   const isMobile = useMediaQuery({ maxWidth: 767 });
+
+  const handleCardClick = () => {
+    // Navigate using the action_slug from API response
+    navigate(`/car/${item.action_slug}`);
+  };
 
   return (
     <Card
+      onClick={handleCardClick}
       className={`${
         isMobile ? "max-w-[300px]" : ""
-      } max-w-[275px] w-full rounded-lg shadow-md overflow-hidden hover:shadow-lg mx-auto`}
+      } max-w-[275px] w-full rounded-lg shadow-md overflow-hidden hover:shadow-lg mx-auto cursor-pointer`}
     >
       <div className="relative">
         <img
-          src={item.image}
-          alt={item.productname}
+          src={item.image_url}
+          alt={item.title}
           className="w-full h-36 object-cover"
         />
+        {/* Status badge */}
+        {item.status && (
+          <div className="absolute top-2 left-2 bg-green-600 text-white px-2 py-1 text-xs rounded">
+            {item.status_label || item.status}
+          </div>
+        )}
       </div>
 
       <CardContent className="p-3">
-        <h3 className="font-bold text-lg">{item.productname}</h3>
+        <h3 className="font-bold text-lg line-clamp-1" title={item.title}>
+          {item.title}
+        </h3>
 
         <div className="flex items-center text-sm text-gray-500 mt-1">
           <LocationOnIcon sx={{ color: red[500] }} />
-          <span>{item.location}</span>
+          <span>
+            {item.city}, {item.district}
+          </span>
+        </div>
+
+        {/* Car details */}
+        <div className="mt-2 space-y-1">
+          {item.brand && (
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Brand:</span>
+              <span className="text-sm font-medium">{item.brand}</span>
+            </div>
+          )}
+          
+          {item.model && (
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Model:</span>
+              <span className="text-sm font-medium">{item.model}</span>
+            </div>
+          )}
+
+          {item.subcategory && (
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Type:</span>
+              <span className="text-sm font-medium">{item.subcategory}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Additional car info */}
+        <div className="mt-2 space-y-1">
+          <div className="flex items-center justify-between text-xs text-gray-500">
+            {item.manufacturing_year && (
+              <div className="flex items-center">
+                <CalendarTodayIcon sx={{ fontSize: 14, marginRight: 0.5 }} />
+                <span>{item.manufacturing_year}</span>
+              </div>
+            )}
+            
+            {item.kilometers_driven && (
+              <div className="flex items-center">
+                <SpeedIcon sx={{ fontSize: 14, marginRight: 0.5 }} />
+                <span>{item.kilometers_driven} km</span>
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center justify-between text-xs text-gray-500">
+            {item.fuel_type && (
+              <div className="flex items-center">
+                <LocalGasStationIcon sx={{ fontSize: 14, marginRight: 0.5 }} />
+                <span>{item.fuel_type}</span>
+              </div>
+            )}
+            
+            {item.transmission && (
+              <div className="flex items-center">
+                <SettingsIcon sx={{ fontSize: 14, marginRight: 0.5 }} />
+                <span>{item.transmission}</span>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">
           <span className="text-sm text-gray-500">
-            {item.year} - {item.distance}
+            {item.year}
           </span>
-          <span className="font-bold text-lg">₹ {item.price}L</span>
+          <span className="font-bold text-lg text-black">
+            ₹ {parseFloat(item.price).toLocaleString()}
+          </span>
         </div>
+
+        {/* View count */}
+        {item.view_count && (
+          <div className="mt-2 text-xs text-gray-400 text-center">
+            {item.view_count} views
+          </div>
+        )}
       </CardContent>
     </Card>
   );
 };
 
-const CarListingGrid = () => {
-  const cars = [
-    {
-      id: 1,
-      productname: "Maruti Suzuki Swift",
-      image: IMAGES.car1,
-      location: "West Mambalam, Chennai",
-      year: 2022,
-      distance: "25,000 km",
-      price: "5.85",
-    },
-    {
-      id: 2,
-      productname: "Hyundai Creta",
-      image: IMAGES.car2,
-      location: "Adyar, Chennai",
-      year: 2023,
-      distance: "12,000 km",
-      price: "12.5",
-    },
-    {
-      id: 3,
-      productname: "Toyota Innova",
-      image: IMAGES.car3,
-      location: "T Nagar, Chennai",
-      year: 2021,
-      distance: "42,000 km",
-      price: "15.75",
-    },
-    {
-      id: 4,
-      productname: "Honda City",
-      image: IMAGES.car4,
-      location: "Anna Nagar, Chennai",
-      year: 2023,
-      distance: "8,000 km",
-      price: "9.65",
-    },
-    {
-      id: 5,
-      productname: "Mahindra XUV700",
-      image: IMAGES.car5,
-      location: "Velachery, Chennai",
-      year: 2022,
-      distance: "32,000 km",
-      price: "18.2",
-    },
-    {
-      id: 6,
-      productname: "Tata Nexon",
-      image: IMAGES.car6,
-      location: "Porur, Chennai",
-      year: 2022,
-      distance: "28,500 km",
-      price: "8.25",
-    },
-    {
-      id: 7,
-      productname: "Kia Seltos",
-      image: IMAGES.car7,
-      location: "Nungambakkam, Chennai",
-      year: 2023,
-      distance: "15,000 km",
-      price: "14.5",
-    },
-    {
-      id: 8,
-      productname: "Maruti Suzuki Baleno",
-      image: IMAGES.car8,
-      location: "Mylapore, Chennai",
-      year: 2022,
-      distance: "20,000 km",
-      price: "7.2",
-    },
-    {
-      id: 9,
-      productname: "Hyundai i20",
-      image: IMAGES.car1,
-      location: "Kodambakkam, Chennai",
-      year: 2023,
-      distance: "7,500 km",
-      price: "6.8",
-    },
-  ];
+const SkeletonCard = () => (
+  <Card className="max-w-[275px] w-full rounded-lg shadow-md mx-auto">
+    <Skeleton variant="rectangular" width="100%" height={140} />
+    <CardContent>
+      <Skeleton variant="text" width="60%" height={24} />
+      <Skeleton variant="text" width="80%" height={20} />
+      <Skeleton variant="text" width="40%" height={20} />
+      <Skeleton variant="text" width="60%" height={20} />
+      <Skeleton variant="text" width="50%" height={20} />
+      <Skeleton variant="text" width="70%" height={20} />
+    </CardContent>
+  </Card>
+);
+
+const CarListingGrid = ({ cars = [], loading = false }) => {
+  const skeletonCount = 6;
 
   return (
     <div className="container mx-auto px-4 py-8 pt-[10px]">
       <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 justify-items-center">
-        {cars.map((item) => (
-          <CarCard key={item.id} item={item} />
-        ))}
+        {loading
+          ? Array.from({ length: skeletonCount }).map((_, index) => (
+              <SkeletonCard key={index} />
+            ))
+          : cars.map((item) => (
+              <CarCard key={item.id} item={item} />
+            ))}
       </div>
+
+      {/* Show message when no cars found */}
+      {!loading && cars.length === 0 && (
+        <div className="text-center py-8">
+          <div className="text-gray-500 text-lg">No cars found</div>
+          <div className="text-gray-400 text-sm mt-2">
+            Try adjusting your search filters or location
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,11 +1,12 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation, Pagination, Thumbs } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import "swiper/css/thumbs";
-import { IconButton, Snackbar, Alert } from "@mui/material";
+import { IconButton, Snackbar, Alert, Card, CardContent } from "@mui/material";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import ShareIcon from "@mui/icons-material/Share";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
@@ -15,8 +16,13 @@ import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import CloseIcon from "@mui/icons-material/Close";
+import SpeedIcon from "@mui/icons-material/Speed";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import LocalGasStationIcon from "@mui/icons-material/LocalGasStation";
+import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
+import PersonIcon from "@mui/icons-material/Person";
+import ReportProblemIcon from "@mui/icons-material/ReportProblem";
 import { red } from "@mui/material/colors";
-import IMAGES from "../../utils/images.js";
 import { useMediaQuery } from "react-responsive";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -24,7 +30,7 @@ import L from "leaflet";
 import EnquiryForm from "../../features/EnquiryForm.jsx";
 import { Link } from "react-router-dom";
 import { api } from "@/api/axios";
-import ShareModal from "../../components/common/ShareModal"; // Import reusable ShareModal
+import ShareModal from "../../components/common/ShareModal";
 
 // Fix for default markers in React Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -34,9 +40,9 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-const ElectronicsDetails = ({ electronics }) => {
+const CarDetails = ({ car }) => {
   const isMobile = useMediaQuery({ maxWidth: 767 });
-  const [isFavorite, setIsFavorite] = useState(electronics.is_wishlisted || false);
+  const [isFavorite, setIsFavorite] = useState(car?.is_wishlisted || false);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
@@ -47,30 +53,20 @@ const ElectronicsDetails = ({ electronics }) => {
   const [zoomedImageSrc, setZoomedImageSrc] = useState("");
   const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
   const [zoomLevel, setZoomLevel] = useState(2);
-  const mainImageRef = useRef(null);
-  const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
   const [showEnquiryPopup, setShowEnquiryPopup] = useState(false);
 
   // Default Chennai coordinates
   const defaultLocation = { lat: 13.0827, lng: 80.2707 };
 
-  // Prepare images - handle both single image and array, fallback to dummy images
-  const dummyImages = [
-    IMAGES.tv1,
-    IMAGES.tv2,
-    IMAGES.tv3,
-    IMAGES.tv4,
-    IMAGES.tv5,
-  ];
+  // Prepare images from API response
+  const images = car?.image_url 
+    ? (Array.isArray(car.image_url) ? car.image_url : [car.image_url])
+    : [];
 
-  const images = electronics.image_url 
-    ? (Array.isArray(electronics.image_url) ? electronics.image_url : [electronics.image_url])
-    : dummyImages;
-
-  // Get map coordinates - use Chennai as default if null
+  // Get map coordinates
   const mapCenter = {
-    lat: electronics.latitude || defaultLocation.lat,
-    lng: electronics.longitude || defaultLocation.lng,
+    lat: car?.latitude || defaultLocation.lat,
+    lng: car?.longitude || defaultLocation.lng,
   };
 
   // Wishlist functionality
@@ -80,20 +76,18 @@ const ElectronicsDetails = ({ electronics }) => {
 
     try {
       if (isFavorite) {
-        // Remove from wishlist
         await api.delete('/wishlist', {
           data: {
-            wishable_type: "electronic",
-            wishable_id: electronics.id.toString()
+            wishable_type: "car",
+            wishable_id: car.id.toString()
           }
         });
         setIsFavorite(false);
         setSnackbar({ open: true, message: 'Removed from wishlist', severity: 'info' });
       } else {
-        // Add to wishlist
         await api.post('/wishlist', {
-          wishable_type: "electronic",
-          wishable_id: electronics.id
+          wishable_type: "car",
+          wishable_id: car.id
         });
         setIsFavorite(true);
         setSnackbar({ open: true, message: 'Added to wishlist', severity: 'success' });
@@ -124,32 +118,14 @@ const ElectronicsDetails = ({ electronics }) => {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  // Function to open Google Maps in new tab
+  // Function to open Google Maps
   const openGoogleMaps = () => {
     const { lat, lng } = mapCenter;
     const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lng}&z=15`;
     window.open(googleMapsUrl, '_blank');
   };
 
-  // Handle touch events for mobile zoom
-  const handleTouchStart = (e) => {
-    const touch = e.touches[0];
-    setTouchStart({ x: touch.clientX, y: touch.clientY });
-  };
-  
-  const handleTouchMove = (e) => {
-    if (!showZoom) return;
-    
-    const touch = e.touches[0];
-    const container = e.currentTarget;
-    const rect = container.getBoundingClientRect();
-    
-    const x = ((touch.clientX - rect.left) / rect.width) * 100;
-    const y = ((touch.clientY - rect.top) / rect.height) * 100;
-    
-    setZoomPosition({ x, y });
-  };
-  
+  // Zoom functionality
   const handleZoomIn = (imageSrc, index) => {
     setZoomedImageSrc(imageSrc);
     setShowZoom(true);
@@ -188,11 +164,15 @@ const ElectronicsDetails = ({ electronics }) => {
     }
   };
 
+  if (!car) {
+    return <div className="text-center py-8">Car not found</div>;
+  }
+
   return (
     <>
       {/* Enquiry Modal */}
       {showEnquiryPopup && (
-        <EnquiryForm onClose={() => { setShowEnquiryPopup(false) }} />
+        <EnquiryForm onClose={() => setShowEnquiryPopup(false)} />
       )}
 
       <div className="">
@@ -201,139 +181,135 @@ const ElectronicsDetails = ({ electronics }) => {
           <div className="w-full md:w-1/2 p-2">
             <div className="flex flex-col-reverse md:flex-row gap-3">
               {/* Thumbnails */}
-              <div className="md:flex flex-row md:flex-col space-y-2 mr-2 gap-2">
-                <Swiper
-                  onSwiper={setThumbsSwiper}
-                  slidesPerView={3}
-                  spaceBetween={10}
-                  direction={isMobile ? "horizontal" : "vertical"}
-                  loop={true}
-                  autoplay={{ delay: 5000, disableOnInteraction: false }}
-                  pagination={{ clickable: true }}
-                  navigation={false}
-                  modules={[Navigation, Thumbs]}
-                  className="rounded-lg overflow-hidden max-h-[280px]"
-                >
-                  {images.map((thumb, index) => (
-                    <SwiperSlide
-                      key={index}
-                      style={{
-                        height: "40px !important",
-                        maxHeight: "40px !important ",
-                      }}
-                      className={`w-24 h-16 rounded overflow-hidden cursor-pointer  ${
-                        activeIndex === index
-                          ? "border-2 border-gray-200 rounded-[10px]"
-                          : "border-transparent"
-                      }`}
-                      onClick={() => {
-                        if (mainSwiper) {
-                          mainSwiper.slideToLoop(index);
-                        }
-                      }}
-                    >
-                      <img
-                        src={thumb}
-                        alt={`Thumbnail ${index + 1}`}
-                        className="w-24 h-full rounded object-cover"
-                      />
-                    </SwiperSlide>
-                  ))}
-                </Swiper>
-              </div>
+              {images.length > 0 && (
+                <div className="md:flex flex-row md:flex-col space-y-2 mr-2 gap-2">
+                  <Swiper
+                    onSwiper={setThumbsSwiper}
+                    slidesPerView={3}
+                    spaceBetween={10}
+                    direction={isMobile ? "horizontal" : "vertical"}
+                    loop={true}
+                    modules={[Navigation, Thumbs]}
+                    className="rounded-lg overflow-hidden max-h-[280px]"
+                  >
+                    {images.map((thumb, index) => (
+                      <SwiperSlide
+                        key={index}
+                        className={`w-24 h-16 rounded overflow-hidden cursor-pointer border-2 ${
+                          activeIndex === index ? "border-blue-500" : "border-gray-200"
+                        }`}
+                        onClick={() => {
+                          if (mainSwiper) {
+                            mainSwiper.slideToLoop(index);
+                          }
+                        }}
+                      >
+                        <img
+                          src={thumb}
+                          alt={`Thumbnail ${index + 1}`}
+                          className="w-24 h-full rounded object-cover"
+                        />
+                      </SwiperSlide>
+                    ))}
+                  </Swiper>
+                </div>
+              )}
 
               {/* Main Image with Swiper */}
               <div className="flex max-w-[450px] h-[280px] relative">
-                <Swiper
-                  onSwiper={setMainSwiper}
-                  slidesPerView={1}
-                  spaceBetween={20}
-                  loop={true}
-                  thumbs={{
-                    swiper:
-                      thumbsSwiper && !thumbsSwiper.destroyed
-                        ? thumbsSwiper
-                        : null,
-                  }}
-                  autoplay={{
-                    delay: 3000,
-                    disableOnInteraction: false,
-                  }}
-                  pagination={{
-                    clickable: true,
-                  }}
-                  navigation={false}
-                  onSlideChange={handleSlideChange}
-                  modules={[Autoplay, Pagination, Navigation, Thumbs]}
-                  className="rounded-lg overflow-hidden"
-                >
-                  {images.map((image, index) => (
-                    <SwiperSlide key={index}>
-                      <div className="relative">
-                        <img
-                          src={image}
-                          alt={`Electronics view ${index + 1}`}
-                          className="w-full h-[300px] object-cover"
-                        />
-                        <div className="absolute top-2 right-2 flex flex-col gap-2">
-                          <IconButton
-                            size="small"
-                            onClick={handleShareClick}
-                            className="bg-white bg-opacity-80 hover:bg-opacity-100"
-                            sx={{ 
-                              width: 36, 
-                              height: 36,
-                              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                              '&:hover': {
-                                backgroundColor: 'rgba(255, 255, 255, 1)',
-                              }
-                            }}
-                          >
-                            <ShareIcon sx={{ fontSize: 20, color: 'gray' }} />
-                          </IconButton>
-
-                          <IconButton
-                            size="small"
-                            onClick={handleWishlistClick}
-                            disabled={isWishlistLoading}
-                            className="bg-white bg-opacity-80 hover:bg-opacity-100"
-                            sx={{ 
-                              width: 36, 
-                              height: 36,
-                              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                              '&:hover': {
-                                backgroundColor: 'rgba(255, 255, 255, 1)',
-                              }
-                            }}
-                          >
-                            <FavoriteBorderIcon
+                {images.length > 0 ? (
+                  <Swiper
+                    onSwiper={setMainSwiper}
+                    slidesPerView={1}
+                    spaceBetween={20}
+                    loop={true}
+                    thumbs={{
+                      swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null,
+                    }}
+                    autoplay={{
+                      delay: 3000,
+                      disableOnInteraction: false,
+                    }}
+                    pagination={{
+                      clickable: true,
+                    }}
+                    navigation={false}
+                    onSlideChange={handleSlideChange}
+                    modules={[Autoplay, Pagination, Navigation, Thumbs]}
+                    className="rounded-lg overflow-hidden"
+                  >
+                    {images.map((image, index) => (
+                      <SwiperSlide key={index}>
+                        <div className="relative">
+                          <img
+                            src={image}
+                            alt={`Car view ${index + 1}`}
+                            className="w-full h-[300px] object-cover"
+                          />
+                          <div className="absolute top-2 right-2 flex flex-col gap-2">
+                            <IconButton
+                              size="small"
+                              onClick={handleShareClick}
+                              className="bg-white bg-opacity-80 hover:bg-opacity-100"
                               sx={{ 
-                                fontSize: 20,
-                                color: isFavorite ? red[500] : 'gray'
+                                width: 36, 
+                                height: 36,
+                                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                '&:hover': {
+                                  backgroundColor: 'rgba(255, 255, 255, 1)',
+                                }
                               }}
-                            />
-                          </IconButton>
+                            >
+                              <ShareIcon sx={{ fontSize: 20, color: 'gray' }} />
+                            </IconButton>
 
-                          <IconButton
-                            size="small"
-                            onClick={() => handleZoomIn(image, index)}
-                            className="bg-white bg-opacity-80 hover:bg-opacity-100"
-                            sx={{ 
-                              width: 36, 
-                              height: 36,
-                              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                              '&:hover': {
-                                backgroundColor: 'rgba(255, 255, 255, 1)',
-                              }
-                            }}
-                          >
-                            <ZoomInIcon sx={{ fontSize: 20, color: 'gray' }} />
-                          </IconButton>
+                            <IconButton
+                              size="small"
+                              onClick={handleWishlistClick}
+                              disabled={isWishlistLoading}
+                              className="bg-white bg-opacity-80 hover:bg-opacity-100"
+                              sx={{ 
+                                width: 36, 
+                                height: 36,
+                                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                '&:hover': {
+                                  backgroundColor: 'rgba(255, 255, 255, 1)',
+                                }
+                              }}
+                            >
+                              <FavoriteBorderIcon
+                                sx={{ 
+                                  fontSize: 20,
+                                  color: isFavorite ? red[500] : 'gray'
+                                }}
+                              />
+                            </IconButton>
+
+                            <IconButton
+                              size="small"
+                              onClick={() => handleZoomIn(image, index)}
+                              className="bg-white bg-opacity-80 hover:bg-opacity-100"
+                              sx={{ 
+                                width: 36, 
+                                height: 36,
+                                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                '&:hover': {
+                                  backgroundColor: 'rgba(255, 255, 255, 1)',
+                                }
+                              }}
+                            >
+                              <ZoomInIcon sx={{ fontSize: 20, color: 'gray' }} />
+                            </IconButton>
+                          </div>
                         </div>
-                      </div>
-                    </SwiperSlide>
-                  ))}
-                </Swiper>
+                      </SwiperSlide>
+                    ))}
+                  </Swiper>
+                ) : (
+                  <div className="w-full h-[300px] bg-gray-200 rounded-lg flex items-center justify-center">
+                    <span className="text-gray-500">No images available</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -343,16 +319,22 @@ const ElectronicsDetails = ({ electronics }) => {
             <div className="p-4 rounded-lg shadow-lg bg-white w-full max-w-[440px]">
               {/* Seller profile section */}
               <div className="flex items-center mb-4 p-3 bg-gray-50 rounded-lg">
-                <div className="w-12 h-12 rounded-full overflow-hidden">
-                  <img
-                    src={electronics.profile_image || IMAGES.profile}
-                    alt="Seller"
-                    className="w-full h-full object-cover"
-                  />
+                <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-300">
+                  {car.profile_image ? (
+                    <img
+                      src={car.profile_image}
+                      alt="Seller"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <PersonIcon className="text-gray-500" />
+                    </div>
+                  )}
                 </div>
                 <div className="ml-3">
                   <h3 className="font-semibold text-lg">
-                    {electronics.vendor_name || "Seller"}
+                    {car.vendor_name || "Seller"}
                   </h3>
                   <p className="text-sm text-gray-500">Owner</p>
                 </div>
@@ -363,7 +345,7 @@ const ElectronicsDetails = ({ electronics }) => {
                 </div>
               </div>
 
-              {/* Location and map section with clickable map */}
+              {/* Location and map section */}
               <div className="border-t border-gray-200 pt-4 mt-4">
                 <div className="flex items-start">
                   <LocationOnIcon
@@ -371,8 +353,8 @@ const ElectronicsDetails = ({ electronics }) => {
                     sx={{ color: "red" }}
                   />
                   <div className="ml-2">
-                    <p className="text-sm text-gray-500">{electronics.city}</p>
-                    <p className="font-semibold text-xl">{electronics.district}</p>
+                    <p className="text-sm text-gray-500">{car.city}</p>
+                    <p className="font-semibold text-xl">{car.district}</p>
                   </div>
                   <div className="ml-auto">
                     <div 
@@ -393,12 +375,12 @@ const ElectronicsDetails = ({ electronics }) => {
                         />
                         <Marker position={[mapCenter.lat, mapCenter.lng]}>
                           <Popup>
-                            {electronics.brand} {electronics.model} <br /> {electronics.subcategory}
+                            {car.brand} {car.model} <br /> {car.subcategory || 'Car'}
                           </Popup>
                         </Marker>
                       </MapContainer>
 
-                      {/* Overlay with Google Maps icon - appears on hover */}
+                      {/* Overlay with Google Maps icon */}
                       <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                         <div className="text-white text-center">
                           <svg className="w-8 h-8 mx-auto mb-1" fill="currentColor" viewBox="0 0 24 24">
@@ -408,6 +390,17 @@ const ElectronicsDetails = ({ electronics }) => {
                         </div>
                       </div>
                     </div>
+                  </div>
+                </div>
+
+                {/* Ad ID and Report Section */}
+                <div className="flex justify-between items-center text-gray-600 pt-4 mt-4 border-t">
+                  <div className="text-sm">
+                    <span className="font-semibold">ADS ID:</span> {car.unique_code || car.id}
+                  </div>
+                  <div className="flex items-center text-blue-600 cursor-pointer" aria-label="report">
+                    <ReportProblemIcon fontSize="small" />
+                    <span className="ml-1 text-sm">Report Ad</span>
                   </div>
                 </div>
               </div>
@@ -421,7 +414,7 @@ const ElectronicsDetails = ({ electronics }) => {
             <div className="w-full md:w-1/2">
               <div className="flex items-center py-2">
                 <h2 className="md:text-2xl text-[20px] font-bold">
-                  {electronics.title || `${electronics.brand} ${electronics.model}`}
+                  {car.title || `${car.brand} ${car.model}`}
                 </h2>
                 <div className="w-[fit-content] ml-4 bg-blue-100 text-blue-800 px-2 py-1 rounded-md flex items-center text-xs">
                   <VerifiedIcon fontSize="small" className="mr-1" />
@@ -430,24 +423,27 @@ const ElectronicsDetails = ({ electronics }) => {
               </div>
 
               <div className="flex items-center mt-2 mb-2">
-                <p className="mr-4">{electronics.subcategory}</p>
+                <p className="mr-4">
+                  {car.manufacturing_year || car.year} - {car.kilometers || 'N/A'} km
+                </p>
                 <div className="flex items-center">
                   <StarIcon className="text-orange-500" />
-                  <span className="ml-1">{electronics.average_rating || "4.5"}</span>
+                  <span className="ml-1">{car.average_rating || "4.5"}</span>
                 </div>
               </div>
 
               <div className="flex items-center text-red-500 mt-4 gap-[10px]">
                 <LocationOnIcon fontSize="small" />
                 <p className="text-sm text-black">
-                  {electronics.city}, {electronics.district}
+                  {car.city}, {car.district}
                 </p>
               </div>
             </div>
+            
             <div className="w-full md:w-1/2 flex flex-col md:items-center md:mt-[10px]">
               <div className="mt-1 md:mt-0">
-                <h3 className="md:text-2xl text-[20px] font-bold md:text-center">
-                  ₹ {electronics.price ? parseFloat(electronics.price).toLocaleString() : "N/A"}
+                <h3 className="md:text-2xl text-[20px] font-bold md:text-center text-green-600">
+                  ₹ {car.price ? parseFloat(car.price).toLocaleString() : "N/A"}
                 </h3>
                 <div className="flex mt-4 space-x-4 justify-center">
                   <button
@@ -461,7 +457,7 @@ const ElectronicsDetails = ({ electronics }) => {
                     className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] 
                   cursor-pointer flex items-center justify-center flex-1"
                     onClick={() =>
-                      (window.location.href = `tel:${electronics.mobile_number}`)
+                      (window.location.href = `tel:${car.mobile_number}`)
                     }
                   >
                     <CallIcon fontSize="small" className="mr-2" />
@@ -472,6 +468,8 @@ const ElectronicsDetails = ({ electronics }) => {
             </div>
           </div>
         </div>
+
+       
       </div>
 
       {/* Reusable Share Modal */}
@@ -479,10 +477,10 @@ const ElectronicsDetails = ({ electronics }) => {
         isOpen={showShareModal}
         onClose={handleShareClose}
         url={getCurrentUrl()}
-        title={`Check out this ${electronics.brand} ${electronics.model} - ₹${electronics.price ? parseFloat(electronics.price).toLocaleString() : "N/A"}`}
-        description={electronics.description || `${electronics.subcategory} in excellent condition`}
-        modalTitle="Share this electronics item"
-        showPlatforms={['pinterest', 'twitter', 'instagram', 'facebook', 'telegram', 'linkedin']}
+        title={`Check out this ${car.brand} ${car.model} - ₹${car.price ? parseFloat(car.price).toLocaleString() : "N/A"}`}
+        description={car.description || `${car.subcategory || 'Car'} in excellent condition`}
+        modalTitle="Share this car"
+        showPlatforms={['whatsapp', 'facebook', 'twitter', 'instagram', 'telegram', 'linkedin']}
       />
 
       {/* Snackbar for notifications */}
@@ -502,8 +500,8 @@ const ElectronicsDetails = ({ electronics }) => {
       </Snackbar>
 
       {/* Zoom Modal */}
-      {showZoom && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
+      {showZoom && images.length > 0 && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 z-999 flex items-center justify-center p-4">
           <div className="relative w-full max-w-4xl h-[80vh] bg-white rounded-lg overflow-hidden">
             <button
               onClick={handleZoomOut}
@@ -514,12 +512,10 @@ const ElectronicsDetails = ({ electronics }) => {
             <div
               className="w-full h-full overflow-hidden"
               onMouseMove={handleZoomMouseMove}
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
             >
               <img
                 src={zoomedImageSrc}
-                alt="Zoomed electronics view"
+                alt="Zoomed car view"
                 className={`w-full h-full ${
                   isMobile ? "object-contain" : "object-cover"
                 }`}
@@ -570,4 +566,4 @@ const ElectronicsDetails = ({ electronics }) => {
   );
 };
 
-export default ElectronicsDetails;
+export default CarDetails;
