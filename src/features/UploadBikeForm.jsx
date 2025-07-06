@@ -12,7 +12,7 @@ import { DynamicInputs } from "@/components";
 import { useDispatch, useSelector } from "react-redux";
 
 // Import dynamic validation schemas
-import { uploadBikeFormSchema } from "../validation/BikeFormSchema";
+import {  createBikeFormSchema, getVehicleType } from "../validation/BikeFormSchema";
 
 // Import API services
 import { dropdownService } from "../utils/propertyDropdownService";
@@ -100,9 +100,14 @@ const UploadBikeForm = () => {
     }
   };
 
-  useEffect(() => {
-    setValidationSchema(uploadBikeFormSchema);
-  }, []);
+ useEffect(() => {
+  // Create dynamic validation schema based on slug
+  const dynamicSchema = createBikeFormSchema(slug);
+  setValidationSchema(dynamicSchema);
+  
+  console.log("🔧 Validation schema updated for slug:", slug);
+}, [slug]);
+
 
   const { formData, errors, touched, isLoading, apiError, autoPopulateData } =
     useSelector((state) => state.uploadbikeform);
@@ -134,7 +139,7 @@ const UploadBikeForm = () => {
   const [showOtherModel, setShowOtherModel] = useState(false);
 
   // Dynamic validation schema based on slug
-  const [validationSchema, setValidationSchema] = useState(uploadBikeFormSchema);
+  const [validationSchema, setValidationSchema] = useState();
 
   useEffect(() => {
     const loadDropdownData = async () => {
@@ -152,10 +157,10 @@ const UploadBikeForm = () => {
           states: response.states?.data || response.states || [],
           districts: [],
           cities: [],
-          bikeBrand: response.bikeBrand?.data || response.bikeBrand || [],
+         bikeBrand: response.bikeBrand?.data || response.bikeBrand || [],
           bikeModel: [],
-          FuelTypes: response.FuelTypes?.data || response.FuelTypes || [],
-          bikeOwners: response.bikeOwners?.data || response.bikeOwners || [],
+         fuelTypes: response.FuelTypes?.data || response.FuelTypes || response.fuelTypes?.data || response.fuelTypes || [],
+          numberOfOwners: response.bikeOwners?.data || response.bikeOwners || response.numberOfOwners?.data || response.numberOfOwners || [],
         };
 
         console.log("✅ Processed dropdown data:", processedDropdowns);
@@ -384,7 +389,7 @@ const UploadBikeForm = () => {
 
       try {
         console.log("Loading bike models for brand:", formData.brand_id);
-        const models = await dropdownService.getBikeModel(formData.brand_id);
+        const models = await dropdownService.getbikeModel(formData.brand_id);
         setDropdownData((prev) => ({
           ...prev,
           bikeModel: models || [],
@@ -772,127 +777,125 @@ const UploadBikeForm = () => {
 
   // Handle field blur for validation
   const handleBlur = async (e) => {
-    const { name } = e.target;
-    dispatch(setTouched(name));
+  const { name } = e.target;
+  dispatch(setTouched(name));
 
-    if (!validationSchema) return;
+  const currentValidationSchema = createBikeFormSchema(slug);
+  if (!currentValidationSchema) return;
 
-    try {
-      await validationSchema.validateAt(name, formData);
-      dispatch(setErrors({ ...errors, [name]: "" }));
-    } catch (err) {
-      dispatch(setErrors({ ...errors, [name]: err.message }));
+  // Skip validation for bicycle-excluded fields
+  const isBicycle = slug?.toLowerCase().includes('bicycle');
+  const bicycleExcludedFields = ['kilometers', 'engine_cc', 'fuel_type_id'];
+  
+  if (isBicycle && bicycleExcludedFields.includes(name)) {
+    console.log(`🚲 Skipping validation for ${name} (bicycle mode)`);
+    return;
+  }
+
+  try {
+    await currentValidationSchema.validateAt(name, formData);
+    dispatch(setErrors({ ...errors, [name]: "" }));
+  } catch (err) {
+    dispatch(setErrors({ ...errors, [name]: err.message }));
+  }
+};
+
+  // Update your handleSubmit function to use the dynamic schema:
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  if (isLoading) return;
+
+  // Create validation schema based on current slug
+  const currentValidationSchema = createBikeFormSchema(slug);
+  
+  if (!currentValidationSchema) {
+    dispatch(
+      setApiError("Validation schema not loaded. Please refresh the page.")
+    );
+    return;
+  }
+
+  const isEditMode = location.pathname.includes("edit");
+  const isBicycle = slug?.toLowerCase().includes('bicycle');
+
+  dispatch(setErrors({}));
+  dispatch(setApiError(null));
+
+  try {
+    dispatch(setLoading(true));
+    
+    // Filter form data to exclude irrelevant fields for bicycles
+    let dataToValidate = { ...formData };
+    
+    if (isBicycle) {
+      // Remove motor bike specific fields from validation data
+      const { kilometers, engine_cc, fuel_type_id, ...bicycleData } = dataToValidate;
+      dataToValidate = bicycleData;
+      
+      console.log("🚲 Validating bicycle data (excluding motor bike fields):", Object.keys(dataToValidate));
+    } else {
+      console.log("🏍️ Validating motor bike data (all fields):", Object.keys(dataToValidate));
     }
-  };
+    
+    await currentValidationSchema.validate(dataToValidate, { abortEarly: false });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+    const allFieldsTouched = {};
+    Object.keys(formData).forEach((key) => {
+      allFieldsTouched[key] = true;
+    });
+    dispatch({
+      type: "uploadbikeform/setAllTouched",
+      payload: allFieldsTouched,
+    });
 
-    if (isLoading) return;
+    console.log("✅ Client-side validation passed:", dataToValidate);
 
-    if (!validationSchema) {
-      dispatch(
-        setApiError("Validation schema not loaded. Please refresh the page.")
+    const allDeletedMedia = [
+      ...deletedMediaIds.images,
+      ...deletedMediaIds.videos,
+    ].join(",");
+
+    const submissionData = {
+      ...formData,
+      media_to_delete: allDeletedMedia,
+      action_id: isEditMode ? formData.action_id : undefined,
+      subcategory_id: id,
+      slug: slug,
+      urlId: id,
+      vehicle_type: getVehicleType(slug), // Add vehicle type for backend
+    };
+
+    console.log("🏍️ Submitting bike form data:", submissionData);
+
+    const result = await submitBikeForm(submissionData, slug, isEditMode);
+
+    if (result.success) {
+      alert(
+        isEditMode
+          ? `${isBicycle ? 'Bicycle' : 'Bike'} updated successfully!`
+          : `${isBicycle ? 'Bicycle' : 'Bike'} submitted successfully!`
       );
-      return;
-    }
-
-    const isEditMode = location.pathname.includes("edit");
-
-    dispatch(setErrors({}));
-    dispatch(setApiError(null));
-
-    try {
-      dispatch(setLoading(true));
-      await validationSchema.validate(formData, { abortEarly: false });
-
-      const allFieldsTouched = {};
-      Object.keys(formData).forEach((key) => {
-        allFieldsTouched[key] = true;
-      });
-      dispatch({
-        type: "uploadbikeform/setAllTouched",
-        payload: allFieldsTouched,
-      });
-
-      console.log("✅ Client-side validation passed:", formData);
-
-      const allDeletedMedia = [
-        ...deletedMediaIds.images,
-        ...deletedMediaIds.videos,
-      ].join(",");
-
-      const submissionData = {
-        ...formData,
-        media_to_delete: allDeletedMedia,
-        action_id: isEditMode ? formData.action_id : undefined,
-        subcategory_id: id, // ID from URL
-        slug: slug, // current slug
-        urlId: id, // URL ID for the backend
-      };
-
-      console.log("🏍️ Submitting bike form data:", submissionData);
-
-      // Use bike form service instead of property form service
-      const result = await submitBikeForm(submissionData, slug, isEditMode);
-
-      if (result.success) {
-        alert(
-          isEditMode
-            ? "Bike updated successfully!"
-            : "Bike submitted successfully!"
-        );
-        if (!isEditMode) {
-          dispatch(resetForm());
-        }
-        setDeletedMediaIds({ images: [], videos: [] });
-      } else {
-        if (result.error || result.details) {
-          dispatch(
-            setApiError(result.error || result.details || "Submission failed")
-          );
-        }
-
-        if (
-          result.validationErrors &&
-          Object.keys(result.validationErrors).length > 0
-        ) {
-          dispatch(setErrors(result.validationErrors));
-
-          const firstErrorField = Object.keys(result.validationErrors)[0];
-          if (firstErrorField) {
-            dispatch(setFocusedField(firstErrorField));
-            setTimeout(() => {
-              const errorElement = document.getElementById(firstErrorField);
-              if (errorElement) {
-                errorElement.scrollIntoView({
-                  behavior: "smooth",
-                  block: "center",
-                });
-                errorElement.focus();
-              }
-            }, 100);
-          }
-        }
+      if (!isEditMode) {
+        dispatch(resetForm());
       }
-    } catch (err) {
-      if (err.name === "ValidationError" && err.inner) {
-        console.log("❌ Validation failed:", err.inner);
-        const formattedErrors = {};
-        const touchedFields = {};
-        err.inner.forEach((error) => {
-          formattedErrors[error.path] = error.message;
-          touchedFields[error.path] = true;
-        });
-        const allFields = Object.keys(formData).reduce((acc, key) => {
-          acc[key] = true;
-          return acc;
-        }, {});
-        dispatch(setErrors(formattedErrors));
-        dispatch({ type: "uploadbikeform/setAllTouched", payload: allFields });
+      setDeletedMediaIds({ images: [], videos: [] });
+    } else {
+      if (result.error || result.details) {
+        dispatch(
+          setApiError(result.error || result.details || "Submission failed")
+        );
+      }
 
-        if (err.inner.length > 0) {
-          const firstErrorField = err.inner[0].path;
+      if (
+        result.validationErrors &&
+        Object.keys(result.validationErrors).length > 0
+      ) {
+        dispatch(setErrors(result.validationErrors));
+
+        const firstErrorField = Object.keys(result.validationErrors)[0];
+        if (firstErrorField) {
+          dispatch(setFocusedField(firstErrorField));
           setTimeout(() => {
             const errorElement = document.getElementById(firstErrorField);
             if (errorElement) {
@@ -904,15 +907,47 @@ const UploadBikeForm = () => {
             }
           }, 100);
         }
-      } else {
-        dispatch(
-          setApiError(err.message || "An error occurred during validation")
-        );
       }
-    } finally {
-      dispatch(setLoading(false));
     }
-  };
+  } catch (err) {
+    if (err.name === "ValidationError" && err.inner) {
+      console.log("❌ Validation failed:", err.inner);
+      const formattedErrors = {};
+      const touchedFields = {};
+      err.inner.forEach((error) => {
+        formattedErrors[error.path] = error.message;
+        touchedFields[error.path] = true;
+      });
+      const allFields = Object.keys(formData).reduce((acc, key) => {
+        acc[key] = true;
+        return acc;
+      }, {});
+      dispatch(setErrors(formattedErrors));
+      dispatch({ type: "uploadbikeform/setAllTouched", payload: allFields });
+
+      if (err.inner.length > 0) {
+        const firstErrorField = err.inner[0].path;
+        setTimeout(() => {
+          const errorElement = document.getElementById(firstErrorField);
+          if (errorElement) {
+            errorElement.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+            });
+            errorElement.focus();
+          }
+        }, 100);
+      }
+    } else {
+      dispatch(
+        setApiError(err.message || "An error occurred during validation")
+      );
+    }
+  } finally {
+    dispatch(setLoading(false));
+  }
+};
+
 
   const renderDropdownOptionsWithOther = (options, fieldName = "") => {
     // console.log(`🔄 Rendering dropdown options for ${fieldName}:`, options);
@@ -997,15 +1032,16 @@ console.log("📦 Extracted data array from response:", dataArray);
       return [];
     }
 
-    const processedOptions = dataArray.map((option, index) => {
-      // console.log(`Processing option ${index}:`, option);
-
-      return {
-        value: option.id || option.value || option.key,
-        label: option.name || option.label || option.title || option.text,
-      };
-    });
-
+   const processedOptions = dataArray.map((option, index) => {
+    // FIX: Better handling of option properties
+    const value = option.id || option.value || option.key || index;
+    const label = option.name || option.label || option.title || option.text || option.display_name || `Option ${index + 1}`;
+    
+    return {
+      value: value,
+      label: label,
+    };
+  });
     // console.log("✅ Final processed options:", processedOptions);
     return processedOptions;
   };
@@ -1030,53 +1066,64 @@ console.log("📦 Extracted data array from response:", dataArray);
 
   // Enhanced useEffect for bike models loading
   useEffect(() => {
-    const loadBikeModels = async () => {
-      if (formData.brand_id && formData.brand_id !== "other") {
-        console.log("🔄 Loading bike models for brand_id:", formData.brand_id);
+  const loadBikeModels = async () => {
+    if (formData.brand_id && formData.brand_id !== "other") {
+      console.log("🔄 Loading bike models for brand_id:", formData.brand_id);
 
-        try {
-          const models = await dropdownService.getBikeModel(formData.brand_id);
-          console.log("📦 Bike models received:", models);
+      try {
+        setDropdownData((prev) => ({
+          ...prev,
+          bikeModel: [], // Clear existing models while loading
+        }));
 
-          // Extract data array from response
-          let modelData = [];
-          if (Array.isArray(models)) {
-            modelData = models;
-          } else if (models && models.data && Array.isArray(models.data)) {
-            modelData = models.data;
-          } else if (models && models.response && Array.isArray(models.response)) {
-            modelData = models.response;
-          }
+        const models = await dropdownService.getBikeModel(formData.brand_id);
+        console.log("📦 Bike models received:", models);
 
-          setDropdownData((prev) => {
-            const newData = {
-              ...prev,
-              bikeModel: modelData,
-            };
-            console.log("✅ Updated dropdown data with models:", newData);
-            return newData;
-          });
-        } catch (error) {
-          console.error("❌ Failed to load bike models:", error);
-          setDropdownData((prev) => ({
-            ...prev,
-            bikeModel: [],
-          }));
+        // FIX: Better handling of different response formats
+        let modelData = [];
+        if (Array.isArray(models)) {
+          modelData = models;
+        } else if (models && models.data && Array.isArray(models.data)) {
+          modelData = models.data;
+        } else if (models && models.response && Array.isArray(models.response)) {
+          modelData = models.response;
+        } else if (models && models.bikeModel && Array.isArray(models.bikeModel)) {
+          modelData = models.bikeModel;
         }
-      } else {
-        console.log("⚠️ No brand_id selected or brand is 'other', clearing models");
+
+        console.log("🏍️ Processed bike models:", modelData);
+
+        setDropdownData((prev) => {
+          const newData = {
+            ...prev,
+            bikeModel: modelData,
+          };
+          console.log("✅ Updated dropdown data with models:", newData);
+          return newData;
+        });
+      } catch (error) {
+        console.error("❌ Failed to load bike models:", error);
         setDropdownData((prev) => ({
           ...prev,
           bikeModel: [],
         }));
+        // Don't show error for models as it's not critical
       }
-    };
-
-    // Only load models when not in auto-populating mode OR when it's the initial load
-    if (!isAutoPopulating || formData.brand_id) {
-      loadBikeModels();
+    } else {
+      console.log("⚠️ No brand_id selected or brand is 'other', clearing models");
+      setDropdownData((prev) => ({
+        ...prev,
+        bikeModel: [],
+      }));
     }
-  }, [formData.brand_id, isAutoPopulating]);
+  };
+
+  // Only load models when not in auto-populating mode OR when it's the initial load
+  if (!isAutoPopulating || formData.brand_id) {
+    loadBikeModels();
+  }
+}, [formData.brand_id, isAutoPopulating]);
+
 
   // Enhanced useEffect for edit mode initialization with proper dependent dropdowns
   useEffect(() => {
@@ -1293,6 +1340,11 @@ console.log("📦 Extracted data array from response:", dataArray);
     dispatch
   ]);
 
+
+const isBicycle = slug?.toLowerCase().includes('bicycles');
+
+
+
   if (isEditMode && isLoading && !formData.title) {
     return (
       <div className="bg-gray-50 p-6 rounded-3xl w-full max-w-6xl shadow-[0_0_10px_rgba(176,_176,_176,_0.25)] mx-auto border border-[#b9b9b9] bg-[#f6f6f6]">
@@ -1439,24 +1491,30 @@ console.log("📦 Extracted data array from response:", dataArray);
               </label>
               {!showOtherModel && (
                 <DynamicInputs
-                  type="select"
-                  name="model_id"
-                  id="model_id"
-                  className="appearance-none w-full px-4 py-3 rounded-full border
-                   border-[#bfbfbf] bg-white focus:outline-none"
-                  placeholder="Select Model"
-                  onChange={handleChange}
-                  value={formData.model_id || ""}
-                  onBlur={handleBlur}
-                  error={errors.model_id}
-                  touched={touched.model_id}
-                  focusedField={focusedField}
-                  options={renderDropdownOptionsWithOther(
-                    dropdownData.bikeModel,
-                    "model"
-                  )}
-                  disabled={!formData.brand_id || loadingDropdowns || isAutoPopulating}
-                />
+      type="select"
+      name="model_id"
+      id="model_id"
+      className="appearance-none w-full px-4 py-3 rounded-full border
+       border-[#bfbfbf] bg-white focus:outline-none"
+      placeholder={
+        !formData.brand_id || formData.brand_id === "other"
+          ? "Select brand first"
+          : dropdownData.bikeModel.length === 0
+          ? "No models available"
+          : "Select Model"
+      }
+      onChange={handleChange}
+      value={formData.model_id || ""}
+      onBlur={handleBlur}
+      error={errors.model_id}
+      touched={touched.model_id}
+      focusedField={focusedField}
+      options={renderDropdownOptionsWithOther(
+        dropdownData.bikeModel,
+        "model"
+      )}
+      disabled={!formData.brand_id || formData.brand_id === "other" || loadingDropdowns || isAutoPopulating}
+    />
               )}
 
               {showOtherModel && (
@@ -1494,6 +1552,8 @@ console.log("📦 Extracted data array from response:", dataArray);
           </div>
 
           {/* Row 2 - Bike specific fields */}
+
+          {!isBicycle && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div>
               <label className="block text-gray-800 font-medium mb-2 px-4">
@@ -1534,27 +1594,30 @@ console.log("📦 Extracted data array from response:", dataArray);
                 focusedField={focusedField}
               />
             </div>
-
-            <div>
+           <div>
               <label className="block text-gray-800 font-medium mb-2 px-4">
-                Enter year
+                Enter Fuel type
               </label>
               <DynamicInputs
-                type="text"
-                name="year"
-                id="year"
+                type="select"
+                name="fuel_type_id"
+                id="fuel_type_id"
                 className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border 
                 border-[#bfbfbf] bg-white focus:outline-none "
-                placeholder="Enter year"
-                value={formData.year || ""}
+                placeholder="Select Fuel type "
                 onChange={handleChange}
+                value={formData.fuel_type_id || ""}
                 onBlur={handleBlur}
-                error={errors.year}
-                touched={touched.year}
+                error={errors.fuel_type_id}
+                touched={touched.fuel_type_id}
                 focusedField={focusedField}
+               options={renderDropdownOptions(dropdownData.fuelTypes)}
+    disabled={loadingDropdowns}
               />
             </div>
+           
           </div>
+          )}
 
           {/* Row 3 - Location fields */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -1670,24 +1733,25 @@ console.log("📦 Extracted data array from response:", dataArray);
               />
             </div>
 
-            <div>
+            
+
+             <div>
               <label className="block text-gray-800 font-medium mb-2 px-4">
-                Enter Fuel type
+                Enter year
               </label>
               <DynamicInputs
-                type="select"
-                name="fuel_type_id"
-                id="fuel_type_id"
+                type="text"
+                name="year"
+                id="year"
                 className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border 
                 border-[#bfbfbf] bg-white focus:outline-none "
-                placeholder="Select Fuel type "
+                placeholder="Enter year"
+                value={formData.year || ""}
                 onChange={handleChange}
-                value={formData.fuel_type_id || ""}
                 onBlur={handleBlur}
-                error={errors.fuel_type_id}
-                touched={touched.fuel_type_id}
+                error={errors.year}
+                touched={touched.year}
                 focusedField={focusedField}
-                options={renderDropdownOptions(dropdownData.fuelTypes)}
               />
             </div>
 
@@ -1708,7 +1772,8 @@ console.log("📦 Extracted data array from response:", dataArray);
                 error={errors.number_of_owner_id}
                 touched={touched.number_of_owner_id}
                 focusedField={focusedField}
-                options={renderDropdownOptions(dropdownData.numberOfOwners)}
+                 options={renderDropdownOptions(dropdownData.numberOfOwners)}
+    disabled={loadingDropdowns}
               />
             </div>
           </div>
@@ -1741,11 +1806,12 @@ console.log("📦 Extracted data array from response:", dataArray);
               </label>
               <DynamicInputs
                 type="text"
+                  name="mobile_number"
                 id="mobile_number"
                 className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border 
                 border-[#bfbfbf] bg-white focus:outline-none "
-                placeholder="Enter mobile no.  "
-                onChange={handleChange}
+                placeholder="Enter mobile no."
+               onChange={handleChange}
                 value={formData.mobile_number || ""}
                 onBlur={handleBlur}
                 error={errors.mobile_number}

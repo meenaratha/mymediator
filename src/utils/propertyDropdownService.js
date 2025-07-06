@@ -24,6 +24,10 @@ const DROPDOWN_ENDPOINTS = {
 
   bikeBrand :"/bike/brands",
   bikeModel:"/bike/models/by-brand",
+
+  // electronics
+  electronicBrand :"/electronics/brands",
+ electronicModel:"/electronics/models/by-brand",
 };
 
 class DropdownService {
@@ -155,7 +159,7 @@ class DropdownService {
 
   async getbikeModel(bikeBrandId) {
     if (!bikeBrandId) {
-      throw new Error("car brand is required to fetch cities");
+      throw new Error("bike brand is required to fetch cities");
     }
     return this.fetchDropdownData(
       DROPDOWN_ENDPOINTS.bikeModel,
@@ -196,7 +200,7 @@ async getNumberOfOwners() {
       { name: "states", method: this.getStates },
       { name: "bhkTypes", method: this.getBHKTypes },
       { name: "carBrand", method: this.getcarBrand },
-       { name: "bikeBrand", method: this.getcarBrand },
+       { name: "bikeBrand", method: this.getbikeBrand  },
       { name: "fuelTypes", method: this.getfuelTypes },
       { name: "transmissions" , method:this.gettransmissions },
        { name: "numberOfOwners", method: this.getNumberOfOwners },
@@ -240,7 +244,7 @@ async getNumberOfOwners() {
 
      // car
       carBrand: await this.getcarBrand().catch(() => []),
-        bikeBrand: await this.getcarBrand().catch(() => []),
+        bikeBrand: await this.getbikeBrand().catch(() => []),
       fuelTypes: await this.getfuelTypes().catch(() => []),
       transmissions: await this.gettransmissions().catch(()=>[]),
        numberOfOwners: await this.getNumberOfOwners().catch(() => []), // Add this line

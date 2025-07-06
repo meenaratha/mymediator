@@ -98,9 +98,35 @@ const UserRoutes = () => {
             </ProtectedRoute>
           }
         />
+         <Route
+          path="/electronics/:slug/:id"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <ElectronicsFormPage />
+            </ProtectedRoute>
+          }
+        />
+
+         <Route
+          path="/electronics/:slug/:id/edit"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <ElectronicsFormPage />
+            </ProtectedRoute>
+          }
+        />
 
          <Route
           path="/bike/:slug/:id"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <BikeFormPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/bike/:slug/:id/edit"
           element={
             <ProtectedRoute requireAuth={true}>
               <BikeFormPage />
