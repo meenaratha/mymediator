@@ -189,6 +189,8 @@ const PropertyDetails = ({ property }) => {
           onClose={() => {
             setShowEnquiryPopup(false);
           }}
+          propertyData={property}
+    enquirableType="property"
         />
       )}
 
@@ -355,7 +357,7 @@ const PropertyDetails = ({ property }) => {
                 </div>
                 <div className="ml-auto">
                   <Link
-                    to="/seller-profile"
+                    to= {`/seller-profile/${property.vendor_id}`}
                     className="text-blue-600 text-sm font-medium cursor-pointer"
                   >
                     See Profile

@@ -63,7 +63,7 @@ const UserRoutes = () => {
         />
 
         <Route
-          path="/seller-profile"
+          path="/seller-profile/:vendorId"
           element={
             <ProtectedRoute requireAuth={true}>
               <SellerProfile />

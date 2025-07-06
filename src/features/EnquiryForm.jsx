@@ -4,11 +4,25 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { updateFormData, clearFormData } from '../redux/enquiryFormSlice';
 import Feedback from '../components/common/Feedback';
-
-const EnquiryForm = ({onClose}) => {
+import { api } from '../api/axios';
+const EnquiryForm = ({ onClose, propertyData, vendorData, enquirableType  }) => {
   const dispatch = useDispatch();
   const formState = useSelector((state) => state.enquiryForm);
   const [feedbackPopup, setFeedbackPopup] =  useState(false);
+   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+
+   // Determine the enquirable data from either propertyData or vendorData
+  const enquirableData = propertyData || vendorData;
+  const enquirableId = enquirableData?.id;
+
+   console.log('EnquiryForm props:', {
+    enquirableType,
+    enquirableId,
+    enquirableData,
+    propertyData,
+    vendorData
+  });
 
   // Define validation schema with Yup
   const validationSchema = Yup.object({
@@ -19,24 +33,74 @@ const EnquiryForm = ({onClose}) => {
     message: Yup.string().required('Message is required')
   });
 
-  // Initialize formik
+ // Initialize formik
   const formik = useFormik({
     initialValues: {
       name: formState.name || '',
       email: formState.email || '',
       mobile: formState.mobile || '',
       whatsapp: formState.whatsapp || '',
-      message: formState.message || ''
+      message: formState.message || `I'm interested in this ${enquirableType}. Please provide more details.`
     },
     validationSchema,
-    onSubmit: (values) => {
-      console.log('Form submitted with values:', values);
-      // Dispatch to Redux store
-      dispatch(clearFormData());
-      setFeedbackPopup(true); // Show feedback popup after submission
-      // Don't reset form here - do it after closing the feedback
+    onSubmit: async (values) => {
+      if (!enquirableId) {
+        setSubmitError('Unable to submit enquiry. Missing required information.');
+        return;
+      }
+
+      setIsSubmitting(true);
+      setSubmitError('');
+
+      try {
+        // Prepare the payload according to your API requirements
+        const payload = {
+          enquirable_type: enquirableType,
+          enquirable_id: enquirableId,
+          name: values.name,
+          mobile_number: values.mobile,
+          whatsapp_number: values.whatsapp,
+          email: values.email,
+          message: values.message
+        };
+
+        console.log('Submitting enquiry with payload:', payload);
+
+        // Submit to API
+        const response = await api.post('/enquiry/store', payload);
+        
+        console.log('Enquiry submitted successfully:', response.data);
+
+        // Clear form data from Redux
+        dispatch(clearFormData());
+        
+        // Show success feedback
+        setFeedbackPopup(true);
+
+      } catch (error) {
+        console.error('Error submitting enquiry:', error);
+        
+        // Handle different error scenarios
+        if (error.response?.data?.message) {
+          setSubmitError(error.response.data.message);
+        } else if (error.response?.status === 422) {
+          setSubmitError('Please check your input and try again.');
+        } else if (error.response?.status === 401) {
+          setSubmitError('Please login to submit an enquiry.');
+        } else {
+          setSubmitError('Failed to submit enquiry. Please try again.');
+        }
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   });
+
+  // Update Redux state on form changes
+  useEffect(() => {
+    dispatch(updateFormData(formik.values));
+  }, [formik.values, dispatch]);
+
 
   // Update Redux state on form changes
   useEffect(() => {
@@ -51,12 +115,24 @@ const EnquiryForm = ({onClose}) => {
       onClose();
     }
   };
+
+  // Handle form close
+  const handleClose = () => {
+    setSubmitError('');
+    if (onClose) {
+      onClose();
+    }
+  };
   
   return (
     <>
    {/* Feedback popup - Make sure this is rendered at a high z-index */}
    {feedbackPopup ? (
-        <Feedback onClose={handleFeedbackClose} />
+       <Feedback 
+          onClose={handleFeedbackClose}
+          rateableData={enquirableData}
+          rateableType={enquirableType}
+        />
       ):
 
  (
@@ -65,7 +141,7 @@ const EnquiryForm = ({onClose}) => {
       <div className="bg-white rounded-lg p-6 w-full max-w-[600px] mx-auto relative">
         {/* Close button */}
         <button 
-          onClick={onClose}
+          onClick={handleClose}
           className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 focus:outline-none cursor-pointer"
           aria-label="Close"
         >
@@ -170,12 +246,23 @@ const EnquiryForm = ({onClose}) => {
           </div>
           
           <div className="text-center">
-            <button
-              type="submit"
-              className="w-[170px] bg-[#0f1c5e] hover:bg-blue-800 text-white font-medium py-2 px-4 rounded-md transition duration-300"
-            >
-              Submit
-            </button>
+           <button
+                  type="submit"
+                  disabled={isSubmitting || !enquirableId}
+                  className={`w-[170px] ${isSubmitting || !enquirableId ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#0f1c5e] hover:bg-blue-800'} text-white font-medium py-2 px-4 rounded-md transition duration-300 flex items-center justify-center`}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Submitting...
+                    </>
+                  ) : (
+                    'Submit'
+                  )}
+                </button>
           </div>
         </form>
       </div>
