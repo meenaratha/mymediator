@@ -13,7 +13,7 @@ const BikeCard = ({ item }) => {
 
   const handleCardClick = () => {
     // Navigate using the action_slug from API response
-    navigate(`/bikes/${item.action_slug}`);
+    navigate(`/bike/${item.slug}`);
   };
 
   return (
@@ -75,17 +75,17 @@ const BikeCard = ({ item }) => {
 
         {/* Additional bike info */}
         <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
-          {item.manufacturing_year && (
+          {item.year && (
             <div className="flex items-center">
               <CalendarTodayIcon sx={{ fontSize: 14, marginRight: 0.5 }} />
-              <span>{item.manufacturing_year}</span>
+              <span>{item.year}</span>
             </div>
           )}
           
-          {item.kilometers_driven && (
+          {item.kilometers && (
             <div className="flex items-center">
               <SpeedIcon sx={{ fontSize: 14, marginRight: 0.5 }} />
-              <span>{item.kilometers_driven} km</span>
+              <span>{item.kilometers} km</span>
             </div>
           )}
         </div>

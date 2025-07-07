@@ -459,14 +459,7 @@ const PriceRangeSection = ({
           </div>
         )}
 
-        {/* Debug info - remove in production */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="mt-2 p-2 bg-gray-100 rounded text-xs">
-            <div>Selected Array: [{selectedPriceRanges.join(', ')}]</div>
-            <div>Filter Value: {JSON.stringify(filters.price_range)}</div>
-            <div>Count: {selectedPriceRanges.length}</div>
-          </div>
-        )}
+        
       </div>
     </div>
   );

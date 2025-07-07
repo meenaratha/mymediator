@@ -11,7 +11,7 @@ const ElectronicsCard = ({ item }) => {
 
   const handleCardClick = () => {
     // Adjust the navigation path based on your routing structure
-    navigate(`/electronic/${item.action_slug}`);
+    navigate(`/electronic/${item.slug}`);
   };
 
   return (

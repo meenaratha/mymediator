@@ -491,14 +491,7 @@ const BedroomsSection = ({
           </div>
         )}
 
-        {/* Debug info - remove in production */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="mt-2 p-2 bg-gray-100 rounded text-xs">
-            <div>Selected Array: [{selectedBedrooms.join(', ')}]</div>
-            <div>Filter Value: {JSON.stringify(filters.bedroom_min)}</div>
-            <div>Count: {selectedBedrooms.length}</div>
-          </div>
-        )}
+       
       </div>
     </div>
   );

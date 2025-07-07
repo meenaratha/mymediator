@@ -393,25 +393,7 @@ const PropertyFilterPage = () => {
 
           {/* Property listings - 70% on desktop, full width on mobile */}
           <div className="w-full md:w-9/12">
-            {/* Debug Section - Remove this in production */}
-            <div className="bg-gray-100 p-4 mb-4 rounded">
-              <h3 className="font-bold mb-2">Debug Info:</h3>
-              <p>Loading: {loading.toString()}</p>
-              <p>Properties Count: {properties.length}</p>
-              <p>Properties Array: {Array.isArray(properties).toString()}</p>
-              <p>Current Page: {currentPage}</p>
-              <p>Last Page: {lastPage}</p>
-              <p>Total: {total}</p>
-              <p>Has More: {hasMoreData.toString()}</p>
-              {properties.length > 0 && (
-                <details className="mt-2">
-                  <summary>First Property Data</summary>
-                  <pre className="text-xs mt-2 overflow-auto max-h-40">
-                    {JSON.stringify(properties[0], null, 2)}
-                  </pre>
-                </details>
-              )}
-            </div>
+           
             
             <PropertyListingGrid properties={properties} loading={loading} />
 

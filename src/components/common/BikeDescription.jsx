@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {useParams, Link } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import IMAGES from "@/utils/images.js";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -24,19 +24,22 @@ import ReportAdsModal from "./ReportAdsModal";
 // Fix for default markers in React Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconRetinaUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+  iconUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 });
 
 const BikeDescription = () => {
- const { slug } = useParams();
+  const { slug } = useParams();
   const [bike, setBike] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-const [showReportModal, setShowReportModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
 
-   const handleReportClick = () => {
+  const handleReportClick = () => {
     setShowReportModal(true);
   };
 
@@ -60,7 +63,7 @@ const [showReportModal, setShowReportModal] = useState(false);
 
     fetchData();
   }, [slug]);
-  
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -77,23 +80,21 @@ const [showReportModal, setShowReportModal] = useState(false);
     lng: bike.longtitude || defaultLocation.lng, // Note: API uses 'longtitude' (typo)
   };
 
-
-   // Function to open Google Maps in new tab
+  // Function to open Google Maps in new tab
   const openGoogleMaps = () => {
     const { lat, lng } = mapCenter;
     const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lng}&z=15`;
-    window.open(googleMapsUrl, '_blank');
+    window.open(googleMapsUrl, "_blank");
   };
 
   return (
     <>
-
-    {/* Report Ads Modal */}
+      {/* Report Ads Modal */}
       <ReportAdsModal
         isOpen={showReportModal}
         onClose={handleCloseModal}
         adId={bike.id}
-        adType={ bike.form_type }
+        adType={bike.form_type}
         adTitle={bike.property_name}
       />
       <BikeDetails bike={bike} />
@@ -137,7 +138,7 @@ const [showReportModal, setShowReportModal] = useState(false);
                 <div className="flex items-center space-x-2">
                   <LocationOnOutlined className="text-gray-500" />
                   <span className="text-sm font-medium text-gray-600">
-                    {bike.address}
+                    {bike.city}
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -151,9 +152,7 @@ const [showReportModal, setShowReportModal] = useState(false);
               {/* Description Section */}
               <div className="pt-4">
                 <h3 className="text-lg font-bold mb-2">Description</h3>
-                <p className="text-gray-700 text-sm">
-               {bike.description}
-                </p>
+                <p className="text-gray-700 text-sm">{bike.description}</p>
               </div>
             </div>
           </div>
@@ -170,45 +169,56 @@ const [showReportModal, setShowReportModal] = useState(false);
                     alt="Profile"
                   />
                   <div className="ml-3">
-                    <h2 className="text-lg font-semibold">{bike.vendor_name}</h2>
+                    <h2 className="text-lg font-semibold">
+                      {bike.vendor_name}
+                    </h2>
                     <p className="text-sm text-gray-500">Seller</p>
                   </div>
                 </div>
                 <Link
-                to= {`/seller-profile/${bike.vendor_id}`}
-                 className="text-blue-600 font-semibold text-sm">
+                  to={`/seller-profile/${bike.vendor_id}`}
+                  className="text-blue-600 font-semibold text-sm"
+                >
                   See Profile
                 </Link>
               </div>
 
               {/* Location Section */}
               <div className="my-4">
-                <div className="flex flex-col justify-center items-center max-w-sm mx-auto gap-[10px]"
-                onClick={openGoogleMaps}
+                <div
+                  className="flex flex-col justify-center items-center max-w-sm mx-auto gap-[10px]"
+                  onClick={openGoogleMaps}
                 >
                   <MapContainer
-                    center={[
-                      bike.latitude,
-                      bike.latitude,
-                    ]}
+                    // center={[
+                    //   bike.latitude,
+                    //   bike.latitude,
+                    // ]}
+                    center={[mapCenter.lat, mapCenter.lng]}
                     zoom={13}
                     scrollWheelZoom={false}
                     className="w-[150px] h-[150px] rounded-[10px]"
                   >
                     <TileLayer
                       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     />
-                    <Marker
-                      position={[
-                        bike.latitude,
-                        bike.latitude,
-                      ]}
-                    >
+                    <Marker position={[mapCenter.lat, mapCenter.lng]}>
                       <Popup>
-                        {bike.brand} {bike.model} <br /> {bike.year}
+                        {bike.brand} {bike.model} <br />{" "}
+                        {bike.subcategory || "bike"}
                       </Popup>
                     </Marker>
                   </MapContainer>
+                   {/* Overlay with Google Maps icon */}
+                      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <div className="text-white text-center">
+                          <svg className="w-8 h-8 mx-auto mb-1" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                          </svg>
+                          <span className="text-xs">Open in Google Maps</span>
+                        </div>
+                      </div>
 
                   <div className="flex items-center space-x-2">
                     <LocationOnOutlined className="text-gray-500" />
@@ -224,9 +234,11 @@ const [showReportModal, setShowReportModal] = useState(false);
                 <div className="text-sm">
                   <span className="font-semibold">ADS ID :</span> {bike.id}
                 </div>
-                <div 
-                    onClick={handleReportClick}
-                className="flex items-center text-blue-600 cursor-pointer" aria-label="report">
+                <div
+                  onClick={handleReportClick}
+                  className="flex items-center text-blue-600 cursor-pointer"
+                  aria-label="report"
+                >
                   <ReportProblemOutlined fontSize="small" />
                   <span className="ml-1 text-sm">Report Ad</span>
                 </div>

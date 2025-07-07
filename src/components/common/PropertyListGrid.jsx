@@ -14,7 +14,7 @@ const PropertyCard = ({ property }) => {
   const isMobile = useMediaQuery({ maxWidth: 767 });
 
   const handleCardClick = () => {
-    navigate(`/properties/${property.action_slug}`);
+    navigate(`/properties/${property.slug}`);
   };
 
 

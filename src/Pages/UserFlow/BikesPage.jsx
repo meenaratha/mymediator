@@ -18,6 +18,21 @@ const BikesPage = () => {
   const [hasMoreData, setHasMoreData] = useState(false);
   const [total, setTotal] = useState(0);
 
+  // Add state for current filters
+  const [currentFilters, setCurrentFilters] = useState({
+    type: "bike",
+    price_range: "",
+    subcategory_id: "",
+    year_filter: "",
+    brand_id: "",
+    model_id: "",
+    latitude: "",
+    longitude: "",
+    engine_cc_range: "",
+    kilometers_range: "",
+    fuel_type: "",
+  });
+
   const toggleFilter = () => {
     setIsFilterOpen(!isFilterOpen);
   };
@@ -41,10 +56,7 @@ const BikesPage = () => {
       return {
         latitude: parseFloat(selectedLocation.latitude),
         longitude: parseFloat(selectedLocation.longitude),
-        address: selectedLocation.address || '',
-        city: selectedLocation.city || '',
-        state: selectedLocation.state || '',
-        country: selectedLocation.country || ''
+       
       };
     } catch (error) {
       console.error("Error reading selectedLocation from localStorage:", error);
@@ -52,60 +64,173 @@ const BikesPage = () => {
     }
   };
 
-  const fetchBikes = async (page = 1, loadMore = false) => {
+  // const fetchBikes = async (page = 1, loadMore = false) => {
+  //   if (loadMore) setLoadingMore(true);
+  //   else setLoading(true);
+
+  //   try {
+  //     // Get location from localStorage
+  //     const location = getLocationFromStorage();
+      
+  //     // Build API parameters
+  //     const params = new URLSearchParams({
+  //       page: page.toString()
+  //     });
+      
+  //     // Add location parameters if available
+  //     if (location) {
+  //       // params.append('latitude', location.latitude.toString());
+  //       // params.append('longitude', location.longitude.toString());
+        
+  //     }
+
+  //     const response = await api.get(`/gbike/list?${params.toString()}`);
+  //     const result = response.data?.data;
+
+  //     // Debug: Log API response
+  //     console.log("Bikes API Pagination Data:", {
+  //       current_page: result.current_page,
+  //       last_page: result.last_page,
+  //       data_length: result.data.length,
+  //       total: result.total,
+  //       next_page_url: result.next_page_url,
+  //       location_params: location ? `lat: ${location.latitude}, lng: ${location.longitude}, city: ${location.city || 'N/A'}` : 'No location data'
+  //     });
+
+  //     // Update bikes based on whether we're loading more or starting fresh
+  //     if (page === 1) {
+  //       setBikes(result.data || []);
+  //     } else {
+  //       setBikes((prev) => [...prev, ...(result.data || [])]);
+  //     }
+
+  //     // Update pagination state
+  //     setCurrentPage(result.current_page);
+  //     setLastPage(result.last_page);
+  //     setTotal(result.total);
+
+  //     // Check if there's more data to load
+  //     setHasMoreData(
+  //       result.next_page_url !== null &&
+  //         result.current_page < result.last_page &&
+  //         result.data &&
+  //         result.data.length > 0
+  //     );
+  //   } catch (err) {
+  //     console.error("Failed to load bikes", err);
+  //     // Reset states on error
+  //     if (page === 1) {
+  //       setBikes([]);
+  //     }
+  //     setHasMoreData(false);
+  //   } finally {
+  //     if (loadMore) setLoadingMore(false);
+  //     else setLoading(false);
+  //   }
+  // };
+
+const fetchBikes = async (page = 1, loadMore = false, filters = null) => {
     if (loadMore) setLoadingMore(true);
     else setLoading(true);
 
     try {
       // Get location from localStorage
       const location = getLocationFromStorage();
-      
+
+      // Use provided filters or current filters
+      const filtersToUse = filters || currentFilters;
+
       // Build API parameters
       const params = new URLSearchParams({
         page: page.toString()
       });
+
+      // Add filter parameters - only add if they have values
+      Object.entries(filtersToUse).forEach(([key, value]) => {
+        if (value && value !== "" && value !== null && value !== undefined) {
+          // Handle arrays by converting to comma-separated strings
+          if (Array.isArray(value)) {
+            if (value.length > 0) {
+              params.append(key, value.join(','));
+            }
+          } else {
+            params.append(key, value.toString());
+          }
+        }
+      });
       
       // Add location parameters if available
       if (location) {
-        // params.append('latitude', location.latitude.toString());
-        // params.append('longitude', location.longitude.toString());
+        params.append('latitude', location.latitude.toString());
+        params.append('longitude', location.longitude.toString());
         
+  
       }
 
-      const response = await api.get(`/gbike/list?${params.toString()}`);
-      const result = response.data?.data;
+      // Debug: Log the final URL and parameters
+      console.log("=== API REQUEST INFO ===");
+      console.log("Final API URL:", `/filter?${params.toString()}`);
+      console.log("Filters being sent:", filtersToUse);
+      console.log("URL Parameters:", Object.fromEntries(params.entries()));
 
-      // Debug: Log API response
-      console.log("Bikes API Pagination Data:", {
-        current_page: result.current_page,
-        last_page: result.last_page,
-        data_length: result.data.length,
-        total: result.total,
-        next_page_url: result.next_page_url,
-        location_params: location ? `lat: ${location.latitude}, lng: ${location.longitude}, city: ${location.city || 'N/A'}` : 'No location data'
-      });
+      // Use the filter endpoint
+      const response = await api.get(`/filter?${params.toString()}`);
+      
+      // Debug: Log full API response to understand structure
+      console.log("=== FULL API RESPONSE ===");
+      console.log("Response Status:", response.status);
+      console.log("Response Data:", response.data);
+      
+      // Based on your API response structure, the data is directly in response.data.data
+      const result = response.data;
+      const bikeData = response.data.data || [];
+
+      // Debug: Log processed data
+      console.log("=== PROCESSED DATA ===");
+      console.log("Bikes Data:", bikeData);
+      console.log("Bikes Length:", bikeData?.length || 0);
+      console.log("First Bike:", bikeData?.[0]);
+      console.log("Result Object:", result);
+      
+      // Validate that we have an array
+      if (!Array.isArray(bikeData)) {
+        console.error("Bikes data is not an array:", typeof bikeData);
+        bikeData = [];
+      }
 
       // Update bikes based on whether we're loading more or starting fresh
       if (page === 1) {
-        setBikes(result.data || []);
+        console.log("Setting bikes (fresh load):", bikeData.length, "items");
+        setBikes(bikeData);
       } else {
-        setBikes((prev) => [...prev, ...(result.data || [])]);
+        console.log("Adding bikes (load more):", bikeData.length, "items");
+        setBikes((prev) => {
+          const updated = [...prev, ...bikeData];
+          console.log("Total bikes after load more:", updated.length);
+          return updated;
+        });
       }
 
-      // Update pagination state
-      setCurrentPage(result.current_page);
-      setLastPage(result.last_page);
-      setTotal(result.total);
+      // Update pagination state with safe defaults
+      setCurrentPage(result?.current_page || page);
+      setLastPage(result?.last_page || page);
+      setTotal(result?.total || bikeData?.length || 0);
 
       // Check if there's more data to load
-      setHasMoreData(
-        result.next_page_url !== null &&
-          result.current_page < result.last_page &&
-          result.data &&
-          result.data.length > 0
-      );
+      const hasMore = (result?.next_page_url !== null && result?.next_page_url !== undefined) &&
+          (result?.current_page || page) < (result?.last_page || page) &&
+          bikeData &&
+          bikeData.length > 0;
+          
+      console.log("Has more data:", hasMore);
+      setHasMoreData(hasMore);
+      
     } catch (err) {
-      console.error("Failed to load bikes", err);
+      console.error("=== API ERROR ===");
+      console.error("Error details:", err);
+      console.error("Error response:", err.response?.data);
+      console.error("Error status:", err.response?.status);
+      
       // Reset states on error
       if (page === 1) {
         setBikes([]);
@@ -116,6 +241,29 @@ const BikesPage = () => {
       else setLoading(false);
     }
   };
+
+  // Function to handle filter application
+  const applyFilters = (newFilters) => {
+    console.log("=== APPLY FILTERS CALLED ===");
+    console.log("New filters received:", newFilters);
+    console.log("Previous filters:", currentFilters);
+    
+    // Update current filters
+    setCurrentFilters(newFilters);
+    
+    // Reset pagination to first page
+    setCurrentPage(1);
+    setBikes([]); // Clear existing bikes
+    
+    // Fetch new bikes with filters
+    fetchBikes(1, false, newFilters);
+    
+    // Close filter on mobile after applying
+    if (isMobile) {
+      setIsFilterOpen(false);
+    }
+  };
+
 
   useEffect(() => {
     fetchBikes(1);
@@ -220,7 +368,12 @@ const BikesPage = () => {
               </button>
             )}
 
-            <BikeFilter isFilterOpen={isFilterOpen} isMobile={isMobile} />
+            <BikeFilter
+             isFilterOpen={isFilterOpen}
+              isMobile={isMobile}
+              onApplyFilters={applyFilters}
+              currentFilters={currentFilters}
+               />
           </div>
 
           {/* Overlay background - only on mobile when filter is open */}

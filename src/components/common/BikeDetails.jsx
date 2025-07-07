@@ -379,7 +379,7 @@ const BikeDetails = ({ bike }) => {
                         />
                         <Marker position={[mapCenter.lat, mapCenter.lng]}>
                           <Popup>
-                            {bike.brand} {bike.model} <br /> {bike.subcategory}
+                            {bike.brand} {bike.model} <br /> {bike.subcategory || 'bike'}
                           </Popup>
                         </Marker>
                       </MapContainer>
@@ -397,16 +397,7 @@ const BikeDetails = ({ bike }) => {
                   </div>
                 </div>
 
-                {/* Ad ID and Report Section */}
-                <div className="flex justify-between items-center text-gray-600 pt-4 mt-4 border-t">
-                  <div className="text-sm">
-                    <span className="font-semibold">ADS ID:</span> {bike.unique_code}
-                  </div>
-                  <div className="flex items-center text-blue-600 cursor-pointer" aria-label="report">
-                    <ReportProblemIcon fontSize="small" />
-                    <span className="ml-1 text-sm">Report Ad</span>
-                  </div>
-                </div>
+              
               </div>
             </div>
           </div>
@@ -428,7 +419,7 @@ const BikeDetails = ({ bike }) => {
 
               <div className="flex items-center mt-2 mb-2">
                 <p className="mr-4">
-                  {bike.manufacturing_year} - {bike.kilometers_driven || 'N/A'} km
+                  {bike.year} - {bike.kilometers || 'N/A'} km
                 </p>
                 <div className="flex items-center">
                   <StarIcon className="text-orange-500" />
@@ -473,130 +464,7 @@ const BikeDetails = ({ bike }) => {
           </div>
         </div>
 
-        {/* Bike Description and Details */}
-        <div className="p-4">
-          <div className="flex flex-col md:flex-row md:items-stretch">
-            {/* Left Column (65%) */}
-            <div className="md:w-2/3 w-full md:pr-4 mb-4 md:mb-0">
-              <div className="bg-white p-6 shadow-lg rounded-lg h-full border border-gray-200">
-                {/* Upper section with icons and details */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 border-b border-[#E1E1E1] pb-4">
-                  <div className="flex items-center space-x-2">
-                    <TwoWheelerIcon className="text-gray-500" />
-                    <span className="text-sm font-medium text-gray-600">
-                      {bike.engine_capacity || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <SpeedIcon className="text-gray-500" />
-                    <span className="text-sm font-medium text-gray-600">
-                      {bike.kilometers_driven || 'N/A'} km
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <LocalGasStationIcon className="text-gray-500" />
-                    <span className="text-sm font-medium text-gray-600">
-                      {bike.fuel_type || 'Petrol'}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Middle section with owner, location, and date */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 py-4 border-b border-[#E1E1E1]">
-                  <div className="flex items-center space-x-2">
-                    <PersonIcon className="text-gray-500" />
-                    <span className="text-sm font-medium text-gray-600">
-                      Owner {bike.owner_number || '1'}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <LocationOnIcon className="text-gray-500" />
-                    <span className="text-sm font-medium text-gray-600">
-                      {bike.city}, {bike.district}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <CalendarTodayIcon className="text-gray-500" />
-                    <span className="text-sm font-medium text-gray-600">
-                      {bike.manufacturing_year}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Description Section */}
-                <div className="pt-4">
-                  <h3 className="text-lg font-bold mb-2">Description</h3>
-                  <p className="text-gray-700 text-sm">
-                    {bike.description || `This ${bike.manufacturing_year} ${bike.brand} ${bike.model} is in excellent condition. Well-maintained and ready for its next owner.`}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Bike Specifications */}
-        <div className="p-4 rounded-xl shadow-lg bg-white w-full mb-6">
-          <h3 className="text-lg font-bold mb-4">Specifications</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm sm:text-base">
-            <div className="grid grid-cols-2">
-              <div className="flex gap-[15px] justify-between">
-                <span>Brand </span>
-                <span>:</span>
-              </div>
-              <span className="px-[10px]">{bike.brand}</span>
-            </div>
-            <div className="grid grid-cols-2">
-              <div className="flex gap-[15px] justify-between">
-                <span>Model </span>
-                <span>:</span>
-              </div>
-              <span className="px-[10px]">{bike.model}</span>
-            </div>
-            <div className="grid grid-cols-2">
-              <div className="flex gap-[15px] justify-between">
-                <span>Year </span>
-                <span>:</span>
-              </div>
-              <span className="px-[10px]">{bike.manufacturing_year}</span>
-            </div>
-            <div className="grid grid-cols-2">
-              <div className="flex gap-[15px] justify-between">
-                <span>Engine </span>
-                <span>:</span>
-              </div>
-              <span className="px-[10px]">{bike.engine_capacity || 'N/A'}</span>
-            </div>
-            <div className="grid grid-cols-2">
-              <div className="flex gap-[15px] justify-between">
-                <span>Fuel Type </span>
-                <span>:</span>
-              </div>
-              <span className="px-[10px]">{bike.fuel_type || 'Petrol'}</span>
-            </div>
-            <div className="grid grid-cols-2">
-              <div className="flex gap-[15px] justify-between">
-                <span>Subcategory </span>
-                <span>:</span>
-              </div>
-              <span className="px-[10px]">{bike.subcategory}</span>
-            </div>
-            <div className="grid grid-cols-2">
-              <div className="flex gap-[15px] justify-between">
-                <span>Kilometers </span>
-                <span>:</span>
-              </div>
-              <span className="px-[10px]">{bike.kilometers_driven || 'N/A'} km</span>
-            </div>
-            <div className="grid grid-cols-2">
-              <div className="flex gap-[15px] justify-between">
-                <span>Status</span>
-                <span>:</span>
-              </div>
-              <span className="px-[10px]">{bike.status || 'Available'}</span>
-            </div>
-          </div>
-        </div>
+       
       </div>
 
       {/* Reusable Share Modal */}

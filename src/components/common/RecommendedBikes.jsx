@@ -12,8 +12,10 @@ import SpeedIcon from "@mui/icons-material/Speed";
 import { red } from "@mui/material/colors";
 import StarIcon from "@mui/icons-material/Star";
 import { api } from "@/api/axios";
+import { useNavigate } from "react-router-dom";
 
 const RecommendedBikes = () => {
+    const navigate = useNavigate();
   const [recommendedBikes, setRecommendedBikes] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -58,7 +60,7 @@ const RecommendedBikes = () => {
         const response = await api.get(`/gbike/populer/list?${params.toString()}`);
         const result = response.data?.data;
 
-        setRecommendedBikes(result?.data || []);
+        setRecommendedBikes(result || []);
       } catch (error) {
         console.error('Failed to load recommended bikes:', error);
         setRecommendedBikes([]);
@@ -69,6 +71,10 @@ const RecommendedBikes = () => {
 
     fetchRecommendedBikes();
   }, []);
+
+   const handleCardClick = (bike) => {
+    navigate(`/bike/${bike.action_slug}`);
+  };
 
   if (loading) {
     return <div className="text-center py-8">Loading recommended bikes...</div>;
@@ -107,7 +113,9 @@ const RecommendedBikes = () => {
         >
          {recommendedBikes.map((bike) => (
             <SwiperSlide key={bike.id}>
-              <Card className="max-w-[275px] w-full rounded-lg shadow-md overflow-hidden hover:shadow-lg mx-auto">
+              <Card 
+                onClick={() => handleCardClick(bike)}
+              className="cursor-pointer max-w-[275px] w-full rounded-lg shadow-md overflow-hidden hover:shadow-lg mx-auto">
                 <div className="relative">
                   <img
                     src={bike.image_url}

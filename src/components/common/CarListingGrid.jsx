@@ -15,7 +15,7 @@ const CarCard = ({ item }) => {
 
   const handleCardClick = () => {
     // Navigate using the action_slug from API response
-    navigate(`/car/${item.action_slug}`);
+    navigate(`/car/${item.slug}`);
   };
 
   return (

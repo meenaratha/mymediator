@@ -168,13 +168,7 @@ const PropertyFilter = ({ isFilterOpen, isMobile, onApplyFilters, currentFilters
         } `}
       >
         <div className="p-4">
-          {/* Debug Filter Display - Remove in production */}
-          <div className="bg-yellow-50 border border-yellow-200 rounded p-2 mb-4 text-xs">
-            <strong>Current Filters:</strong>
-            <pre className="mt-1 text-xs overflow-auto max-h-20">
-              {JSON.stringify(filters, null, 2)}
-            </pre>
-          </div>
+         
           
           {/* Categories Section */}
           <div className="mb-4">
@@ -315,12 +309,12 @@ const PropertyFilter = ({ isFilterOpen, isMobile, onApplyFilters, currentFilters
           />
 
           {/* Listed By Section */}
-          <ListedBySection 
+          {/* <ListedBySection 
             filters={filters}
             setFilters={setFilters}
             expandedSections={expandedSections}
             toggleSection={toggleSection}
-          />
+          /> */}
 
           {/* Building Direction Section */}
           <BuildingDirectionSection 
