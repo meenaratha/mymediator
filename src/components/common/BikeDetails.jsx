@@ -173,7 +173,10 @@ const BikeDetails = ({ bike }) => {
     <>
       {/* Enquiry Modal */}
       {showEnquiryPopup && (
-        <EnquiryForm onClose={() => setShowEnquiryPopup(false)} />
+        <EnquiryForm onClose={() => setShowEnquiryPopup(false)}
+        propertyData={bike}
+    enquirableType={bike.form_type}
+        />
       )}
 
       <div className="">

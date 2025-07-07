@@ -172,7 +172,10 @@ const CarDetails = ({ car }) => {
     <>
       {/* Enquiry Modal */}
       {showEnquiryPopup && (
-        <EnquiryForm onClose={() => setShowEnquiryPopup(false)} />
+        <EnquiryForm onClose={() => setShowEnquiryPopup(false)}
+          propertyData={car}
+    enquirableType={car.form_type}/>
+      
       )}
 
       <div className="">
@@ -339,7 +342,9 @@ const CarDetails = ({ car }) => {
                   <p className="text-sm text-gray-500">Owner</p>
                 </div>
                 <div className="ml-auto">
-                  <Link to="/seller-profile" className="text-blue-600 text-sm font-medium cursor-pointer">
+                  <Link 
+                 to= {`/seller-profile/${car.vendor_id}`}
+                  className="text-blue-600 text-sm font-medium cursor-pointer">
                     See Profile
                   </Link>
                 </div>
@@ -393,16 +398,7 @@ const CarDetails = ({ car }) => {
                   </div>
                 </div>
 
-                {/* Ad ID and Report Section */}
-                <div className="flex justify-between items-center text-gray-600 pt-4 mt-4 border-t">
-                  <div className="text-sm">
-                    <span className="font-semibold">ADS ID:</span> {car.unique_code || car.id}
-                  </div>
-                  <div className="flex items-center text-blue-600 cursor-pointer" aria-label="report">
-                    <ReportProblemIcon fontSize="small" />
-                    <span className="ml-1 text-sm">Report Ad</span>
-                  </div>
-                </div>
+               
               </div>
             </div>
           </div>

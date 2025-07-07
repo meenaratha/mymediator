@@ -1,91 +1,82 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import AspectRatioIcon from "@mui/icons-material/AspectRatio";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { api, apiForFiles } from "../../api/axios.js";
 import IMAGES from "../../utils/images.js";
 import { useMediaQuery } from "react-responsive";
 
-const SellerPropertyTabContent = () => {
+const SellerPropertyTabContent = ({ 
+  enquiryData = [], 
+  loading = false, 
+  activeEnquiryType = "post",
+  onRefresh = () => {} 
+}) => {
   const isMobile = useMediaQuery({ maxWidth: 767 });
 
-  // Customer inquiry data
-  const customerDetails = {
-    name: "Kesavan kumar",
-    mobileNumber: "9654853214",
-    email: "Kesavankumar.03@gmail.com",
-    whatsappNumber: "9654853214",
-    message:
-      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley",
-  };
-
-  // Initial properties with expanded state
-  const initialProperties = [
-    {
-      id: 1,
-      title: "Raju House",
-      location: "Anna Nagar chennai puraisvakkam",
-      type: "Individual",
-      bhk: "2BHK",
-      sqft: 800,
-      price: 10000,
-      expanded: true,
-    },
-    {
-      id: 2,
-      title: "Din House",
-      location: "Anna Nagar",
-      type: "Individual",
-      bhk: "2BHK",
-      sqft: 800,
-      price: 10000,
-      expanded: false,
-    },
-    {
-      id: 3,
-      title: "Mani House",
-      location: "Anna Nagar",
-      type: "Individual",
-      bhk: "2BHK",
-      sqft: 800,
-      price: 10000,
-      expanded: false,
-    },
-    {
-      id: 4,
-      title: "Dinesh House",
-      location: "Anna Nagar",
-      type: "Individual",
-      bhk: "2BHK",
-      sqft: 800,
-      price: 10000,
-      expanded: false,
-    },
-    {
-      id: 5,
-      title: "Dinesh House",
-      location: "Anna Nagar",
-      type: "Individual",
-      bhk: "2BHK",
-      sqft: 800,
-      price: 10000,
-      expanded: false,
-    },
-    {
-      id: 6,
-      title: "Mani House",
-      location: "Anna Nagar",
-      type: "Individual",
-      bhk: "2BHK",
-      sqft: 800,
-      price: 10000,
-      expanded: false,
-    },
-  ];
-
   // State for property cards with expanded state
-  const [properties, setProperties] = useState(initialProperties);
+  const [properties, setProperties] = useState([]);
+
+  // Update properties when enquiryData changes
+  useEffect(() => {
+    if (enquiryData && enquiryData.length > 0) {
+      const formattedProperties = enquiryData.map((item, index) => {
+        const propertyData = item.enquirable || {};
+        
+        // Format BHK display
+        const formatBHK = (bedrooms, bhkId) => {
+          if (bedrooms) return `${bedrooms}BHK`;
+          if (bhkId) return `${bhkId}BHK`;
+          return "N/A";
+        };
+
+        // Format area display
+        const formatArea = (superBuiltupArea, carpetArea, plotArea) => {
+          if (superBuiltupArea) return superBuiltupArea;
+          if (carpetArea) return carpetArea;
+          if (plotArea) return plotArea;
+          return "N/A";
+        };
+
+        // Format property type
+        const formatPropertyType = (subcategoryId, plotArea) => {
+          if (plotArea && plotArea > 0) return "Plot";
+          if (subcategoryId === 2) return "Apartment";
+          if (subcategoryId === 3) return "Plot";
+          return "Individual";
+        };
+
+        return {
+          id: item.id,
+          title: propertyData.property_name || "Property",
+          location: propertyData.address || "Location not specified",
+          type: formatPropertyType(propertyData.subcategory_id, propertyData.plot_area),
+          bhk: formatBHK(propertyData.bedrooms, propertyData.bhk_id),
+          sqft: formatArea(propertyData.super_builtup_area, propertyData.carpet_area, propertyData.plot_area),
+          price: propertyData.amount || 0,
+          expanded: index === 0, // First item expanded by default
+          image: propertyData.image,
+          propertyCode: propertyData.unique_code,
+          status: propertyData.status,
+          customerDetails: {
+            name: item.name || "Customer Name",
+            mobileNumber: item.mobile_number || "Not provided",
+            email: item.email || "Not provided",
+            whatsappNumber: item.whatsapp_number || item.mobile_number || "Not provided",
+            message: item.message || "No message provided",
+          }
+        };
+      });
+      setProperties(formattedProperties);
+    } else {
+      // No API data - set empty array
+      setProperties([]);
+    }
+  }, [enquiryData]);
+
+
 
   // Toggle expanded state for a property
   const toggleExpand = (id) => {
@@ -98,26 +89,66 @@ const SellerPropertyTabContent = () => {
     );
   };
 
-  // First, update your handleDelete function
-  const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this property?")) {
-      setProperties(properties.filter((property) => property.id !== id));
+  // Handle delete with API call
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this enquiry?")) {
+      try {
+        let endpoint;
+        
+        if (activeEnquiryType === "property") {
+          // Property enquiry - delete from user API
+          endpoint = `/enquiries/user/${id}`;
+        } else {
+          // Post enquiry - delete from vendor API
+          endpoint = `/enquiries/vendor/${id}`;
+        }
+
+        await api.delete(endpoint);
+
+        // Remove from local state
+        setProperties(properties.filter((property) => property.id !== id));
+        
+        // Refresh data from server
+        onRefresh();
+        
+        // Show success message
+        alert('Enquiry deleted successfully');
+      } catch (error) {
+        console.error('Error deleting enquiry:', error);
+        alert('Failed to delete enquiry. Please try again.');
+      }
     }
   };
+
+  if (loading) {
+    return (
+      <div className="mymediator-seller-tab-content">
+        <div className="flex justify-center items-center h-40">
+          <div className="text-lg">Loading enquiries...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (properties.length === 0) {
+    return (
+      <div className="mymediator-seller-tab-content">
+        <div className="flex flex-col justify-center items-center h-40 text-center">
+          <div className="text-xl text-gray-400 mb-2">📋</div>
+          <div className="text-lg text-gray-600 font-medium mb-1">
+            No enquiries found
+          </div>
+          <div className="text-sm text-gray-500">
+            No {activeEnquiryType === "property" ? "property" : "post"} enquiries available at the moment
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
       <div className="mymediator-seller-tab-content">
-        {/* Action Buttons - Centered */}
-        <div className="flex justify-center gap-4 mb-6 flex-wrap">
-          <button className="bg-[#0b1645] text-white py-2 px-4 rounded-md font-medium">
-            Post enquiry
-          </button>
-          <button className="bg-white text-gray-700 py-2 px-4 rounded-md border border-gray-300 font-medium">
-            Property enquiry
-          </button>
-        </div>
-
         {/* Property Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-2 md:grid-cols-1 gap-4 px-2">
           {properties.map((property) => (
@@ -133,7 +164,7 @@ const SellerPropertyTabContent = () => {
                 <div className="flex">
                   <div className="w-20 h-20 flex-shrink-0">
                     <img
-                      src={IMAGES.propertydetails}
+                      src={property.image || IMAGES.propertydetails}
                       alt={property.title}
                       className="w-full h-full object-cover rounded-md"
                     />
@@ -170,38 +201,56 @@ const SellerPropertyTabContent = () => {
                     </div>
                     <div className="text-sm mt-1 flex items-center flex-wrap">
                       <span className="mr-2">{property.type}</span>
-                      <span className="border border-gray-300 rounded px-1 mr-2">
-                        {property.bhk}
-                      </span>
+                      {property.bhk !== "N/A" && (
+                        <span className="border border-gray-300 rounded px-1 mr-2">
+                          {property.bhk}
+                        </span>
+                      )}
                       <span className="flex items-center">
                         <AspectRatioIcon
                           style={{ fontSize: 16 }}
                           className="mr-1"
                         />
-                        {property.sqft} Sq. Ft
+                        {property.sqft} {property.type === "Plot" ? "Sq. Ft" : "Sq. Ft"}
                       </span>
+                      {property.propertyCode && (
+                        <span className="ml-2 text-xs text-gray-500">
+                          #{property.propertyCode}
+                        </span>
+                      )}
                     </div>
                     <div className="flex items-center justify-between mt-3 pb-[10px]">
                       <div className="font-bold">
-                        ₹ {property.price.toLocaleString()}
+                        ₹ {property.price ? property.price.toLocaleString() : "Not specified"}
                       </div>
-                      <button
-                        className=" text-sm flex items-center cursor-pointer"
-                        onClick={() => toggleExpand(property.id)}
-                      >
-                        View more
-                        {property.expanded ? (
-                          <KeyboardArrowUpIcon
-                            style={{ fontSize: 22 }}
-                            className="ml-1 text-red-500  font-bold "
-                          />
-                        ) : (
-                          <KeyboardArrowDownIcon
-                            style={{ fontSize: 22 }}
-                            className="ml-1 text-red-500  font-bold"
-                          />
+                      <div className="flex items-center gap-2">
+                        {property.status && (
+                          <span className={`text-xs px-2 py-1 rounded ${
+                            property.status === 'available' 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            {property.status}
+                          </span>
                         )}
-                      </button>
+                        <button
+                          className=" text-sm flex items-center cursor-pointer"
+                          onClick={() => toggleExpand(property.id)}
+                        >
+                          View more
+                          {property.expanded ? (
+                            <KeyboardArrowUpIcon
+                              style={{ fontSize: 22 }}
+                              className="ml-1 text-red-500  font-bold "
+                            />
+                          ) : (
+                            <KeyboardArrowDownIcon
+                              style={{ fontSize: 22 }}
+                              className="ml-1 text-red-500  font-bold"
+                            />
+                          )}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -219,10 +268,10 @@ const SellerPropertyTabContent = () => {
                   <div className="">
                     <div className="flex">
                       <div className=" text-sm pb-[15px]">
-                        <strong>Name :</strong> &nbsp; {customerDetails.name}
+                        <strong>Name :</strong> &nbsp;                         {property.customerDetails?.name || "Customer Name"}
                       </div>
 
-                      <button className="text-blue-500 ml-auto cursor-pointer">
+                      <button className="text-red-500 ml-auto cursor-pointer">
                         <DeleteIcon
                           style={{ fontSize: 20 }}
                           onClick={(e) => {
@@ -235,22 +284,33 @@ const SellerPropertyTabContent = () => {
 
                     <div className="  text-sm pb-[15px]">
                       <strong>Mobile number :</strong> &nbsp;
-                      {customerDetails.mobileNumber}
+                      <a href={`tel:${property.customerDetails?.mobileNumber}`} className="text-blue-600 hover:underline">
+                        {property.customerDetails?.mobileNumber || "Not provided"}
+                      </a>
                     </div>
 
                     <div className="  text-sm pb-[15px]">
                       <strong>E-mail Id :</strong> &nbsp;
-                      {customerDetails.email}
+                      <a href={`mailto:${property.customerDetails?.email}`} className="text-blue-600 hover:underline">
+                        {property.customerDetails?.email || "Not provided"}
+                      </a>
                     </div>
 
                     <div className="pb-[15px] text-sm">
                       <strong> Whatsapp number :</strong>&nbsp;{" "}
-                      {customerDetails.whatsappNumber}
+                      <a 
+                        href={`https://wa.me/${property.customerDetails?.whatsappNumber?.replace(/[^0-9]/g, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-green-600 hover:underline"
+                      >
+                        {property.customerDetails?.whatsappNumber || "Not provided"}
+                      </a>
                     </div>
 
                     <div className=" text-sm align-top overflow-hidden line-clamp-4 ">
                       <strong> Message :</strong> &nbsp;{" "}
-                      {customerDetails.message}
+                                              {property.customerDetails?.message || "No message provided"}
                     </div>
                   </div>
                 </div>

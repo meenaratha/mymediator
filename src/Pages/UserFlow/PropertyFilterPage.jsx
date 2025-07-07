@@ -231,7 +231,12 @@ const PropertyFilterPage = () => {
               </button>
             )}
 
-            <PropertyFilter isFilterOpen={isFilterOpen} isMobile={isMobile} />
+            <PropertyFilter
+             isFilterOpen={isFilterOpen}
+              isMobile={isMobile}
+  // onFilterChange={handleFilterChange}
+  // onClearFilters={handleClearFilters}
+              />
           </div>
 
           {/* Overlay background - only on mobile when filter is open */}

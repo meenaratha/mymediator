@@ -192,7 +192,9 @@ const ElectronicsDetails = ({ electronics }) => {
     <>
       {/* Enquiry Modal */}
       {showEnquiryPopup && (
-        <EnquiryForm onClose={() => { setShowEnquiryPopup(false) }} />
+        <EnquiryForm onClose={() => { setShowEnquiryPopup(false) }}
+          propertyData={electronics}
+    enquirableType={electronics.form_type}/>
       )}
 
       <div className="">

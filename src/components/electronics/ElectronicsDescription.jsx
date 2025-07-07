@@ -19,6 +19,7 @@ import {
 } from "@mui/icons-material";
 import { api } from "@/api/axios";
 import ElectronicsDetails from "./ElectronicsDetails";
+import ReportAdsModal from "../common/ReportAdsModal";
 
 // Fix for default markers in React Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -33,6 +34,16 @@ const ElectronicsDescription = () => {
   const [electronics, setElectronics] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+     const [showReportModal, setShowReportModal] = useState(false);
+  
+   const handleReportClick = () => {
+    setShowReportModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowReportModal(false);
+  };
 
   // Default Chennai coordinates
   const defaultLocation = { lat: 13.0827, lng: 80.2707 };
@@ -93,6 +104,17 @@ const ElectronicsDescription = () => {
 
   return (
     <>
+{/* Report Ads Modal */}
+      <ReportAdsModal
+        isOpen={showReportModal}
+        onClose={handleCloseModal}
+        adId={electronics.id}
+        adType={ electronics.form_type }
+        adTitle={electronics.title}
+      />
+
+
+
       <ElectronicsDetails electronics={electronics} />
 
       <div className="p-4">
@@ -192,7 +214,9 @@ const ElectronicsDescription = () => {
                     <p className="text-sm text-gray-500">Owner</p>
                   </div>
                 </div>
-                <Link to="/seller-profile" className="text-blue-600 font-semibold text-sm">
+                <Link
+                to= {`/seller-profile/${electronics.vendor_id}`}
+                  className="text-blue-600 font-semibold text-sm">
                   See Profile
                 </Link>
               </div>
@@ -248,7 +272,9 @@ const ElectronicsDescription = () => {
                 <div className="text-sm">
                   <span className="font-semibold">ADS ID :</span> {electronics.unique_code}
                 </div>
-                <div className="flex items-center text-blue-600 cursor-pointer" aria-label="report">
+                <div 
+                  onClick={handleReportClick}
+                className="flex items-center text-blue-600 cursor-pointer" aria-label="report">
                   <ReportProblemOutlined fontSize="small" />
                   <span className="ml-1 text-sm">Report Ad</span>
                 </div>

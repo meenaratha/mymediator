@@ -19,6 +19,7 @@ import axios from "axios";
 import BikeDetails from "./BikeDetails";
 import L from "leaflet";
 import { api } from "../../api/axios";
+import ReportAdsModal from "./ReportAdsModal";
 
 // Fix for default markers in React Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -33,7 +34,15 @@ const BikeDescription = () => {
   const [bike, setBike] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+const [showReportModal, setShowReportModal] = useState(false);
 
+   const handleReportClick = () => {
+    setShowReportModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowReportModal(false);
+  };
   // Default Chennai coordinates
   const defaultLocation = { lat: 13.0827, lng: 80.2707 };
 
@@ -78,6 +87,15 @@ const BikeDescription = () => {
 
   return (
     <>
+
+    {/* Report Ads Modal */}
+      <ReportAdsModal
+        isOpen={showReportModal}
+        onClose={handleCloseModal}
+        adId={bike.id}
+        adType={ bike.form_type }
+        adTitle={bike.property_name}
+      />
       <BikeDetails bike={bike} />
 
       <div className="p-4">
@@ -156,7 +174,9 @@ const BikeDescription = () => {
                     <p className="text-sm text-gray-500">Seller</p>
                   </div>
                 </div>
-                <Link to="/seller-profile" className="text-blue-600 font-semibold text-sm">
+                <Link
+                to= {`/seller-profile/${bike.vendor_id}`}
+                 className="text-blue-600 font-semibold text-sm">
                   See Profile
                 </Link>
               </div>
@@ -204,7 +224,9 @@ const BikeDescription = () => {
                 <div className="text-sm">
                   <span className="font-semibold">ADS ID :</span> {bike.id}
                 </div>
-                <div className="flex items-center text-blue-600 cursor-pointer" aria-label="report">
+                <div 
+                    onClick={handleReportClick}
+                className="flex items-center text-blue-600 cursor-pointer" aria-label="report">
                   <ReportProblemOutlined fontSize="small" />
                   <span className="ml-1 text-sm">Report Ad</span>
                 </div>

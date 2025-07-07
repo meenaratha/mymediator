@@ -1,15 +1,6 @@
-import React, { useState } from "react";
-import LocationOnIcon from "@mui/icons-material/LocationOn";
-import AspectRatioIcon from "@mui/icons-material/AspectRatio";
-import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import FilterListIcon from "@mui/icons-material/FilterList";
-import HomeIcon from "@mui/icons-material/Home";
-import DevicesIcon from "@mui/icons-material/Devices";
-import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
-import TwoWheelerIcon from "@mui/icons-material/TwoWheeler";
-import DeleteIcon from "@mui/icons-material/Delete";
+import React, { useState, useEffect } from "react";
+import SellerBikeTabContent from "./SellerBikeTabContent"; // Import the bike component, { useState, useEffect } from "react";
+import { api, apiForFiles } from "../../api/axios.js";
 import IMAGES from "../../utils/images.js";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
@@ -17,12 +8,22 @@ import {
   SellerPropertyTabContent,
   SellerElectronicsTabContent,
 } from "@/components";
+import SellerCarTabContent from "./SellerCarTabContent"; // Import the new component
 
 const SellerEnquiryList = () => {
-  // State to manage active tab
+  // State to manage active tab (only visible when "Post enquiry" is active)
   const [activeTab, setActiveTab] = useState("property");
+  
+  // State to manage active enquiry type (property enquiry is default)
+  const [activeEnquiryType, setActiveEnquiryType] = useState("property");
+  
+  // State to manage loading
+  const [loading, setLoading] = useState(false);
+  
+  // State to manage enquiry data
+  const [enquiryData, setEnquiryData] = useState([]);
 
-  // Property types for filter buttons
+  // Property types for filter buttons (only shown when "Post enquiry" is active)
   const [propertyTypes, setPropertyTypes] = useState([
     {
       id: "property",
@@ -50,7 +51,32 @@ const SellerEnquiryList = () => {
     },
   ]);
 
-  // Function to handle tab click
+  // Function to fetch enquiry data from API
+  const fetchEnquiryData = async (type = "property", formType = "property") => {
+    setLoading(true);
+    try {
+      let endpoint;
+      
+      if (formType === "property") {
+        // Property enquiry - call user API
+        endpoint = `/enquiries/user?type=${type}`;
+      } else {
+        // Post enquiry - call vendor API
+        endpoint = `/enquiries/vendor?type=${type}`;
+      }
+
+      const response = await api.get(endpoint);
+      setEnquiryData(response.data?.data || response.data || []);
+    } catch (error) {
+      console.error('Error fetching enquiry data:', error);
+      setEnquiryData([]);
+      // Handle error (show notification, etc.)
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Function to handle tab click (works for both enquiry types)
   const handleTabClick = (tabId) => {
     // Update the active tab
     setActiveTab(tabId);
@@ -62,23 +88,45 @@ const SellerEnquiryList = () => {
     }));
 
     setPropertyTypes(updatedPropertyTypes);
+    
+    // Fetch data for the new tab based on current enquiry type
+    fetchEnquiryData(tabId, activeEnquiryType);
   };
 
-  // Function to render the appropriate tab content based on active tab
+  // Function to handle enquiry type button click
+  const handleEnquiryTypeClick = (type) => {
+    setActiveEnquiryType(type);
+    
+    // Fetch data based on current active tab and new enquiry type
+    fetchEnquiryData(activeTab, type);
+  };
+
+  // Initial data load - default to property enquiry
+  useEffect(() => {
+    fetchEnquiryData("property", "property");
+  }, []);
+
+  // Function to render the appropriate tab content
   const renderTabContent = () => {
+    const props = {
+      enquiryData,
+      loading,
+      activeEnquiryType,
+      onRefresh: () => fetchEnquiryData(activeTab, activeEnquiryType)
+    };
+
+    // Show content based on selected tab for both enquiry types
     switch (activeTab) {
       case "property":
-        return <SellerPropertyTabContent />;
+        return <SellerPropertyTabContent {...props} />;
       case "electronics":
-        return <SellerElectronicsTabContent />;
+        return <SellerElectronicsTabContent {...props} />;
       case "car":
-        // Add your car tab content component here
-        return <div>Car Tab Content</div>;
+        return <SellerCarTabContent {...props} />;
       case "bike":
-        // Add your bike tab content component here
-        return <div>Bike Tab Content</div>;
+        return <SellerBikeTabContent {...props} />;
       default:
-        return <SellerPropertyTabContent />;
+        return <SellerPropertyTabContent {...props} />;
     }
   };
 
@@ -91,7 +139,33 @@ const SellerEnquiryList = () => {
             Enquiry list
           </h1>
 
-          {/* Property Type Filter */}
+          {/* Action Buttons - Centered */}
+          <div className="flex justify-center gap-4 mb-6 flex-wrap">
+            <button 
+              className={`py-2 px-4 rounded-md font-medium ${
+                activeEnquiryType === "post"
+                  ? "bg-[#0b1645] text-white"
+                  : "bg-white text-gray-700 border border-gray-300"
+              }`}
+              onClick={() => handleEnquiryTypeClick("post")}
+              disabled={loading}
+            >
+              {loading && activeEnquiryType === "post" ? "Loading..." : "Post enquiry"}
+            </button>
+            <button 
+              className={`py-2 px-4 rounded-md font-medium ${
+                activeEnquiryType === "property"
+                  ? "bg-[#0b1645] text-white"
+                  : "bg-white text-gray-700 border border-gray-300"
+              }`}
+              onClick={() => handleEnquiryTypeClick("property")}
+              disabled={loading}
+            >
+              {loading && activeEnquiryType === "property" ? "Loading..." : "Property enquiry"}
+            </button>
+          </div>
+
+          {/* Property Type Filter - Shown for both Post enquiry and Property enquiry */}
           <div className="border-b border-[#EAEAEA] mb-10">
             <div className="mx-auto max-w-[800px] pb-6 ">
               <Swiper

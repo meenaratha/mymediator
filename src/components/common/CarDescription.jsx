@@ -18,6 +18,7 @@ import {
 import CarDetails from "./CarDetails";
 import L from "leaflet";
 import { api } from "../../api/axios";
+import ReportAdsModal from "./ReportAdsModal";
 
 // Fix for default markers in React Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -32,6 +33,16 @@ const CarDescription = () => {
   const [car, setCar] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+   const [showReportModal, setShowReportModal] = useState(false);
+  
+     const handleReportClick = () => {
+      setShowReportModal(true);
+    };
+  
+    const handleCloseModal = () => {
+      setShowReportModal(false);
+    };
 
   // Default Chennai coordinates
   const defaultLocation = { lat: 13.0827, lng: 80.2707 };
@@ -81,6 +92,16 @@ const CarDescription = () => {
 
   return (
     <>
+ {/* Report Ads Modal */}
+      <ReportAdsModal
+        isOpen={showReportModal}
+        onClose={handleCloseModal}
+        adId={car.id}
+        adType={ car.form_type }
+        adTitle={car.title}
+      />
+
+
       <CarDetails car={car} />
 
       <div className="p-4">
@@ -161,7 +182,9 @@ const CarDescription = () => {
                     <p className="text-sm text-gray-500">Seller</p>
                   </div>
                 </div>
-                <Link to="/seller-profile" className="text-blue-600 font-semibold text-sm">
+                <Link
+                   to= {`/seller-profile/${car.vendor_id}`}
+                  className="text-blue-600 font-semibold text-sm">
                   See Profile
                 </Link>
               </div>
@@ -199,7 +222,9 @@ const CarDescription = () => {
                 <div className="text-sm">
                   <span className="font-semibold">ADS ID :</span> {car.unique_code || car.id}
                 </div>
-                <div className="flex items-center text-blue-600 cursor-pointer" aria-label="report">
+                <div 
+                 onClick={handleReportClick}
+                className="flex items-center text-blue-600 cursor-pointer" aria-label="report">
                   <ReportProblemOutlined fontSize="small" />
                   <span className="ml-1 text-sm">Report Ad</span>
                 </div>
