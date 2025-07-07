@@ -26,6 +26,8 @@ import { api } from "../../api/axios"; // Adjust the import path as needed
 import { Skeleton } from "@mui/material";
 import { useAuth } from "../../auth/AuthContext"; // Import the useAuth hook
 import { useLoadScript, Autocomplete } from "@react-google-maps/api";
+import { Heart, } from 'lucide-react';
+
 const GOOGLE_MAP_LIBRARIES = ["places"];
 const Header = () => {
   const navigate = useNavigate();
@@ -535,6 +537,10 @@ const Header = () => {
 
               {/* notification box */}
               <div className="flex gap-10 items-center">
+
+<Heart className="w-5 h-5 text-red-600 cursor-pointer"   onClick={() =>
+                                handleProfileNavigation("/wishlist")
+                              }/>
                 <motion.div
                   animate={
                     isNotificationShaking

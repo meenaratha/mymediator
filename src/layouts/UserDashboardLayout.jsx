@@ -17,6 +17,8 @@ import {
   FaTimes,
   FaEdit,
 } from "react-icons/fa";
+import { Heart,  } from 'lucide-react';
+
 import { useAuth } from "../auth/AuthContext"; 
 const UserDashboardLayout = () => {
   const isMobile = useMediaQuery({ maxWidth: 767 });
@@ -28,7 +30,7 @@ const UserDashboardLayout = () => {
     {
       icon: <FaUser className="w-5 h-5" />,
       title: "My details",
-      path: "#",
+      path: "/profile-edit",
     },
     {
       icon: <FaListAlt className="w-5 h-5" />,
@@ -45,6 +47,11 @@ const UserDashboardLayout = () => {
       title: "My Post details",
       path: "/seller-post-details",
     },
+    {
+          icon: <Heart className="w-5 h-5" />,
+          title: "Wishlist",
+          path: "/wishlist",
+        },
     {
       icon: <FaFileContract className="w-5 h-5" />,
       title: "Terms and Conditions",

@@ -68,7 +68,7 @@ const SellerPostDetailsPage = () => {
         // Add your bike tab content component here
         return <BikePostDetails />;
       default:
-        return <PostDetails />;
+        return <div > No post</div>;
     }
   };
 

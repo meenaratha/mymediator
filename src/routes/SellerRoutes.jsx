@@ -7,6 +7,8 @@ import TermsAndCondition from "../components/sell/TermsAndCondition";
 import PrivacyPolicy from "../components/sell/PrivacyPolicy";
 import AccountDeleteModel from "../components/sell/AccountDeleteModel";
 import { FormLayout, SellerEnquiryList, SellerEnquiryListPage, SellerPostDetailsPage, SubscriptionHistoryPlanPage, UserDashboardLayout } from "../components";
+import WishlistPage from "../Pages/wishlist/WishlistPage";
+import ProfileEditScreen from "../Pages/SellerFlow/ProfileEditScreen";
 
 // Simple message component for deprecated routes
 const DeprecatedRouteMessage = ({ redirectTo, message }) => (
@@ -58,6 +60,15 @@ const SellerRoutes = () => {
     <>
       <Route element={<UserDashboardLayout />}>
         {/* Deprecated Seller Routes - Redirect to unified dashboard */}
+
+         <Route
+          path="/profile-edit"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <ProfileEditScreen />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/seller-enquiry-list"
           element={
@@ -81,6 +92,15 @@ const SellerRoutes = () => {
           element={
             <ProtectedRoute requireAuth={true}>
               <SellerPostDetailsPage />
+            </ProtectedRoute>
+          }
+        />
+
+         <Route
+          path="/wishlist"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <WishlistPage />
             </ProtectedRoute>
           }
         />

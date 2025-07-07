@@ -133,7 +133,7 @@ const IMAGES = {
   car8: new URL("@/assets/images/cars/car8.png", import.meta.url).href,
   hondaLogo: new URL("@/assets/images/cars/hondalogo.png", import.meta.url)
     .href,
-  hyndaiLogo: new URL("@/assets/images/cars/hyundailogo.png", import.meta.url)
+  hyndaiLogo: new URL("@/assets/images/cars/hondalogo.png", import.meta.url)
     .href,
   mahendraLogo: new URL(
     "@/assets/images/cars/mahendralogo.png",
