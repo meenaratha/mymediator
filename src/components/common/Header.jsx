@@ -539,7 +539,7 @@ const Header = () => {
               <div className="flex gap-10 items-center">
 
 <Heart className="w-[20px] h-[20px] text-red-600 cursor-pointer"   onClick={() =>
-                              Navigation("/wishlist")
+                              navigate("/wishlist")
                               }/>
                 <motion.div
                   animate={
