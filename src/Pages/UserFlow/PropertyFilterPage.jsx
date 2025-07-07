@@ -234,8 +234,6 @@ const PropertyFilterPage = () => {
             <PropertyFilter
              isFilterOpen={isFilterOpen}
               isMobile={isMobile}
-  // onFilterChange={handleFilterChange}
-  // onClearFilters={handleClearFilters}
               />
           </div>
 

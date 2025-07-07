@@ -538,8 +538,8 @@ const Header = () => {
               {/* notification box */}
               <div className="flex gap-10 items-center">
 
-<Heart className="w-5 h-5 text-red-600 cursor-pointer"   onClick={() =>
-                                handleProfileNavigation("/wishlist")
+<Heart className="w-[20px] h-[20px] text-red-600 cursor-pointer"   onClick={() =>
+                              Navigation("/wishlist")
                               }/>
                 <motion.div
                   animate={
