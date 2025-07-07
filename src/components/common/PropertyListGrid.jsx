@@ -60,7 +60,7 @@ const PropertyCard = ({ property }) => {
             {/* Bath icon */}
             <BedIcon />
 
-            <span className="ml-1 text-sm">{property.bhk || "N/A"}</span>
+            <span className="ml-1 text-sm">{property.bhk || property.bedrooms}</span>
           </div>
         </div>
 

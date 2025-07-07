@@ -1,4 +1,4 @@
-import React, { useState,useEffect  } from "react";
+import React, { useState, useEffect } from "react";
 import FilterIcon from "@mui/icons-material/FilterList";
 import styles from "@/styles/Home.module.css";
 import PriceRangeSection from "./filter/PriceRangeSection";
@@ -8,7 +8,8 @@ import FurnishingSection from "./filter/property/FurnishingSection";
 import ConstructionStatusSection from "./filter/property/ConstructionStatusSection";
 import ListedBySection from "./filter/property/ListedBySection";
 import BuildingDirectionSection from "./filter/property/BuildingDirectionSection";
-const PropertyFilter = ({ isFilterOpen, isMobile }) => {
+
+const PropertyFilter = ({ isFilterOpen, isMobile, onApplyFilters, currentFilters }) => {
   const [expandedSections, setExpandedSections] = useState({
     categories: true,
     location: true,
@@ -34,19 +35,10 @@ const PropertyFilter = ({ isFilterOpen, isMobile }) => {
   const [selectedBathrooms, setSelectedBathrooms] = useState(null);
   const [selectedFurnishing, setSelectedFurnishing] = useState(null);
 
-  // Example of how to handle filter submission
-  const handleApplyFilters = () => {
-    console.log("Applying filters:", filters);
-    
-    // Your filter application logic here
-    // The price_range will contain values like "0-99999", "100000-199999", etc.
-  };
-
-  // new code 
-
-const [filters, setFilters] = useState({
+  // Initialize filters state with current filters or default values
+  const [filters, setFilters] = useState({
     type: "property",
-    price_range: "", // This will be updated by PriceRangeSection
+    price_range: "",
     bathroom_min: "",
     bedroom_min: "",
     furnished_id: "",
@@ -59,12 +51,48 @@ const [filters, setFilters] = useState({
     subcategory_id: "",
     latitude: "",
     longitude: "",
+    ...currentFilters // Override with current filters from parent
   });
 
+  // Update local filters when currentFilters prop changes
+  useEffect(() => {
+    setFilters(prev => ({
+      ...prev,
+      ...currentFilters
+    }));
+  }, [currentFilters]);
 
+  // Function to handle filter application
+  const handleApplyFilters = () => {
+    console.log("=== HANDLE APPLY FILTERS ===");
+    console.log("Current filters state:", filters);
+    
+    // Clean up filters - remove empty values
+    const cleanedFilters = Object.entries(filters).reduce((acc, [key, value]) => {
+      if (value && value !== "" && value !== null && value !== undefined) {
+        // Handle arrays
+        if (Array.isArray(value)) {
+          if (value.length > 0) {
+            acc[key] = value;
+          }
+        } else {
+          acc[key] = value;
+        }
+      }
+      return acc;
+    }, {});
+    
+    console.log("Cleaned filters to send:", cleanedFilters);
+    
+    // Call the parent's apply filters function
+    if (onApplyFilters) {
+      onApplyFilters(cleanedFilters);
+    } else {
+      console.error("onApplyFilters function not provided!");
+    }
+  };
 
-
-   const [locationData, setLocationData] = useState({
+  const [locationData, setLocationData] = useState({
     address: "Chennai, Tamil Nadu", // Default fallback
     city: "Chennai",
     state: "Tamil Nadu",
@@ -72,8 +100,18 @@ const [filters, setFilters] = useState({
     longitude: ""
   });
 
+  // Helper functions for extracting city and state
+  const extractCityFromAddress = (address) => {
+    if (!address) return "";
+    const parts = address.split(",");
+    return parts[0]?.trim() || "";
+  };
 
-
+  const extractStateFromAddress = (address) => {
+    if (!address) return "";
+    const parts = address.split(",");
+    return parts[1]?.trim() || "";
+  };
 
   // Function to get location from localStorage
   const loadLocationFromStorage = () => {
@@ -116,8 +154,6 @@ const [filters, setFilters] = useState({
     loadLocationFromStorage();
   }, []);
 
-  // prise dropdowm
-
   return (
     <>
       <div
@@ -132,15 +168,23 @@ const [filters, setFilters] = useState({
         } `}
       >
         <div className="p-4">
+          {/* Debug Filter Display - Remove in production */}
+          <div className="bg-yellow-50 border border-yellow-200 rounded p-2 mb-4 text-xs">
+            <strong>Current Filters:</strong>
+            <pre className="mt-1 text-xs overflow-auto max-h-20">
+              {JSON.stringify(filters, null, 2)}
+            </pre>
+          </div>
+          
           {/* Categories Section */}
           <div className="mb-4">
-
             <button 
-        onClick={handleApplyFilters}
-        className="w-full bg-blue-900 my-4 cursor-pointer text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors"
-      >
-        Apply Filters
-      </button>
+              onClick={handleApplyFilters}
+              className="w-full bg-blue-900 my-4 cursor-pointer text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors"
+            >
+              Apply Filters
+            </button>
+            
             <div
               className="flex justify-between items-center cursor-pointer py-2 border-b"
               onClick={() => toggleSection("categories")}
@@ -215,85 +259,80 @@ const [filters, setFilters] = useState({
                 expandedSections.location ? "max-h-20 py-2" : "max-h-0"
               }`}
             >
-             <div className="flex items-center">
-              <svg className="w-4 h-4 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/>
-              </svg>
-              {locationData.city && locationData.state ? (
-                <span>{locationData.city}, {locationData.state}</span>
-              ) : (
-                <span></span>
-              )}
-            </div>
+              <div className="flex items-center">
+                <svg className="w-4 h-4 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/>
+                </svg>
+                {locationData.city && locationData.state ? (
+                  <span>{locationData.city}, {locationData.state}</span>
+                ) : (
+                  <span></span>
+                )}
+              </div>
             </div>
           </div>
 
           <div className="py-1 text-sm font-medium">Filter</div>
 
-{/* Replace your existing price range section with this: */}
-      <PriceRangeSection 
-        filters={filters}
-        setFilters={setFilters}
-        expandedSections={expandedSections}
-        toggleSection={toggleSection}
-      />
+          {/* Replace your existing price range section with this: */}
+          <PriceRangeSection 
+            filters={filters}
+            setFilters={setFilters}
+            expandedSections={expandedSections}
+            toggleSection={toggleSection}
+          />
 
-           {/* Bedrooms Section */}
-      <BedroomsSection 
-        filters={filters}
-        setFilters={setFilters}
-        expandedSections={expandedSections}
-        toggleSection={toggleSection}
-      />
+          {/* Bedrooms Section */}
+          <BedroomsSection 
+            filters={filters}
+            setFilters={setFilters}
+            expandedSections={expandedSections}
+            toggleSection={toggleSection}
+          />
 
-      {/* Bathrooms Section */}
-      <BathroomsSection 
-        filters={filters}
-        setFilters={setFilters}
-        expandedSections={expandedSections}
-        toggleSection={toggleSection}
-      />
+          {/* Bathrooms Section */}
+          <BathroomsSection 
+            filters={filters}
+            setFilters={setFilters}
+            expandedSections={expandedSections}
+            toggleSection={toggleSection}
+          />
 
-          
+          {/* Furnishing Section */}
+          <FurnishingSection 
+            filters={filters}
+            setFilters={setFilters}
+            expandedSections={expandedSections}
+            toggleSection={toggleSection}
+          />
 
-           {/* Furnishing Section - ADD THIS */}
-      <FurnishingSection 
-        filters={filters}
-        setFilters={setFilters}
-        expandedSections={expandedSections}
-        toggleSection={toggleSection}
-      />
+          {/* Construction Status Section */}
+          <ConstructionStatusSection 
+            filters={filters}
+            setFilters={setFilters}
+            expandedSections={expandedSections}
+            toggleSection={toggleSection}
+          />
 
-         {/* Construction Status Section - ADD THIS */}
-      <ConstructionStatusSection 
-        filters={filters}
-        setFilters={setFilters}
-        expandedSections={expandedSections}
-        toggleSection={toggleSection}
-      />
-{/* Listed By Section - ADD THIS */}
-      <ListedBySection 
-        filters={filters}
-        setFilters={setFilters}
-        expandedSections={expandedSections}
-        toggleSection={toggleSection}
-      />
+          {/* Listed By Section */}
+          <ListedBySection 
+            filters={filters}
+            setFilters={setFilters}
+            expandedSections={expandedSections}
+            toggleSection={toggleSection}
+          />
 
-         {/* Building Direction Section - ADD THIS */}
-      <BuildingDirectionSection 
-        filters={filters}
-        setFilters={setFilters}
-        expandedSections={expandedSections}
-        toggleSection={toggleSection}
-      />
-
-
+          {/* Building Direction Section */}
+          <BuildingDirectionSection 
+            filters={filters}
+            setFilters={setFilters}
+            expandedSections={expandedSections}
+            toggleSection={toggleSection}
+          />
         </div>
       </div>
     </>
   );
 };
-
-
 
 export default PropertyFilter;

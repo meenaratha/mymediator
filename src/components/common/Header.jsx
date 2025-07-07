@@ -536,11 +536,11 @@ const Header = () => {
               </motion.div>
 
               {/* notification box */}
-              <div className="flex gap-10 items-center">
+              <div className="flex gap-8 items-center">
 
-<Heart className="w-[20px] h-[20px] text-red-600 cursor-pointer"   onClick={() =>
-                              navigate("/wishlist")
-                              }/>
+<Heart className="w-[30px] h-[30px] text-red-600 cursor-pointer"   
+ onClick={() => navigate("/wishlist")}
+                              />
                 <motion.div
                   animate={
                     isNotificationShaking
