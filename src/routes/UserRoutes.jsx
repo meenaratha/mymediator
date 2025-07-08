@@ -45,6 +45,7 @@ const UserRoutes = () => {
         <Route path="/electronics" element={<ElectronicsPage />} />
         <Route path="/car" element={<CarsPage />} />
         <Route path="/bike" element={<BikesPage />} />
+        <Route path="/subscription-plan" element={<SubscriptionPlan />} />
         {/* Authendication Routes */}
       </Route>
 
@@ -99,7 +100,7 @@ const UserRoutes = () => {
             </ProtectedRoute>
           }
         />
-         <Route
+        <Route
           path="/electronics/:slug/:id"
           element={
             <ProtectedRoute requireAuth={true}>
@@ -108,7 +109,7 @@ const UserRoutes = () => {
           }
         />
 
-         <Route
+        <Route
           path="/electronics/:slug/:id/edit"
           element={
             <ProtectedRoute requireAuth={true}>
@@ -117,7 +118,7 @@ const UserRoutes = () => {
           }
         />
 
-         <Route
+        <Route
           path="/bike/:slug/:id"
           element={
             <ProtectedRoute requireAuth={true}>
@@ -144,7 +145,7 @@ const UserRoutes = () => {
           }
         />
 
-         <Route
+        <Route
           path="/car/:slug/:id/edit"
           element={
             <ProtectedRoute requireAuth={true}>

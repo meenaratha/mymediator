@@ -23,6 +23,7 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import ReportAdsModal from "../common/ReportAdsModal";
+import axios from "axios";
 
 // Fix for default markers in React Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -53,7 +54,7 @@ const PropertyDescription = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await api.get(`/properties/${slug}`);
+        const response = await api.get(`/properties/${slug}`);    
         setProperty(response.data.data);
         setIsLoading(false);
       } catch (error) {
@@ -88,9 +89,6 @@ const PropertyDescription = () => {
     const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lng}&z=15`;
     window.open(googleMapsUrl, '_blank');
   };
-
- 
-
 
   return (
     <>

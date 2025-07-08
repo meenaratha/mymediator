@@ -14,7 +14,7 @@ export default defineConfig({
     react(),
     tailwindcss(), // TailwindCSS configuration
   ],
-  base: "./", // Set your subfolder path
+  base: "/", // Set your subfolder path
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"), // Alias @ to the src directory

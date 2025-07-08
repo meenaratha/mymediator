@@ -29,6 +29,7 @@ const PropertyCard = ({
   buildingDirection,
   onStatusChange,
   onDelete,
+  bedroom,
 }) => {
   const navigate = useNavigate();
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
@@ -123,16 +124,7 @@ const PropertyCard = ({
           <h3 className="font-bold text-gray-900 truncate mr-1 md:mb-0 mb-2">
             {propertyName}
           </h3>
-          {/* Publish Status Indicator */}
-          <div
-            className={`px-2 py-1 rounded-full text-xs font-medium mr-2 ${
-              currentPublishStatus
-                ? "bg-green-100 text-green-800"
-                : "bg-yellow-100 text-yellow-800"
-            }`}
-          >
-            {currentPublishStatus ? "Published" : "Draft"}
-          </div>
+         
           <div className="flex items-center text-red-500 md:mb-0 mb-2">
             <LocationOnIcon style={{ fontSize: 18 }} />
             <span className="text-sm truncate max-w-[160px]">{location}</span>
@@ -140,36 +132,25 @@ const PropertyCard = ({
         </div>
 
         {/* Property Type and BHK */}
-        <div className="flex items-center mt-1 text-gray-600 flex-wrap md:flex-nowrap gap-[8px] mb-2">
-          {propertyType && (
-            <>
-              <HomeIcon style={{ fontSize: 14 }} />
-              <span className="text-sm">{propertyType}</span>
-            </>
-          )}
-          {bhkType && (
-            <span className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
-              {bhkType}
-            </span>
-          )}
-          {buildingDirection && (
-            <span className="text-sm text-gray-500">({buildingDirection})</span>
-          )}
-        </div>
-
-        {/* Area Information */}
-        <div className="flex items-center mt-1 text-gray-600 flex-wrap md:flex-nowrap gap-[8px] mb-2">
-          {area && (
-            <>
-              <SquareFootIcon style={{ fontSize: 14 }} />
-              <span className="text-sm">{area}</span>
-            </>
-          )}
+        <div className="flex justify-between items-center mt-1 text-gray-600 flex-wrap md:flex-nowrap gap-[8px] my-5">
           {plotArea && (
-            <>
+            <div className="flex gap-2 items-center">
               <SquareFootIcon style={{ fontSize: 14 }} />
               <span className="text-sm">Plot: {plotArea}</span>
-            </>
+            </div>
+          )}
+          {bhkType && (
+            <div className="flex gap-2 items-center">
+              <HomeIcon style={{ fontSize: 14 }} />
+              <span className="text-sm">{bhkType}</span>
+            </div>
+          )}
+
+          {area && (
+            <div className="flex gap-2 items-center">
+              <SquareFootIcon style={{ fontSize: 14 }} />
+              <span className="text-sm">{area}</span>
+            </div>
           )}
         </div>
 
@@ -185,111 +166,109 @@ const PropertyCard = ({
             {/* Edit Icon */}
             <button
               onClick={handleEdit}
-              className="text-gray-600 hover:text-blue-600"
+              className="text-blue-600 hover:text-blue-600"
               title="Edit property"
             >
               <EditIcon fontSize="small" />
             </button>
 
-            {/* Delete Icon */}
-            <button
-              onClick={handleDelete}
-              className="text-gray-600 hover:text-red-600"
-              title="Delete property"
-              disabled={isDeleting}
-            >
-              {isDeleting ? (
-                <span className="text-sm">Deleting...</span>
-              ) : (
-                <DeleteIcon fontSize="small" />
-              )}
-            </button>
-
             {/* Status Dropdown */}
             <div className="relative">
-              {currentStatus === "sold" ? (
-                <div
-                  className="bg-[#0f1c5e] text-white px-4 py-1 rounded-md cursor-pointer"
-                  onClick={markAsAvailable}
-                >
-                  Sold out
-                </div>
-              ) : (
-                <>
-                  <button
-                    onClick={toggleDropdown}
-                    className="bg-[#0f1c5e] text-white px-4 py-1 rounded-md text-sm flex items-center"
-                  >
-                    Status
-                    {showStatusDropdown ? (
-                      <KeyboardArrowUpIcon style={{ fontSize: 18 }} />
-                    ) : (
-                      <KeyboardArrowDownIcon style={{ fontSize: 18 }} />
-                    )}
-                  </button>
+              <button
+                onClick={toggleDropdown}
+                className="bg-[#0f1c5e] text-white px-4 py-1 rounded-md text-sm flex items-center"
+              >
+                Status
+                {showStatusDropdown ? (
+                  <KeyboardArrowUpIcon style={{ fontSize: 18 }} />
+                ) : (
+                  <KeyboardArrowDownIcon style={{ fontSize: 18 }} />
+                )}
+              </button>
 
-                  {/* Status Dropdown */}
-                  {showStatusDropdown && (
-                    <div className="absolute right-0 mt-1 w-40 bg-white rounded-md shadow-lg z-10 border border-gray-200">
-                      {/* Sold/Available Status */}
-                      <button
-                        onClick={markAsSold}
-                        className="block w-full text-left px-4 py-2 text-sm text-blue-800 font-medium hover:bg-blue-50"
+              {/* Status Dropdown */}
+              {showStatusDropdown && (
+                <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+                  {/* Sold/Available Toggle */}
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <div className="flex items-center justify-between">
+                      <span
+                        className={`text-sm text-white px-2 py-1 rounded 
+      ${currentStatus === "sold" ? "bg-red-600" : "bg-green-600"}`}
                       >
-                        Mark as Sold
-                      </button>
-                      <button
-                        onClick={markAsAvailable}
-                        className="block w-full text-left px-4 py-2 text-sm text-green-800 font-medium hover:bg-green-50"
+                        {currentStatus === "sold" ? "Sold Out" : "Available"}
+                      </span>
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (currentStatus === "sold") {
+                            markAsAvailable(e);
+                          } else {
+                            markAsSold(e);
+                          }
+                        }}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
+                          currentStatus === "sold"
+                            ? "bg-red-500"
+                            : "bg-green-500"
+                        }`}
                       >
-                        Mark as Available
-                      </button>
-
-                      {/* Publish/Unpublish */}
-                      <div className="border-t border-gray-100">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            updatePublishStatus(1);
-                            setShowStatusDropdown(false);
-                          }}
-                          className="block w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-blue-50"
-                        >
-                          Publish Property
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            updatePublishStatus(0);
-                            setShowStatusDropdown(false);
-                          }}
-                          className="block w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
-                        >
-                          Unpublish Property
-                        </button>
-                      </div>
-
-                      {/* Ads Toggle */}
-                      <div className="px-4 py-2 border-t border-gray-100">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Ads</span>
-                          <div
-                            onClick={toggleAds}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                              adsEnabled ? "bg-[#0f1c5e]" : "bg-gray-300"
-                            }`}
-                          >
-                            <span
-                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                adsEnabled ? "translate-x-6" : "translate-x-1"
-                              }`}
-                            />
-                          </div>
-                        </div>
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            currentStatus === "sold"
+                              ? "translate-x-1"
+                              : "translate-x-6"
+                          }`}
+                        />
                       </div>
                     </div>
-                  )}
-                </>
+                  </div>
+
+                  {/* Publish/Unpublish Toggle */}
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <div className="flex items-center justify-between">
+                      <span
+                        className={`text-sm text-white px-2 py-1 rounded 
+    ${currentPublishStatus ? "bg-green-600" : "bg-yellow-500"}`}
+                      >
+                        {currentPublishStatus ? "Published" : "Draft"}
+                      </span>
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          updatePublishStatus(currentPublishStatus ? 0 : 1);
+                          setShowStatusDropdown(false);
+                        }}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
+                          currentPublishStatus ? "bg-blue-500" : "bg-gray-300"
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            currentPublishStatus
+                              ? "translate-x-6"
+                              : "translate-x-1"
+                          }`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  {/* delete */}
+                  <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-center ">
+                    {/* Delete Icon */}
+                    <button
+                      onClick={handleDelete}
+                      className="text-white flex items-center justify-center gap-2 px-4 py-2 bg-red-600 rounded disabled:opacity-60"
+                      title="Delete property"
+                      disabled={isDeleting}
+                    >
+                      <DeleteIcon fontSize="small" />
+                      <span className="text-sm">
+                        {isDeleting ? "Deleting..." : "Delete"}
+                      </span>
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
           </div>
@@ -472,7 +451,7 @@ const PropertyPostDetails = () => {
                   }${property.state ? `, ${property.state}` : ""}`}
                   propertyType={property.property_type || property.subcategory}
                   buildingDirection={property.building_direction}
-                  bhkType={property.bhk ? `${property.bhk} BHK` : ""}
+                  bhkType={property.bhk ? `${property.bhk} ` : ""}
                   area={
                     property.super_builtup_area
                       ? `${property.super_builtup_area} Sq.ft`
@@ -480,6 +459,7 @@ const PropertyPostDetails = () => {
                       ? `${property.area} Sq.ft`
                       : null
                   }
+                  bedroom={property.bedrooms}
                   price={
                     property.amount
                       ? property.amount.toLocaleString()

@@ -117,18 +117,11 @@ const CarCard = ({
       {/* Car Details */}
       <div className="ml-3 flex-1 min-w-0">
         {/* Car Title and Location */}
-        <div className="flex items-center flex-wrap md:flex-nowrap">
+        <div className="flex items-center flex-wrap md:flex-nowrap gap-4">
           <h3 className="font-bold text-gray-900 truncate mr-1 md:mb-0 mb-2">
             {carTitle}
           </h3>
-          {/* Publish Status Indicator */}
-          <div className={`px-2 py-1 rounded-full text-xs font-medium mr-2 ${
-            currentPublishStatus 
-              ? 'bg-green-100 text-green-800' 
-              : 'bg-yellow-100 text-yellow-800'
-          }`}>
-            {currentPublishStatus ? 'Published' : 'Draft'}
-          </div>
+
           <div className="flex items-center text-red-500 md:mb-0 mb-2">
             <LocationOnIcon style={{ fontSize: 18 }} />
             <span className="text-sm truncate max-w-[160px]">{location}</span>
@@ -136,20 +129,20 @@ const CarCard = ({
         </div>
 
         {/* Car Specifications */}
-        <div className="flex items-center mt-1 text-gray-600 flex-wrap md:flex-nowrap gap-[8px] mb-2">
+        {/* <div className="flex items-center mt-1 text-gray-600 flex-wrap md:flex-nowrap gap-[8px] mb-2">
           <span className="text-sm">{brand}</span>
           <span className="text-sm">({model})</span>
           <span className="text-sm">{year}</span>
+        </div> */}
+
+        {/* Fuel Type and Transmission */}
+        <div className="flex items-center mt-1 text-gray-600 flex-wrap md:flex-nowrap gap-[8px] mb-2">
           {kilometers && (
             <>
               <SpeedIcon style={{ fontSize: 14 }} />
               <span className="text-sm">{kilometers} km</span>
             </>
           )}
-        </div>
-
-        {/* Fuel Type and Transmission */}
-        <div className="flex items-center mt-1 text-gray-600 flex-wrap md:flex-nowrap gap-[8px] mb-2">
           {fuelType && (
             <>
               <LocalGasStationIcon style={{ fontSize: 14 }} />
@@ -182,105 +175,103 @@ const CarCard = ({
               <EditIcon fontSize="small" />
             </button>
 
-            {/* Delete Icon */}
-            <button
-              onClick={handleDelete}
-              className="text-gray-600 hover:text-red-600"
-              title="Delete car"
-              disabled={isDeleting}
-            >
-              {isDeleting ? (
-                <span className="text-sm">Deleting...</span>
-              ) : (
-                <DeleteIcon fontSize="small" />
-              )}
-            </button>
-
             {/* Status Dropdown */}
             <div className="relative">
-              {currentStatus === "sold" ? (
-                <div
-                  className="bg-[#0f1c5e] text-white px-4 py-1 rounded-md cursor-pointer"
-                  onClick={markAsAvailable}
-                >
-                  Sold out
-                </div>
-              ) : (
-                <>
-                  <button
-                    onClick={toggleDropdown}
-                    className="bg-[#0f1c5e] text-white px-4 py-1 rounded-md text-sm flex items-center"
-                  >
-                    Status
-                    {showStatusDropdown ? (
-                      <KeyboardArrowUpIcon style={{ fontSize: 18 }} />
-                    ) : (
-                      <KeyboardArrowDownIcon style={{ fontSize: 18 }} />
-                    )}
-                  </button>
+              <button
+                onClick={toggleDropdown}
+                className="bg-[#0f1c5e] text-white px-4 py-1 rounded-md text-sm flex items-center"
+              >
+                Status
+                {showStatusDropdown ? (
+                  <KeyboardArrowUpIcon style={{ fontSize: 18 }} />
+                ) : (
+                  <KeyboardArrowDownIcon style={{ fontSize: 18 }} />
+                )}
+              </button>
 
-                  {/* Status Dropdown */}
-                  {showStatusDropdown && (
-                    <div className="absolute right-0 mt-1 w-40 bg-white rounded-md shadow-lg z-10 border border-gray-200">
-                      {/* Sold/Available Status */}
-                      <button
-                        onClick={markAsSold}
-                        className="block w-full text-left px-4 py-2 text-sm text-blue-800 font-medium hover:bg-blue-50"
+              {/* Status Dropdown */}
+              {showStatusDropdown && (
+                <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+                  {/* Sold/Available Toggle */}
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <div className="flex items-center justify-between">
+                      <span
+                        className={`text-sm text-white px-2 py-1 rounded 
+      ${currentStatus === "sold" ? "bg-red-600" : "bg-green-600"}`}
                       >
-                        Mark as Sold
-                      </button>
-                      <button
-                        onClick={markAsAvailable}
-                        className="block w-full text-left px-4 py-2 text-sm text-green-800 font-medium hover:bg-green-50"
+                        {currentStatus === "sold" ? "Sold Out" : "Available"}
+                      </span>
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (currentStatus === "sold") {
+                            markAsAvailable(e);
+                          } else {
+                            markAsSold(e);
+                          }
+                        }}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
+                          currentStatus === "sold"
+                            ? "bg-red-500"
+                            : "bg-green-500"
+                        }`}
                       >
-                        Mark as Available
-                      </button>
-                      
-                      {/* Publish/Unpublish */}
-                      <div className="border-t border-gray-100">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            updatePublishStatus(1);
-                            setShowStatusDropdown(false);
-                          }}
-                          className="block w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-blue-50"
-                        >
-                          Publish Car
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            updatePublishStatus(0);
-                            setShowStatusDropdown(false);
-                          }}
-                          className="block w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
-                        >
-                          Unpublish Car
-                        </button>
-                      </div>
-
-                      {/* Ads Toggle */}
-                      <div className="px-4 py-2 border-t border-gray-100">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Ads</span>
-                          <div
-                            onClick={toggleAds}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                              adsEnabled ? "bg-[#0f1c5e]" : "bg-gray-300"
-                            }`}
-                          >
-                            <span
-                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                adsEnabled ? "translate-x-6" : "translate-x-1"
-                              }`}
-                            />
-                          </div>
-                        </div>
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            currentStatus === "sold"
+                              ? "translate-x-1"
+                              : "translate-x-6"
+                          }`}
+                        />
                       </div>
                     </div>
-                  )}
-                </>
+                  </div>
+
+                  {/* Publish/Unpublish Toggle */}
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <div className="flex items-center justify-between">
+                      <span
+                        className={`text-sm text-white px-2 py-1 rounded 
+    ${currentPublishStatus ? "bg-green-600" : "bg-yellow-500"}`}
+                      >
+                        {currentPublishStatus ? "Published" : "Draft"}
+                      </span>
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          updatePublishStatus(currentPublishStatus ? 0 : 1);
+                          setShowStatusDropdown(false);
+                        }}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
+                          currentPublishStatus ? "bg-blue-500" : "bg-gray-300"
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            currentPublishStatus
+                              ? "translate-x-6"
+                              : "translate-x-1"
+                          }`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  {/* delete */}
+                  <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-center ">
+                    {/* Delete Icon */}
+                    <button
+                      onClick={handleDelete}
+                      className="text-white flex items-center justify-center gap-2 px-4 py-2 bg-red-600 rounded disabled:opacity-60"
+                      title="Delete property"
+                      disabled={isDeleting}
+                    >
+                      <DeleteIcon fontSize="small" />
+                      <span className="text-sm">
+                        {isDeleting ? "Deleting..." : "Delete"}
+                      </span>
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
           </div>

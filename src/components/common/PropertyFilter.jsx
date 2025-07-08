@@ -19,6 +19,7 @@ const PropertyFilter = ({ isFilterOpen, isMobile, onApplyFilters, currentFilters
     constructionStatus: false,
     listedBy: false,
   });
+  
 
   const toggleSection = (section) => {
     setExpandedSections({

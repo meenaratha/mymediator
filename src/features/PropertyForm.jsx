@@ -144,7 +144,7 @@ const PropertyForm = () => {
       subcategoryId: 1,
       type: "house-apartment",
       showFields: {
-        bachelor: true,
+        bachelor: false,
         washroom: false,
         bhk: true,
         bedroom: true,
@@ -1334,7 +1334,7 @@ const PropertyForm = () => {
             />
           </div>
 
-          <div>
+          {/* <div>
             <label className="block text-gray-800 font-medium mb-2 px-4">
               Listed by
             </label>
@@ -1353,9 +1353,7 @@ const PropertyForm = () => {
               focusedField={focusedField}
               options={renderDropdownOptions(dropdownData.listedBy)}
             />
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          </div> */}
           <div>
             <label className="block text-gray-800 font-medium mb-2 px-4">
               Building Direction
@@ -1376,45 +1374,14 @@ const PropertyForm = () => {
               options={renderDropdownOptions(dropdownData.buildingDirections)}
             />
           </div>
+        </div>
 
-          <div>
-            <label className="block text-gray-800 font-medium mb-2 px-4">
-              Amount (₹)
-            </label>
-            <DynamicInputs
-              type="text"
-              name="amount"
-              id="amount"
-              onChange={handleChange}
-              value={formData.amount || ""}
-              className="w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf]
-               bg-white focus:outline-none "
-              placeholder="Enter amount"
-              onBlur={handleBlur}
-              error={errors.amount}
-              touched={touched.amount}
-              focusedField={focusedField}
-            />
-          </div>
-
+        {/* Address fields - Common for all property types */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div>
             <label className="block text-gray-800 font-medium mb-2 px-4">
               Address
             </label>
-            {/* <DynamicInputs
-              type="text"
-              name="address"
-              id="address"
-              onChange={handleChange}
-              value={formData.address || ""}
-              className="w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] 
-              bg-white focus:outline-none "
-              placeholder="Enter address"
-              onBlur={handleBlur}
-              error={errors.address}
-              touched={touched.address}
-              focusedField={focusedField}
-            /> */}
 
             <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
               <DynamicInputs
@@ -1433,10 +1400,6 @@ const PropertyForm = () => {
               />
             </Autocomplete>
           </div>
-        </div>
-
-        {/* Address fields - Common for all property types */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div>
             <label className="block text-gray-800 font-medium mb-2 px-4">
               State
@@ -1487,7 +1450,7 @@ const PropertyForm = () => {
             />
           </div>
 
-          <div>
+          {/* <div>
             <label className="block text-gray-800 font-medium mb-2 px-4">
               City
             </label>
@@ -1513,7 +1476,7 @@ const PropertyForm = () => {
               disabled={!formData.district || loadingCities || isAutoPopulating}
               loading={loadingCities || isAutoPopulating}
             />
-          </div>
+          </div> */}
         </div>
 
         {/* Land Plot specific fields */}
@@ -1886,30 +1849,6 @@ const PropertyForm = () => {
           </div>
         )}
 
-        {shouldShowField("washroom") && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div>
-              <label className="block text-gray-800 font-medium mb-2 px-4">
-                Wash Rooms
-              </label>
-              <DynamicInputs
-                type="text"
-                name="washRoom"
-                id="washRoom"
-                onChange={handleChange}
-                value={formData.washRoom || ""}
-                className="w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] 
-                  bg-white focus:outline-none "
-                placeholder="Enter wash rooms"
-                onBlur={handleBlur}
-                error={errors.washRoom}
-                touched={touched.washRoom}
-                focusedField={focusedField}
-              />
-            </div>
-          </div>
-        )}
-
         {/* Additional fields row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           {/* Bachelor field - only for house/apartment types */}
@@ -1938,7 +1877,71 @@ const PropertyForm = () => {
               />
             </div>
           )}
+
+          {shouldShowField("washroom") && (
+            <div>
+              <label className="block text-gray-800 font-medium mb-2 px-4">
+                Wash Rooms
+              </label>
+              <DynamicInputs
+                type="text"
+                name="washRoom"
+                id="washRoom"
+                onChange={handleChange}
+                value={formData.washRoom || ""}
+                className="w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] 
+               bg-white focus:outline-none "
+                placeholder="Enter wash rooms"
+                onBlur={handleBlur}
+                error={errors.washRoom}
+                touched={touched.washRoom}
+                focusedField={focusedField}
+              />
+            </div>
+          )}
+
+          <div>
+            <label className="block text-gray-800 font-medium mb-2 px-4">
+              Amount (₹)
+            </label>
+            <DynamicInputs
+              type="text"
+              name="amount"
+              id="amount"
+              onChange={handleChange}
+              value={formData.amount || ""}
+              className="w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf]
+               bg-white focus:outline-none "
+              placeholder="Enter amount"
+              onBlur={handleBlur}
+              error={errors.amount}
+              touched={touched.amount}
+              focusedField={focusedField}
+            />
+          </div>
         </div>
+
+        {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div>
+            <label className="block text-gray-800 font-medium mb-2 px-4">
+              Amount (₹)
+            </label>
+            <DynamicInputs
+              type="text"
+              name="amount"
+              id="amount"
+              onChange={handleChange}
+              value={formData.amount || ""}
+              className="w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf]
+               bg-white focus:outline-none "
+              placeholder="Enter amount"
+              onBlur={handleBlur}
+              error={errors.amount}
+              touched={touched.amount}
+              focusedField={focusedField}
+            />
+          </div>
+        </div> */}
 
         {/* Description text area - Common for all types */}
         <div className="mb-6">

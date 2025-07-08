@@ -14,7 +14,6 @@ const commonFields = {
   amount: Yup.string()
     .required("Amount is required")
     .matches(/^[0-9]+(\.[0-9]{1,2})?$/, "Amount must be a valid number"),
-  listedBy: Yup.string().required("Listed by is required"),
   buildingDirection: Yup.string().required("Building direction is required"),
   images: Yup.array().required("images is required"),
   videos: Yup.array().of(

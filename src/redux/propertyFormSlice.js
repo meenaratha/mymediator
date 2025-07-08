@@ -22,7 +22,6 @@ const initialState = {
 
     // Property Features
     furnished: "",
-    listedBy: "",
     constructionStatus: "",
     maintenance: "",
     bachelor: "",
