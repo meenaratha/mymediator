@@ -8,7 +8,7 @@ import "swiper/css/navigation";
 import IMAGES from "@/utils/images.js";
 import { useMediaQuery } from "react-responsive"; // For detecting mobile devices
 
-const BannerSlider = ({ images = [], isLoading = false, hasError = false }) => {
+const BannerSlider = ({ images = [], isLoading = false, hasError = false ,}) => {
   const [loadedImages, setLoadedImages] = useState(new Set());
   const [failedImages, setFailedImages] = useState(new Set());
 

@@ -4,6 +4,7 @@ import { api } from '@/api/axios';
 import LoadMoreButton from '../../components/common/LoadMoreButton';
 import LoginFormModal from '../../components/common/LoginFormModel';
 import { Heart, MapPin, Calendar, Car, Home, Smartphone } from 'lucide-react';
+import SignupFormModel from '../../components/common/SignupFormModel';
 
 const WishlistPage = () => {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ const WishlistPage = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [error, setError] = useState(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
+    const [signupFormModel, setSignupFormModel] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [removingItemId, setRemovingItemId] = useState(null);
 
@@ -252,9 +254,18 @@ const WishlistPage = () => {
       {/* Login Modal */}
       {showLoginModal && (
         <LoginFormModal
-          onClose={() => setShowLoginModal(false)}
+          // onClose={() => setShowLoginModal(false)}
+          setLoginFormModel={setShowLoginModal}
           onSuccess={handleLoginSuccess}
           message="Please login to access your wishlist"
+          setSignupFormModel={setSignupFormModel}
+        />
+      )}
+
+      {signupFormModel && (
+        <SignupFormModel
+          setLoginFormModel={setShowLoginModal}
+           setSignupFormModel={setSignupFormModel}
         />
       )}
 

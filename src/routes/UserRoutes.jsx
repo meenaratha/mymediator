@@ -17,7 +17,6 @@ import {
   SubscriptionPlan,
 } from "@/components";
 import BikeDetailPage from "../Pages/UserFlow/BikeDetailPage";
-import SellerProfile from "../components/sell/sellerProfile";
 import  LaptopDetailPage  from "../Pages/UserFlow/ElectronicsDetailsPage";
 import ChatInterface from "../components/common/ChatInterFace";
 import LandPlotFormPage from "../Pages/UserFlow/LandPlotFormPage";
@@ -32,6 +31,7 @@ import PropertyFormPage from "../Pages/UserFlow/PropertyFormPage";
 import ElectronicsFormPage from "../Pages/UserFlow/ElectronicsFormPage";
 import BikeFormPage from "../Pages/UserFlow/BikeFormPage";
 import CarDetailPage from "../Pages/UserFlow/CarDetailPage";
+import SellerProfile from "../components/sell/SellerProfile";
 const UserRoutes = () => {
   return (
     <>
@@ -239,7 +239,7 @@ const UserRoutes = () => {
 
         {/* Communication Routes */}
         <Route
-          path="/chat"
+          path="/notification"
           element={
             <ProtectedRoute requireAuth={true}>
               <ChatInterface />

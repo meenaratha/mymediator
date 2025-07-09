@@ -7,7 +7,7 @@ import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import IMAGES from "@/utils/images.js";
 import "../../styles/Login.css";
-
+import { api } from "../../api/axios";
 const SignupFormModel = ({ setLoginFormModel, setSignupFormModel }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -32,7 +32,7 @@ const SignupFormModel = ({ setLoginFormModel, setSignupFormModel }) => {
       if (nameInputRef.current) {
         nameInputRef.current.focus();
       }
-    } else if (errors.mobileNumber) {
+    } else if (errors.mobileNumber || errors.phone) {
       if (phoneInputRef.current) {
         // Focus on the phone input container's input element
         const input = phoneInputRef.current.querySelector("input");
@@ -96,47 +96,112 @@ const SignupFormModel = ({ setLoginFormModel, setSignupFormModel }) => {
 
     // Validate phone on change
     const error = validateField("mobileNumber", value);
-    setErrors((prev) => ({ ...prev, mobileNumber: error }));
+    setErrors((prev) => ({ ...prev, mobileNumber: error, phone: null }));
+  };
+
+  // Helper function to map backend field names to frontend field names
+  const mapBackendFieldToFrontend = (backendField) => {
+    const fieldMapping = {
+      phone: "mobileNumber",
+      mobile: "mobileNumber",
+      mobile_number: "mobileNumber",
+      // Add more mappings as needed
+    };
+    return fieldMapping[backendField] || backendField;
   };
 
   // API call function
   const registerUser = async (userData) => {
     try {
-      const response = await fetch(
-        "https://www.mymediator.amrithaa.net/backend/api/register",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify({
-            name: userData.name.trim(),
-            phone: userData.mobileNumber,
-            password: userData.password,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.message || `HTTP error! status: ${response.status}`
-        );
-      }
+      const response = await api.post('/register', {
+        name: userData.name.trim(),
+        phone: userData.mobileNumber,
+        password: userData.password,
+      });
 
       return {
         success: true,
-        data: data,
+        data: response.data,
       };
     } catch (error) {
       console.error("Registration API error:", error);
-      return {
-        success: false,
-        error: error.message || "Registration failed. Please try again.",
-      };
+      
+      // Handle axios error response
+      if (error.response) {
+        // Server responded with error status
+        return {
+          success: false,
+          error: error.response.data?.message || "Registration failed. Please try again.",
+          data: error.response.data || null,
+        };
+      } else if (error.request) {
+        // Request was made but no response received
+        return {
+          success: false,
+          error: "Network error. Please check your connection and try again.",
+          data: null,
+        };
+      } else {
+        // Something else happened
+        return {
+          success: false,
+          error: error.message || "Registration failed. Please try again.",
+          data: null,
+        };
+      }
     }
+  };
+
+  // Helper function to handle backend validation errors
+  const handleBackendErrors = (errorData) => {
+    const newErrors = {};
+
+    // Handle different error response formats
+    if (errorData) {
+      // Format 1: { errors: { field: ['error message'] } }
+      if (errorData.errors) {
+        Object.keys(errorData.errors).forEach((field) => {
+          const frontendField = mapBackendFieldToFrontend(field);
+          const errorMessages = errorData.errors[field];
+          
+          if (Array.isArray(errorMessages)) {
+            newErrors[frontendField] = errorMessages[0]; // Take first error
+          } else {
+            newErrors[frontendField] = errorMessages;
+          }
+        });
+      }
+      
+      // Format 2: { field_errors: { field: 'error message' } }
+      else if (errorData.field_errors) {
+        Object.keys(errorData.field_errors).forEach((field) => {
+          const frontendField = mapBackendFieldToFrontend(field);
+          newErrors[frontendField] = errorData.field_errors[field];
+        });
+      }
+      
+      // Format 3: { validation_errors: [...] }
+      else if (errorData.validation_errors && Array.isArray(errorData.validation_errors)) {
+        errorData.validation_errors.forEach((error) => {
+          if (error.field) {
+            const frontendField = mapBackendFieldToFrontend(error.field);
+            newErrors[frontendField] = error.message || error.error;
+          }
+        });
+      }
+      
+      // Format 4: Direct field mapping { name: 'error', phone: 'error' }
+      else {
+        Object.keys(errorData).forEach((field) => {
+          if (field !== 'message') {
+            const frontendField = mapBackendFieldToFrontend(field);
+            newErrors[frontendField] = errorData[field];
+          }
+        });
+      }
+    }
+
+    return newErrors;
   };
 
   const handleSubmit = async (e) => {
@@ -174,15 +239,43 @@ const SignupFormModel = ({ setLoginFormModel, setSignupFormModel }) => {
         // toast.success("Registration successful! Please login.");
       } else {
         // Handle API errors
-        setErrors({
-          general: result.error,
-        });
+        let errorData = null;
+        
+        // For axios, error data is usually in result.data
+        if (result.data) {
+          errorData = result.data;
+        }
+
+        // Handle field-specific errors
+        const fieldErrors = handleBackendErrors(errorData);
+        
+        if (Object.keys(fieldErrors).length > 0) {
+          setErrors(fieldErrors);
+        } else {
+          // If no field-specific errors, show general error
+          setErrors({
+            general: result.error || "Registration failed. Please try again.",
+          });
+        }
       }
     } catch (error) {
       console.error("Unexpected registration error:", error);
-      setErrors({
-        general: "An unexpected error occurred. Please try again.",
-      });
+      
+      // For axios errors, check error.response.data
+      let errorData = null;
+      if (error.response && error.response.data) {
+        errorData = error.response.data;
+      }
+      
+      const fieldErrors = handleBackendErrors(errorData);
+      
+      if (Object.keys(fieldErrors).length > 0) {
+        setErrors(fieldErrors);
+      } else {
+        setErrors({
+          general: "An unexpected error occurred. Please try again.",
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -191,7 +284,7 @@ const SignupFormModel = ({ setLoginFormModel, setSignupFormModel }) => {
   return (
     <>
       <div
-        className="fixed inset-0 flex items-center overflow-y-auto justify-center z-50 bg-[#000000a8] bg-opacity-50 p-4"
+        className="fixed inset-0 flex items-center overflow-y-auto justify-center z-999 bg-[#000000a8] bg-opacity-50 p-4"
         style={{ backdropFilter: "blur(10px)", scrollbarWidth: "none" }}
       >
         <div
@@ -260,13 +353,13 @@ const SignupFormModel = ({ setLoginFormModel, setSignupFormModel }) => {
                   onChange={handlePhoneChange}
                   placeholder="Mobile Number"
                   disabled={isSubmitting}
-                  className={
-                    isSubmitting ? "opacity-50 pointer-events-none" : ""
-                  }
+                  className={`${
+                    (errors.mobileNumber || errors.phone) ? "border-red-500" : ""
+                  } ${isSubmitting ? "opacity-50 pointer-events-none" : ""}`}
                 />
-                {errors.mobileNumber && (
+                {(errors.mobileNumber || errors.phone) && (
                   <p className="text-red-500 text-xs mt-1">
-                    {errors.mobileNumber}
+                    {errors.mobileNumber || errors.phone}
                   </p>
                 )}
               </div>

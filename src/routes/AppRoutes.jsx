@@ -4,9 +4,14 @@ import UserRoutes from "./UserRoutes";
 import SellerRoutes from "./SellerRoutes";
 import { NotFoundPage, LoginRequiredPage } from "../auth/ProtectedRoute";
 import Location from "../components/common/Location";
+import ScrollToTop from "../utils/ScrollToTop";
 
 const AppRoutes = () => {
   return (
+
+    <>
+      <ScrollToTop />
+    
     <Routes>
       {/* Main User Routes - All users (buyers and sellers) use these */}
       {UserRoutes()}
@@ -22,6 +27,10 @@ const AppRoutes = () => {
       {/* 404 Not Found - catch all route */}
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
+    
+    
+    </>
+    
   );
 };
 

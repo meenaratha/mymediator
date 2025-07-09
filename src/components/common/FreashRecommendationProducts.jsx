@@ -118,12 +118,12 @@ const PropertyCard = ({ item, category }) => {
         {/* Category-specific details */}
         {category === "property" && (
           <div className="flex items-center mt-2 space-x-4">
-            {item.super_builtup_area && (
+            {/* {item.super_builtup_area && (
               <div className="flex items-center">
                 <SquareFootIcon style={{ fontSize: 14 }} />
                 <span className="ml-1 text-sm">{item.super_builtup_area} Sq.ft</span>
               </div>
-            )}
+            )} */}
             {item.plot_area && (
               <div className="flex items-center">
                 <SquareFootIcon style={{ fontSize: 14 }} />
@@ -133,7 +133,7 @@ const PropertyCard = ({ item, category }) => {
             {item.bhk && (
               <div className="flex items-center">
                 <BedIcon style={{ fontSize: 14 }} />
-                <span className="ml-1 text-sm">{item.bhk} BHK</span>
+                <span className="ml-1 text-sm">{item.bhk} </span>
               </div>
             )}
           </div>
@@ -142,13 +142,8 @@ const PropertyCard = ({ item, category }) => {
         {(category === "bike" || category === "car") && (
           <div className="flex items-center mt-2 space-x-4 text-sm text-gray-600 flex-wrap gap-2">
             {item.brand && <span className="font-medium">{item.brand}</span>}
-            {item.model && <span>({item.model})</span>}
-            {item.year && (
-              <div className="flex items-center">
-                <CalendarTodayIcon style={{ fontSize: 14 }} />
-                <span className="ml-1">{item.year}</span>
-              </div>
-            )}
+           {/* {item.model && <span>({item.model})</span>} */}
+           
             {item.kilometers && (
               <div className="flex items-center">
                 <SpeedIcon style={{ fontSize: 14 }} />
@@ -161,23 +156,29 @@ const PropertyCard = ({ item, category }) => {
         {category === "electronics" && (
           <div className="flex items-center mt-2 space-x-4 text-sm text-gray-600">
             {item.brand && <span className="font-medium">{item.brand}</span>}
-            {item.model && <span>({item.model})</span>}
-            {item.features && (
+            {item.subcategory && (
               <div className="flex items-center">
                 <DevicesIcon style={{ fontSize: 14 }} />
-                <span className="ml-1 truncate">{item.features}</span>
+                <span className="ml-1 truncate">{item.subcategory}</span>
               </div>
             )}
           </div>
         )}
 
         <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">
-          <span className="text-sm text-gray-500">
+          {/* <span className="text-sm text-gray-500">
             {item.building_direction || 
              (item.fuel_type && `${item.fuel_type}`) ||
              (item.engine_cc && `${item.engine_cc} CC`) ||
              ""}
-          </span>
+          </span> */}
+
+           {item.year && (
+              <div className="flex items-center">
+                <CalendarTodayIcon style={{ fontSize: 14 }} />
+                <span className="ml-1">{item.year}</span>
+              </div>
+            )}
           <span className="font-bold text-lg">
             {formatPrice(item.price || item.amount)}
           </span>

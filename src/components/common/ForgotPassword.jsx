@@ -112,7 +112,7 @@ const ForgotPassword = ({
   return (
     <>
       <div
-        className="fixed inset-0 flex items-center overflow-y-auto justify-center z-50 bg-[#000000a8] bg-opacity-50 p-4"
+        className="fixed inset-0 flex items-center overflow-y-auto justify-center z-999 bg-[#000000a8] bg-opacity-50 p-4"
         style={{ backdropFilter: "blur(10px)", scrollbarWidth: "none" }}
       >
         <div

@@ -18,7 +18,7 @@ const RecommendedProperty = () => {
   const navigate = useNavigate();
 
   const isMobile = useMediaQuery({ maxWidth: 767 });
- 
+
   const [properties, setProperties] = useState([]);
 
   useEffect(() => {
@@ -32,10 +32,9 @@ const RecommendedProperty = () => {
 
         if (!latitude || !longitude) return;
 
-        const response = await api.get(
-          `/properties/populer/list`,
-          { params: { latitude, longitude } }
-        );
+        const response = await api.get(`/properties/populer/list`, {
+          params: { latitude, longitude },
+        });
 
         setProperties(response.data.data || []);
         console.log("reccomended listttt", response.data.data);
@@ -47,10 +46,9 @@ const RecommendedProperty = () => {
     fetchProperties();
   }, []);
 
- const handleCardClick = (property) => {
+  const handleCardClick = (property) => {
     navigate(`/properties/${property.action_slug}`);
   };
-
 
   return (
     <>
@@ -81,12 +79,12 @@ const RecommendedProperty = () => {
           {properties.map((property) => (
             <SwiperSlide key={property.id}>
               <Card
-             onClick={() => handleCardClick(property)}
+                onClick={() => handleCardClick(property)}
                 className="cursor-pointer max-w-[275px] w-full rounded-lg shadow-md overflow-hidden hover:shadow-lg mx-auto"
               >
                 <div className="relative">
                   <img
-                    src={property.image_url || IMAGES.property1}
+                    src={property.image_url || IMAGES.placeholderimg}
                     alt={property.property_name}
                     className="w-full h-36 object-cover"
                   />
@@ -100,22 +98,49 @@ const RecommendedProperty = () => {
                   <div className="flex items-center text-sm text-gray-500 mt-1">
                     <LocationOnIcon sx={{ color: red[500] }} />
                     <span>
-                      {property.city}, {property.district}
+                      {property.district}, {property.state}
                     </span>
                   </div>
 
                   <div className="flex items-center mt-2 space-x-4">
-                    <div className="flex items-center">
-                      <SquareFootIcon />
-                      <span className="ml-1 text-sm">
-                        {property.super_builtup_area} Sqr
-                      </span>
-                    </div>
+                    {property.super_builtup_area !== null ? (
+                      <div className="flex items-center">
+                        <SquareFootIcon />
+                        <span className="ml-1 text-sm">
+                          {property.super_builtup_area} Sqr
+                        </span>
+                      </div>
+                    ) : (
+                      ""
+                    )}
 
-                    <div className="flex items-center">
-                      <BedIcon />
-                      <span className="ml-1 text-sm">{property.bedrooms} </span>
-                    </div>
+                    {property.bedrooms !== null ? (
+                      <div className="flex items-center">
+                        <BedIcon />
+                        <span className="ml-1 text-sm">
+                          {property.bedrooms} 
+                        </span>
+                      </div>
+                    ) : (
+                      ""
+                    )}
+
+
+                     
+
+                     {property.wash_room !== null ? (
+                      <div className="flex items-center">
+                        <BedIcon />
+                        <span className="ml-1 text-sm">
+                          {property.wash_room} 
+                        </span>
+                      </div>
+                    ) : (
+                      ""
+                    )}
+                
+
+                   
                   </div>
 
                   <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">

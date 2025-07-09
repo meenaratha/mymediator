@@ -14,7 +14,7 @@ const PropertyCard = ({ property }) => {
   const isMobile = useMediaQuery({ maxWidth: 767 });
 
   const handleCardClick = () => {
-    navigate(`/properties/${property.slug}`);
+    navigate(`/properties/${property.action_slug}`);
   };
 
 
@@ -27,13 +27,11 @@ const PropertyCard = ({ property }) => {
     >
       <div className="relative">
         <img
-          src={property.image_url}
+          src={property.image_url || IMAGES.placeholderimg}
           alt={property.property_name}
           className="w-full h-36 object-cover"
         />
-        {/* <div className="absolute top-2 left-2 bg-blue-600 text-white px-2 py-1 text-xs rounded">
-          {property.label}
-        </div> */}
+      
       </div>
 
       <CardContent className="p-3">
@@ -43,25 +41,28 @@ const PropertyCard = ({ property }) => {
           {/* Location icon */}
           <LocationOnIcon sx={{ color: red[500] }} />
           <span>
-            {property.city}, {property.district}
+            {property.district}, {property.state}
           </span>
         </div>
 
         <div className="flex items-center mt-2 space-x-4">
-          <div className="flex items-center">
+
+            {property.super_builtup_area !==null ?(
+ <div className="flex items-center">
             {/* Bed icon */}
             <SquareFootIcon />
             <span className="ml-1 text-sm">
               {property.super_builtup_area || "N/A"} Sq.ft
             </span>
           </div>
+            ):("")}
 
+              {property.bhk !==null ?(
           <div className="flex items-center">
             {/* Bath icon */}
             <BedIcon />
-
             <span className="ml-1 text-sm">{property.bhk || property.bedrooms}</span>
-          </div>
+          </div> ):("")}
         </div>
 
         <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">

@@ -467,7 +467,11 @@ const Header = () => {
   }, [isLocationOpen]);
 
   if (loadError) return <div>Google Maps failed to load.</div>;
-  if (!isLoaded) return <div>Loading map...</div>;
+  if (!isLoaded){ return (
+    <div className="flex justify-center items-center h-screen">
+      <div className="loader"></div>
+    </div>
+  );}
   return (
     <>
       {/* Mobile Header */}
@@ -485,7 +489,9 @@ const Header = () => {
         <div className="w-full h-[70px] bg-[rgba(246,246,246,1)] border-b-[1px] border-b-solid border-b-[rgba(225,225,225,1)]">
           <div className="flex max-w-[1200px] mx-auto px-2.5 mymediator__container">
             <div className="w-[150px] bg-gray-200 h-[70px]">
-              <img src={Logo} alt="" className="relative z-[99] h-[140px]" />
+              <img src={Logo} 
+               onClick={() => navigate("/")}
+              alt="" className="relative z-[99] h-[140px] cursor-pointer " />
             </div>
             <div className="w-[100%] h-[70px] flex items-center gap-5 px-3 justify-between">
               {/* search box */}
@@ -635,9 +641,9 @@ const Header = () => {
                           <div className="py-2">
                             <motion.button
                               whileHover={{ backgroundColor: "#f3f4f6" }}
-                              className="w-full flex items-center gap-3 px-4 py-2 text-left text-gray-700 hover:bg-gray-50"
+                              className="cursor-pointer w-full flex items-center gap-3 px-4 py-2 text-left text-gray-700 hover:bg-gray-50"
                               onClick={() =>
-                                handleProfileNavigation("/profile")
+                                handleProfileNavigation("/profile-edit")
                               }
                             >
                               <PersonIcon className="w-5 h-5" />
@@ -646,31 +652,31 @@ const Header = () => {
 
                             <motion.button
                               whileHover={{ backgroundColor: "#f3f4f6" }}
-                              className="w-full flex items-center gap-3 px-4 py-2 text-left text-gray-700 hover:bg-gray-50"
+                              className="cursor-pointer w-full flex items-center gap-3 px-4 py-2 text-left text-gray-700 hover:bg-gray-50"
                               onClick={() =>
                                 handleProfileNavigation("/seller-enquiry-list")
                               }
                             >
                               <SettingsIcon className="w-5 h-5" />
-                              Seller Dashboard
+                              Enquiry List
                             </motion.button>
 
                             <motion.button
                               whileHover={{ backgroundColor: "#f3f4f6" }}
-                              className="w-full flex items-center gap-3 px-4 py-2 text-left text-gray-700 hover:bg-gray-50"
+                              className="cursor-pointer w-full flex items-center gap-3 px-4 py-2 text-left text-gray-700 hover:bg-gray-50"
                               onClick={() =>
-                                handleProfileNavigation("/settings")
+                                handleProfileNavigation("/subscription-plan")
                               }
                             >
                               <SettingsIcon className="w-5 h-5" />
-                              Settings
+                              Subscribtion
                             </motion.button>
                           </div>
 
                           <div className="border-t border-gray-100 py-2">
                             <motion.button
                               whileHover={{ backgroundColor: "#fef2f2" }}
-                              className="w-full flex items-center gap-3 px-4 py-2 text-left text-red-600 hover:bg-red-50"
+                              className="cursor-pointer w-full flex items-center gap-3 px-4 py-2 text-left text-red-600 hover:bg-red-50"
                               onClick={handleLogout}
                             >
                               <LogoutIcon className="w-5 h-5" />

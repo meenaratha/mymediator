@@ -8,6 +8,7 @@ import "react-phone-number-input/style.css";
 import IMAGES from "@/utils/images.js";
 import "../../styles/Login.css";
 import { useAuth } from "../../auth/AuthContext";
+import { api } from "../../api/axios";
 
 const LoginFormModel = ({
   setSignupFormModel,
@@ -31,7 +32,7 @@ const LoginFormModel = ({
 
   // Effect to handle autofocus on error fields
   useEffect(() => {
-    if (errors.mobileNumber) {
+    if (errors.mobileNumber || errors.phone) {
       if (phoneInputRef.current) {
         const input = phoneInputRef.current.querySelector("input");
         if (input) input.focus();
@@ -82,7 +83,113 @@ const LoginFormModel = ({
   const handlePhoneChange = (value) => {
     setFormData({ ...formData, mobileNumber: value });
     const error = validateField("mobileNumber", value);
-    setErrors((prev) => ({ ...prev, mobileNumber: error }));
+    setErrors((prev) => ({ ...prev, mobileNumber: error, phone: null }));
+  };
+
+  // Helper function to map backend field names to frontend field names
+  const mapBackendFieldToFrontend = (backendField) => {
+    const fieldMapping = {
+      phone: "mobileNumber",
+      mobile: "mobileNumber",
+      mobile_number: "mobileNumber",
+      email: "mobileNumber", // In case backend uses email field for login
+      username: "mobileNumber", // In case backend uses username
+      // Add more mappings as needed
+    };
+    return fieldMapping[backendField] || backendField;
+  };
+
+  // Helper function to handle backend validation errors
+  const handleBackendErrors = (errorData) => {
+    const newErrors = {};
+
+    // Handle different error response formats
+    if (errorData) {
+      // Format 1: { errors: { field: ['error message'] } }
+      if (errorData.errors) {
+        Object.keys(errorData.errors).forEach((field) => {
+          const frontendField = mapBackendFieldToFrontend(field);
+          const errorMessages = errorData.errors[field];
+          
+          if (Array.isArray(errorMessages)) {
+            newErrors[frontendField] = errorMessages[0]; // Take first error
+          } else {
+            newErrors[frontendField] = errorMessages;
+          }
+        });
+      }
+      
+      // Format 2: { field_errors: { field: 'error message' } }
+      else if (errorData.field_errors) {
+        Object.keys(errorData.field_errors).forEach((field) => {
+          const frontendField = mapBackendFieldToFrontend(field);
+          newErrors[frontendField] = errorData.field_errors[field];
+        });
+      }
+      
+      // Format 3: { validation_errors: [...] }
+      else if (errorData.validation_errors && Array.isArray(errorData.validation_errors)) {
+        errorData.validation_errors.forEach((error) => {
+          if (error.field) {
+            const frontendField = mapBackendFieldToFrontend(error.field);
+            newErrors[frontendField] = error.message || error.error;
+          }
+        });
+      }
+      
+      // Format 4: Direct field mapping { phone: 'error', password: 'error' }
+      else {
+        Object.keys(errorData).forEach((field) => {
+          if (field !== 'message') {
+            const frontendField = mapBackendFieldToFrontend(field);
+            newErrors[frontendField] = errorData[field];
+          }
+        });
+      }
+    }
+
+    return newErrors;
+  };
+
+  // API call function for login
+  const loginUser = async (userData) => {
+    try {
+      const response = await api.post('/login', {
+        phone: userData.mobileNumber,
+        password: userData.password,
+      });
+
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      console.error("Login API error:", error);
+      
+      // Handle axios error response
+      if (error.response) {
+        // Server responded with error status
+        return {
+          success: false,
+          error: error.response.data?.message || "Login failed. Please try again.",
+          data: error.response.data || null,
+        };
+      } else if (error.request) {
+        // Request was made but no response received
+        return {
+          success: false,
+          error: "Network error. Please check your connection and try again.",
+          data: null,
+        };
+      } else {
+        // Something else happened
+        return {
+          success: false,
+          error: error.message || "Login failed. Please try again.",
+          data: null,
+        };
+      }
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -96,6 +203,7 @@ const LoginFormModel = ({
     setErrors({}); // Clear any previous errors
 
     try {
+      // Option 1: Use the existing auth context login method
       const result = await login({
         phone: formData.mobileNumber,
         password: formData.password,
@@ -113,15 +221,85 @@ const LoginFormModel = ({
         // Navigate to dashboard
         navigate("/seller-profile");
       } else {
+        // Handle API errors
+        let errorData = null;
+        
+        // For the auth context, error data might be in result.data
+        if (result.data) {
+          errorData = result.data;
+        }
+
+        // Handle field-specific errors
+        const fieldErrors = handleBackendErrors(errorData);
+        
+        if (Object.keys(fieldErrors).length > 0) {
+          setErrors(fieldErrors);
+        } else {
+          // If no field-specific errors, show general error
+          setErrors({
+            general: result.error || "Login failed. Please try again.",
+          });
+        }
+      }
+
+      // Option 2: Alternative direct API call (uncomment if needed)
+      /*
+      const result = await loginUser(formData);
+
+      if (result.success) {
+        // Handle successful login
+        // Store token, update auth state, etc.
+        localStorage.setItem('authToken', result.data.token);
+        
+        // Reset form
+        setFormData({
+          mobileNumber: "",
+          password: "",
+        });
+        setErrors({});
+        setLoginFormModel(false);
+
+        // Navigate to dashboard
+        navigate("/seller-profile");
+      } else {
+        // Handle API errors
+        let errorData = null;
+        
+        if (result.data) {
+          errorData = result.data;
+        }
+
+        // Handle field-specific errors
+        const fieldErrors = handleBackendErrors(errorData);
+        
+        if (Object.keys(fieldErrors).length > 0) {
+          setErrors(fieldErrors);
+        } else {
+          setErrors({
+            general: result.error || "Login failed. Please try again.",
+          });
+        }
+      }
+      */
+
+    } catch (error) {
+      console.error("Unexpected login error:", error);
+      
+      // For axios errors, check error.response.data
+      let errorData = null;
+      if (error.response && error.response.data) {
+        errorData = error.response.data;
+      }
+      
+      const fieldErrors = handleBackendErrors(errorData);
+      
+      if (Object.keys(fieldErrors).length > 0) {
+        setErrors(fieldErrors);
+      } else {
         setErrors({
-          general: result.error || "Login failed. Please try again.",
+          general: "An unexpected error occurred. Please try again.",
         });
       }
-    } catch (error) {
-      console.error("Login error:", error);
-      setErrors({
-        general: "An unexpected error occurred. Please try again.",
-      });
     } finally {
       setIsSubmitting(false);
     }
@@ -130,7 +308,7 @@ const LoginFormModel = ({
   return (
     <>
       <div
-        className="fixed inset-0 flex items-center overflow-y-auto justify-center z-50 bg-[#000000a8] bg-opacity-50 p-4"
+        className="fixed inset-0 flex items-center overflow-y-auto justify-center z-999 bg-[#000000a8] bg-opacity-50 p-4"
         style={{ backdropFilter: "blur(10px)", scrollbarWidth: "none" }}
       >
         <div
@@ -141,7 +319,11 @@ const LoginFormModel = ({
           }`}
         >
           <button
-            onClick={() => setLoginFormModel(false)}
+            onClick={() => {
+              if (!isSubmitting) {
+                setLoginFormModel(false);
+              }
+            }}
             className="absolute top-3 right-3 text-gray-600 hover:text-black transition-colors cursor-pointer"
             disabled={isSubmitting}
           >
@@ -159,30 +341,39 @@ const LoginFormModel = ({
             </div>
 
             <form onSubmit={handleSubmit}>
+              {/* General Error Message */}
               {errors.general && (
                 <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
                   {errors.general}
                 </div>
               )}
 
+              {/* Mobile Number Field */}
               <div className="mb-4" ref={phoneInputRef}>
                 <PhoneInput
                   defaultCountry="IN"
                   value={formData.mobileNumber}
                   onChange={handlePhoneChange}
                   placeholder="Mobile Number"
-                  className="w-full px-3 py-1 outline-none"
+                  className={`w-full px-3 py-1 outline-none ${
+                    (errors.mobileNumber || errors.phone) ? "border-red-500" : ""
+                  } ${isSubmitting ? "opacity-50 pointer-events-none" : ""}`}
                   disabled={isSubmitting}
                 />
-                {errors.mobileNumber && (
+                {(errors.mobileNumber || errors.phone) && (
                   <p className="text-red-500 text-xs mt-1">
-                    {errors.mobileNumber}
+                    {errors.mobileNumber || errors.phone}
                   </p>
                 )}
               </div>
 
+              {/* Password Field */}
               <div className="mb-4">
-                <div className="flex items-center border rounded-md p-2 border-[#CCCBCB]">
+                <div 
+                  className={`flex items-center border rounded-md p-2 border-[#CCCBCB] ${
+                    errors.password ? "border-red-500" : "border-[#CCCBCB]"
+                  } ${isSubmitting ? "opacity-50" : ""}`}
+                >
                   <input
                     ref={passwordInputRef}
                     type={showPassword ? "text" : "password"}
@@ -211,6 +402,7 @@ const LoginFormModel = ({
                 )}
               </div>
 
+              {/* Forgot Password Link */}
               <div className="flex justify-end mb-6">
                 <div
                   className="text-red-500 text-sm cursor-pointer hover:underline"
@@ -225,6 +417,7 @@ const LoginFormModel = ({
                 </div>
               </div>
 
+              {/* Login Button */}
               <div className="flex justify-center">
                 <button
                   type="submit"
@@ -235,6 +428,7 @@ const LoginFormModel = ({
                 </button>
               </div>
 
+              {/* Signup Link */}
               <div className="mt-4 text-center flex flex-wrap justify-center gap-2">
                 <span className="text-gray-600 text-sm">
                   Don't have an account?{" "}
@@ -254,6 +448,7 @@ const LoginFormModel = ({
             </form>
           </div>
 
+          {/* Right side - Illustration */}
           <div className="hidden md:block md:w-1/2 bg-white">
             <div className="h-full p-8 flex items-center justify-center">
               <img

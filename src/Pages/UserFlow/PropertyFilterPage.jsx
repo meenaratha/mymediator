@@ -49,19 +49,19 @@ const PropertyFilterPage = () => {
   // Helper function to get location from localStorage
   const getLocationFromStorage = () => {
     try {
-      const selectedLocationStr = localStorage.getItem('selectedLocation');
-      
+      const selectedLocationStr = localStorage.getItem("selectedLocation");
+
       if (!selectedLocationStr) {
         return null;
       }
-      
+
       const selectedLocation = JSON.parse(selectedLocationStr);
-      
+
       // Check if the parsed object has required coordinates
       if (!selectedLocation.latitude || !selectedLocation.longitude) {
         return null;
       }
-      
+
       return {
         latitude: parseFloat(selectedLocation.latitude),
         longitude: parseFloat(selectedLocation.longitude),
@@ -72,7 +72,11 @@ const PropertyFilterPage = () => {
     }
   };
 
-  const fetchProperties = async (page = 1, loadMore = false, filters = null) => {
+  const fetchProperties = async (
+    page = 1,
+    loadMore = false,
+    filters = null
+  ) => {
     if (loadMore) setLoadingMore(true);
     else setLoading(true);
 
@@ -85,7 +89,7 @@ const PropertyFilterPage = () => {
 
       // Build API parameters
       const params = new URLSearchParams({
-        page: page.toString()
+        page: page.toString(),
       });
 
       // Add filter parameters - only add if they have values
@@ -94,40 +98,40 @@ const PropertyFilterPage = () => {
           // Handle arrays by converting to comma-separated strings
           if (Array.isArray(value)) {
             if (value.length > 0) {
-              params.append(key, value.join(','));
+              params.append(key, value.join(","));
             }
           } else {
             params.append(key, value.toString());
           }
         }
       });
-      
+
       // Debug: Log the final URL and parameters
       console.log("=== API REQUEST INFO ===");
       console.log("Final API URL:", `/filter?${params.toString()}`);
       console.log("Filters being sent:", filtersToUse);
       console.log("URL Parameters:", Object.fromEntries(params.entries()));
-      
+
       // Add location parameters if available
       if (location) {
-        params.append('latitude', location.latitude.toString());
-        params.append('longitude', location.longitude.toString());
+        params.append("latitude", location.latitude.toString());
+        params.append("longitude", location.longitude.toString());
       }
 
       // Use the filter endpoint
       const response = await api.get(`/filter?${params.toString()}`);
-      
+
       // Debug: Log full API response to understand structure
       console.log("=== FULL API RESPONSE ===");
       console.log("Response Status:", response.status);
       console.log("Response Data:", JSON.stringify(response.data, null, 2));
       console.log("Response Data Type:", typeof response.data);
       console.log("Is Array:", Array.isArray(response.data));
-      
+
       // Handle different possible response structures
       let result = {};
       let propertiesData = [];
-      
+
       // Check various possible structures
       if (response.data?.data?.data && Array.isArray(response.data.data.data)) {
         // Structure: { data: { data: [...], current_page: 1, ... } }
@@ -139,7 +143,10 @@ const PropertyFilterPage = () => {
         console.log("Using structure: data.data");
         result = response.data;
         propertiesData = response.data.data;
-      } else if (response.data?.properties && Array.isArray(response.data.properties)) {
+      } else if (
+        response.data?.properties &&
+        Array.isArray(response.data.properties)
+      ) {
         // Structure: { properties: [...], pagination: {...} }
         console.log("Using structure: data.properties");
         propertiesData = response.data.properties;
@@ -148,13 +155,21 @@ const PropertyFilterPage = () => {
         // Structure: [property1, property2, ...]
         console.log("Using structure: direct array");
         propertiesData = response.data;
-        result = { current_page: page, last_page: page, total: response.data.length, next_page_url: null };
+        result = {
+          current_page: page,
+          last_page: page,
+          total: response.data.length,
+          next_page_url: null,
+        };
       } else if (response.data?.items && Array.isArray(response.data.items)) {
         // Structure: { items: [...] }
         console.log("Using structure: data.items");
         propertiesData = response.data.items;
         result = response.data;
-      } else if (response.data?.results && Array.isArray(response.data.results)) {
+      } else if (
+        response.data?.results &&
+        Array.isArray(response.data.results)
+      ) {
         // Structure: { results: [...] }
         console.log("Using structure: data.results");
         propertiesData = response.data.results;
@@ -162,20 +177,22 @@ const PropertyFilterPage = () => {
       } else {
         // Try to find any array in the response
         console.log("Searching for arrays in response...");
-        const findArrayInObject = (obj, path = '') => {
+        const findArrayInObject = (obj, path = "") => {
           for (const [key, value] of Object.entries(obj)) {
             const currentPath = path ? `${path}.${key}` : key;
             if (Array.isArray(value)) {
-              console.log(`Found array at: ${currentPath}, length: ${value.length}`);
+              console.log(
+                `Found array at: ${currentPath}, length: ${value.length}`
+              );
               return { data: value, path: currentPath };
-            } else if (value && typeof value === 'object') {
+            } else if (value && typeof value === "object") {
               const found = findArrayInObject(value, currentPath);
               if (found) return found;
             }
           }
           return null;
         };
-        
+
         const foundArray = findArrayInObject(response.data);
         if (foundArray) {
           console.log(`Using found array at: ${foundArray.path}`);
@@ -194,19 +211,30 @@ const PropertyFilterPage = () => {
       console.log("Properties Length:", propertiesData?.length || 0);
       console.log("First Property:", propertiesData?.[0]);
       console.log("Result Object:", result);
-      
+
       // Validate that we have an array
       if (!Array.isArray(propertiesData)) {
-        console.error("Properties data is not an array:", typeof propertiesData);
+        console.error(
+          "Properties data is not an array:",
+          typeof propertiesData
+        );
         propertiesData = [];
       }
 
       // Update properties based on whether we're loading more or starting fresh
       if (page === 1) {
-        console.log("Setting properties (fresh load):", propertiesData.length, "items");
+        console.log(
+          "Setting properties (fresh load):",
+          propertiesData.length,
+          "items"
+        );
         setProperties(propertiesData);
       } else {
-        console.log("Adding properties (load more):", propertiesData.length, "items");
+        console.log(
+          "Adding properties (load more):",
+          propertiesData.length,
+          "items"
+        );
         setProperties((prev) => {
           const updated = [...prev, ...propertiesData];
           console.log("Total properties after load more:", updated.length);
@@ -220,20 +248,21 @@ const PropertyFilterPage = () => {
       setTotal(result?.total || propertiesData?.length || 0);
 
       // Check if there's more data to load
-      const hasMore = (result?.next_page_url !== null && result?.next_page_url !== undefined) &&
-          (result?.current_page || page) < (result?.last_page || page) &&
-          propertiesData &&
-          propertiesData.length > 0;
-          
+      const hasMore =
+        result?.next_page_url !== null &&
+        result?.next_page_url !== undefined &&
+        (result?.current_page || page) < (result?.last_page || page) &&
+        propertiesData &&
+        propertiesData.length > 0;
+
       console.log("Has more data:", hasMore);
       setHasMoreData(hasMore);
-      
     } catch (err) {
       console.error("=== API ERROR ===");
       console.error("Error details:", err);
       console.error("Error response:", err.response?.data);
       console.error("Error status:", err.response?.status);
-      
+
       // Reset states on error
       if (page === 1) {
         setProperties([]);
@@ -250,17 +279,17 @@ const PropertyFilterPage = () => {
     console.log("=== APPLY FILTERS CALLED ===");
     console.log("New filters received:", newFilters);
     console.log("Previous filters:", currentFilters);
-    
+
     // Update current filters
     setCurrentFilters(newFilters);
-    
+
     // Reset pagination to first page
     setCurrentPage(1);
     setProperties([]); // Clear existing properties
-    
+
     // Fetch new properties with filters
     fetchProperties(1, false, newFilters);
-    
+
     // Close filter on mobile after applying
     if (isMobile) {
       setIsFilterOpen(false);
@@ -322,18 +351,103 @@ const PropertyFilterPage = () => {
   }, [currentPage, lastPage, loadingMore, hasMoreData]);
 
   const images = [
-    IMAGES.propertybanner1,
-    IMAGES.propertybanner2,
-    IMAGES.propertybanner3,
-    IMAGES.propertybanner1,
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
   ];
+
+  // slider
+
+  // State for slider images
+  const [sliderImages, setSliderImages] = useState([]);
+  const [loadingImages, setLoadingImages] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  // Fallback images in case API fails
+  const fallbackImages = [
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
+  ];
+
+  // Fetch slider images from API
+  const fetchSliderImages = async () => {
+    setLoadingImages(true);
+    setImageError(false);
+
+    try {
+      const response = await api.get("/sliderimage?category_id=1"); // Adjust endpoint as needed
+      const result = response.data;
+
+      // Handle different API response structures
+      let images = [];
+      if (result.data && Array.isArray(result.data)) {
+        images = result.data;
+      } else if (Array.isArray(result)) {
+        images = result;
+      } else if (result.images && Array.isArray(result.images)) {
+        images = result.images;
+      }
+
+      // Extract image URLs from the response
+      const imageUrls = images
+        .map((item) => {
+          // Handle different possible image URL field names
+          return (
+            item.image_url ||
+            item.url ||
+            item.image ||
+            item.path ||
+            item.src ||
+            item
+          ); // In case it's already a URL string
+        })
+        .filter((url) => url); // Remove any null/undefined values
+
+      if (imageUrls.length > 0) {
+        setSliderImages(imageUrls);
+        console.log(
+          "✅ Slider images loaded successfully:",
+          imageUrls.length,
+          "images"
+        );
+      } else {
+        console.warn("⚠️ No valid image URLs found in API response");
+        setSliderImages(fallbackImages);
+        setImageError(true);
+      }
+    } catch (error) {
+      console.error("❌ Failed to fetch slider images:", error);
+      setSliderImages(fallbackImages);
+      setImageError(true);
+
+      // Only show error toast if it's a network error or 500 error
+      // Don't show for 404 or other expected errors
+      if (error.response?.status >= 500 || !error.response) {
+        toast.error("Failed to load slider images");
+      }
+    } finally {
+      setLoadingImages(false);
+    }
+  };
+
+  // Load images on component mount
+  useEffect(() => {
+    fetchSliderImages();
+  }, []);
 
   return (
     <>
       <HeroSection tittle="Property List" />
 
       <div className="max-w-screen-xl max-w-[1200px] mx-auto px-4">
-        <BannerSlider images={images} />
+        <BannerSlider
+          images={sliderImages}
+          isLoading={loadingImages}
+          hasError={imageError}
+        />
 
         {/* space div */}
         <div className="h-[10px]"></div>
@@ -393,8 +507,6 @@ const PropertyFilterPage = () => {
 
           {/* Property listings - 70% on desktop, full width on mobile */}
           <div className="w-full md:w-9/12">
-           
-            
             <PropertyListingGrid properties={properties} loading={loading} />
 
             {/* Load More Button - only shows if more pages exist and we have data */}

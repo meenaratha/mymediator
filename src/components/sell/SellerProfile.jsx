@@ -150,14 +150,14 @@ const [vendorData, setVendorData] = useState(null);
 }
 <div className="max-w-[1200px] w-[100%] mx-auto px-4 py-6 ">
        {/* Vendor Info Section */}
-        <div className="flex flex-col items-center text-center md:items-start md:text-left mb-6 gap-[25px]">
+        <div className="flex flex-col items-center text-center md:items-center md:text-left mb-6 gap-[25px]">
           <div className="flex flex-col md:flex-row items-center gap-4">
             <div className="relative w-20 h-20 overflow-hidden rounded-full">
               <img
-                src={vendorData?.profile_image || IMAGES.profile}
+                src={vendorData?.profile_image || IMAGES.placeholderprofile}
                 alt={vendorData?.name || "Vendor"}
                 className="object-cover w-full h-full"
-                onError={(e) => (e.target.src = IMAGES.profile)}
+                onError={(e) => (e.target.src = IMAGES.placeholderprofile)}
               />
             </div>
             <div>
@@ -174,7 +174,7 @@ const [vendorData, setVendorData] = useState(null);
           </div>
 
           <div className="flex gap-3 mt-4 md:mt-0 md:ml-[10px]">
-            <button
+            {/* <button
               className="cursor-pointer flex items-center gap-2 bg-[#0f1c5e] text-white px-4 py-2 rounded-md"
               onClick={() => setShowEnquiryForm(true)}
             >
@@ -182,12 +182,12 @@ const [vendorData, setVendorData] = useState(null);
                 <path d="M16 8c0 3.866-3.582 7-8 7a9 9 0 0 1-2.347-.306c-.584.296-1.925.864-4.181 1.234-.2.032-.352-.176-.273-.362.354-.836.674-1.95.77-2.966C.744 11.37 0 9.76 0 8c0-3.866 3.582-7 8-7s8 3.134 8 7M5 8a1 1 0 1 0-2 0 1 1 0 0 0 2 0m4 0a1 1 0 1 0-2 0 1 1 0 0 0 2 0m3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2"/>
               </svg>
               <span className="whitespace-nowrap">Enquiry</span>
-            </button>
+            </button> */}
 
             {vendorData?.phone && (
               <button
                 onClick={handleCall}
-                className="cursor-pointer flex items-center gap-2 bg-white text-[#0f1c5e] border border-[#0f1c5e] px-4 py-2 rounded-md"
+                className="cursor-pointer flex items-center gap-2 bg-[#0f1c5e] text-white border border-[#0f1c5e] px-4 py-2 rounded-md"
               >
                 <svg width="16" height="16" fill="currentColor" className="bi bi-telephone-fill" viewBox="0 0 16 16">
                   <path fillRule="evenodd" d="M1.885.511a1.745 1.745 0 0 1 2.61.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.68.68 0 0 0 .178.643l2.457 2.457a.68.68 0 0 0 .644.178l2.189-.547a1.75 1.75 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.6 18.6 0 0 1-7.01-4.42 18.6 18.6 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877z" />

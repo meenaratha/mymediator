@@ -67,8 +67,13 @@ const PropertyDescription = () => {
   }, [slug]);
   
   if (isLoading) {
-    return <div>Loading...</div>;
-  }
+  return (
+    <div className="flex justify-center items-center h-screen">
+      <div className="loader"></div>
+    </div>
+  );
+}
+
 
   if (!property) return <div>Property not found.</div>;
 
@@ -122,6 +127,16 @@ const PropertyDescription = () => {
                   </div>
                 )}
 
+                {property.plot_area && (
+                  <div className="flex items-center space-x-2">
+                    <HomeOutlinedIcon className="text-gray-500" />
+                    <span className="text-sm font-medium text-gray-600">
+                      {property.plot_area} 
+                    </span>
+                  </div>
+                )}
+
+
                 {property.building_direction && (
                   <div className="flex items-center space-x-2">
                     <CompassCalibrationOutlinedIcon className="text-gray-500" />
@@ -152,7 +167,7 @@ const PropertyDescription = () => {
                 <div className="flex items-center space-x-2">
                   <LocationOnOutlinedIcon className="text-gray-500" />
                   <span className="text-sm font-medium text-gray-600">
-                    {property.city}, {property.district}
+                    {property.district}, {property.state}
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -179,7 +194,7 @@ const PropertyDescription = () => {
                 <div className="flex items-center">
                   <img
                     className="w-10 h-10 rounded-full object-cover"
-                    src={property.profile_image || IMAGES.profile}
+                    src={property.profile_image || IMAGES.placeholderprofile}
                     alt="Profile"
                   />
                   <div className="ml-3">
@@ -214,7 +229,7 @@ const PropertyDescription = () => {
                       />
                       <Marker position={[mapCenter.lat, mapCenter.lng]}>
                         <Popup>
-                          {property.subcategory} <br /> {property.city}
+                          {property.subcategory} <br /> {property.district}
                         </Popup>
                       </Marker>
                     </MapContainer>
@@ -223,7 +238,7 @@ const PropertyDescription = () => {
                   <div className="flex items-center space-x-2 mt-2">
                     <CompassCalibrationOutlinedIcon className="text-gray-500" />
                     <span className="text-sm font-medium text-gray-600">
-                      {property.city}, {property.district}
+                      {property.district}, {property.state}
                     </span>
                   </div>
                 </div>
@@ -249,7 +264,7 @@ const PropertyDescription = () => {
 
       <div className="p-4 rounded-xl shadow-lg bg-white w-full">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm sm:text-base">
-          {property.building_direction && (
+          {property.building_direction !== null ? (
             <div className="grid grid-cols-2 sm:grid-cols-2">
               <div className="flex gap-[15px] justify-between">
                 <span>Facing </span>
@@ -257,9 +272,9 @@ const PropertyDescription = () => {
               </div>
               <span className="px-[10px]">{property.building_direction}</span>
             </div>
-          )}
+          ):("")}
 
-          {property.total_floors && (
+         {property.total_floors !== null ? (
             <div className="grid grid-cols-2">
               <div className="flex gap-[15px] justify-between">
                 <span>Total Floors </span>
@@ -267,9 +282,9 @@ const PropertyDescription = () => {
               </div>
               <span className="px-[10px]">{property.total_floors}</span>
             </div>
-          )}
+          ):("")}
 
-          {property.bedrooms && (
+        {property.bedrooms !== null ? (
             <div className="grid grid-cols-2">
               <div className="flex gap-[15px] justify-between">
                 <span>Bedrooms </span>
@@ -277,9 +292,9 @@ const PropertyDescription = () => {
               </div>
               <span className="px-[10px]">{property.bedrooms}</span>
             </div>
-          )}
+          ):("")}
 
-          {property.bathroom && (
+          {property.bathroom !== null ? (
             <div className="grid grid-cols-2">
               <div className="flex gap-[15px] justify-between">
                 <span>Bathrooms </span>
@@ -287,9 +302,19 @@ const PropertyDescription = () => {
               </div>
               <span className="px-[10px]">{property.bathroom}</span>
             </div>
-          )}
+          ):("")}
 
-          {property.car_parking && (
+           {property.furnished !== null ? (
+            <div className="grid grid-cols-2">
+              <div className="flex gap-[15px] justify-between">
+                <span>furnished </span>
+                <span>:</span>
+              </div>
+              <span className="px-[10px]">{property.furnished}</span>
+            </div>
+          ):("")}
+
+          {property.car_parking !== null ? (
             <div className="grid grid-cols-2">
               <div className="flex gap-[15px] justify-between">
                 <span>Car Parking </span>
@@ -297,9 +322,49 @@ const PropertyDescription = () => {
               </div>
               <span className="px-[10px]">{property.car_parking}</span>
             </div>
-          )}
+          ):("")}
 
-          {property.maintenance && (
+          {property.bike_parking !== null ?(
+            <div className="grid grid-cols-2">
+              <div className="flex gap-[15px] justify-between">
+                <span>Bike Parking </span>
+                <span>:</span>
+              </div>
+              <span className="px-[10px]">{property.bike_parking}</span>
+            </div>
+          ):("")}
+
+           {property.wash_room !== null ? (
+            <div className="grid grid-cols-2">
+              <div className="flex gap-[15px] justify-between">
+                <span>Washroom </span>
+                <span>:</span>
+              </div>
+              <span className="px-[10px]">{property.wash_room}</span>
+            </div>
+          ):("")}
+
+           {property.floor_no !== null ? (
+            <div className="grid grid-cols-2">
+              <div className="flex gap-[15px] justify-between">
+                <span>Floor Number </span>
+                <span>:</span>
+              </div>
+              <span className="px-[10px]">{property.floor_no}</span>
+            </div>
+          ):("")}
+
+           {property.total_floors !== null ? (
+            <div className="grid grid-cols-2">
+              <div className="flex gap-[15px] justify-between">
+                <span>Total Floor </span>
+                <span>:</span>
+              </div>
+              <span className="px-[10px]">{property.total_floors}</span>
+            </div>
+          ):("")}
+
+          {property.maintenance !== null ? (
             <div className="grid grid-cols-2">
               <div className="flex gap-[15px] justify-between">
                 <span>Maintenance Type </span>
@@ -307,9 +372,9 @@ const PropertyDescription = () => {
               </div>
               <span className="px-[10px]">{property.maintenance}</span>
             </div>
-          )}
+          ):("")}
 
-          {property.length && (
+          {property.length !== null ? (
             <div className="grid grid-cols-2">
               <div className="flex gap-[15px] justify-between">
                 <span>Length</span>
@@ -317,9 +382,18 @@ const PropertyDescription = () => {
               </div>
               <span className="px-[10px]">{property.length}</span>
             </div>
-          )}
+          ):("")}
+           {property.bachelor !== null ? (
+            <div className="grid grid-cols-2">
+              <div className="flex gap-[15px] justify-between">
+                <span>Bachelor</span>
+                <span>:</span>
+              </div>
+              <span className="px-[10px]">{property.bachelor}</span>
+            </div>
+          ):("")}
 
-          {property.breadth && (
+          {property.breadth !== null ? (
             <div className="grid grid-cols-2">
               <div className="flex gap-[15px] justify-between">
                 <span>Breadth</span>
@@ -327,9 +401,9 @@ const PropertyDescription = () => {
               </div>
               <span className="px-[10px]">{property.breadth}</span>
             </div>
-          )}
+          ):("")}
 
-          {property.plot_area && (
+          {property.plot_area !== null ? (
             <div className="grid grid-cols-2">
               <div className="flex gap-[15px] justify-between">
                 <span>Plot Area</span>
@@ -337,9 +411,9 @@ const PropertyDescription = () => {
               </div>
               <span className="px-[10px]">{property.plot_area}</span>
             </div>
-          )}
+          ):("")}
 
-          {property.post_year && (
+          {property.post_year !== null ? (
             <div className="grid grid-cols-2">
               <div className="flex gap-[15px] justify-between">
                 <span>Year</span>
@@ -347,7 +421,7 @@ const PropertyDescription = () => {
               </div>
               <span className="px-[10px]">{property.post_year}</span>
             </div>
-          )}
+          ):("")}
         </div>
       </div>
     </>

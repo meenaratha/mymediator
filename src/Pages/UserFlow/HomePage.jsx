@@ -19,10 +19,10 @@ const HomePage = () => {
 
   // Fallback images in case API fails
   const fallbackImages = [
-    IMAGES.propertybanner1,
-    IMAGES.propertybanner2,
-    IMAGES.propertybanner3,
-    IMAGES.propertybanner1,
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
   ];
 
   // Fetch slider images from API

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import LoadMoreButton from '../common/LoadMoreButton';
 import { api } from '../../api/axios';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const VendorPropertyPost = () => {
   const navigate = useNavigate();
+    const { vendorId } = useParams();
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -21,7 +22,7 @@ const VendorPropertyPost = () => {
         setLoadingMore(true);
       }
 
-      const response = await api.get(`/properties/list/foruser?page=${page}`);
+      const response = await api.get(`/properties/list/foruser?page=${page}&vendor_id=${vendorId}`);
       
       // Handle the nested response structure
       const responseData = response.data;

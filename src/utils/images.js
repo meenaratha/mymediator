@@ -19,7 +19,10 @@ const IMAGES = {
     "../assets/images/common/doublearrow.png",
     import.meta.url
   ).href,
-
+  placeholderimg: new URL("../assets/images/common/placeholder.png", import.meta.url)
+    .href,
+    placeholderprofile: new URL("../assets/images/common/placeholderprofile2.avif", import.meta.url)
+    .href,
   // property banner images
   propertybanner1: new URL(
     "../assets/images/property/propertybanner1.jpg",

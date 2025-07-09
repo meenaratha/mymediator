@@ -24,6 +24,9 @@ import EnquiryForm from "../../features/EnquiryForm.jsx";
 import { Link } from "react-router-dom";
 import { api } from "@/api/axios";
 import ShareModal from "../../components/common/ShareModal"; // Import reusable ShareModal
+import LoginFormModel from "../common/LoginFormModel.jsx";
+import SignupFormModel from "../common/SignupFormModel.jsx";
+import ForgotPassword from "../common/ForgotPassword.jsx";
 
 const PropertyDetails = ({ property }) => {
   const isMobile = useMediaQuery({ maxWidth: 767 });
@@ -41,19 +44,21 @@ const PropertyDetails = ({ property }) => {
   const mainImageRef = useRef(null);
   const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
   const [showEnquiryPopup, setShowEnquiryPopup] = useState(false);
-
+const [loginFormModel, setLoginFormModel] = useState(false);
+const [signupFormModel, setSignupFormModel] = useState(false);
+const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
   // Default Chennai coordinates
   const defaultLocation = { lat: 13.0827, lng: 80.2707 };
 
   // Prepare images - handle both single image and array, fallback to dummy images
   const dummyImages = [
-    IMAGES.property1,
-    IMAGES.property2,
-    IMAGES.property3,
-    IMAGES.property4,
-    IMAGES.property5,
-    IMAGES.property6,
-    IMAGES.propertydetails,
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
   ];
 
   const images = property.image_url 
@@ -67,37 +72,296 @@ const PropertyDetails = ({ property }) => {
   };
 
   // Wishlist functionality
-  const handleWishlistClick = async (e) => {
-    e.stopPropagation();
-    setIsWishlistLoading(true);
+  // const handleWishlistClick = async (e) => {
+  //   e.stopPropagation();
+  //   setIsWishlistLoading(true);
 
-    try {
-      if (isFavorite) {
-        // Remove from wishlist
-        await api.delete('/wishlist', {
-          data: {
-            wishable_type: "property",
-            wishable_id: property.id.toString()
-          }
-        });
-        setIsFavorite(false);
-        setSnackbar({ open: true, message: 'Removed from wishlist', severity: 'info' });
-      } else {
-        // Add to wishlist
-        await api.post('/wishlist', {
+  //   try {
+  //     if (isFavorite) {
+  //       // Remove from wishlist
+  //       await api.delete('/wishlist', {
+  //         data: {
+  //           wishable_type: "property",
+  //           wishable_id: property.id.toString()
+  //         }
+  //       });
+  //       setIsFavorite(false);
+  //       setSnackbar({ open: true, message: 'Removed from wishlist', severity: 'info' });
+  //     } else {
+  //       // Add to wishlist
+  //       await api.post('/wishlist', {
+  //         wishable_type: "property",
+  //         wishable_id: property.id
+  //       });
+  //       setIsFavorite(true);
+  //       setSnackbar({ open: true, message: 'Added to wishlist', severity: 'success' });
+  //     }
+  //   } catch (error) {
+  //     console.error('Wishlist error:', error);
+  //     setSnackbar({ open: true, message: 'Failed to update wishlist', severity: 'error' });
+  //   } finally {
+  //     setIsWishlistLoading(false);
+  //   }
+  // };
+
+// Wishlist functionality with authentication check
+const handleWishlistClick = async (e) => {
+  e.stopPropagation();
+  setIsWishlistLoading(true);
+
+  try {
+    if (isFavorite) {
+      // Remove from wishlist
+      await api.delete('/wishlist', {
+        data: {
           wishable_type: "property",
-          wishable_id: property.id
-        });
-        setIsFavorite(true);
-        setSnackbar({ open: true, message: 'Added to wishlist', severity: 'success' });
-      }
-    } catch (error) {
-      console.error('Wishlist error:', error);
-      setSnackbar({ open: true, message: 'Failed to update wishlist', severity: 'error' });
-    } finally {
-      setIsWishlistLoading(false);
+          wishable_id: property.id.toString()
+        }
+      });
+      setIsFavorite(false);
+      setSnackbar({ open: true, message: 'Removed from wishlist', severity: 'info' });
+    } else {
+      // Add to wishlist
+      await api.post('/wishlist', {
+        wishable_type: "property",
+        wishable_id: property.id
+      });
+      setIsFavorite(true);
+      setSnackbar({ open: true, message: 'Added to wishlist', severity: 'success' });
     }
-  };
+  } catch (error) {
+    console.error('Wishlist error:', error);
+    
+    // Check if it's an authentication error (401 Unauthorized)
+    if (error.response && error.response.status === 401) {
+      // User is not authenticated, show login modal
+      setSnackbar({ 
+        open: true, 
+        message: 'Please login to add items to wishlist', 
+        severity: 'warning' 
+      });
+      
+      // Show login modal
+      setLoginFormModel(true);
+      
+      // Optional: You can also close any other modals that might be open
+      // setSignupFormModel(false);
+      // setForgotPasswordModal(false);
+    } else {
+      // Other errors (network, server error, etc.)
+      const errorMessage = error.response?.data?.message || 'Failed to update wishlist';
+      setSnackbar({ 
+        open: true, 
+        message: errorMessage, 
+        severity: 'error' 
+      });
+    }
+  } finally {
+    setIsWishlistLoading(false);
+  }
+};
+
+// Alternative approach with more detailed error handling
+const handleWishlistClickDetailed = async (e) => {
+  e.stopPropagation();
+  setIsWishlistLoading(true);
+
+  try {
+    if (isFavorite) {
+      // Remove from wishlist
+      const response = await api.delete('/wishlist', {
+        data: {
+          wishable_type: "property",
+          wishable_id: property.id.toString()
+        }
+      });
+      
+      setIsFavorite(false);
+      setSnackbar({ 
+        open: true, 
+        message: response.data?.message || 'Removed from wishlist', 
+        severity: 'info' 
+      });
+    } else {
+      // Add to wishlist
+      const response = await api.post('/wishlist', {
+        wishable_type: "property",
+        wishable_id: property.id
+      });
+      
+      setIsFavorite(true);
+      setSnackbar({ 
+        open: true, 
+        message: response.data?.message || 'Added to wishlist', 
+        severity: 'success' 
+      });
+    }
+  } catch (error) {
+    console.error('Wishlist error:', error);
+    
+    // Handle different types of errors
+    if (error.response) {
+      const { status, data } = error.response;
+      
+      switch (status) {
+        case 401:
+          // Unauthorized - user needs to login
+          setSnackbar({ 
+            open: true, 
+            message: data?.message || 'Please login to manage your wishlist', 
+            severity: 'warning' 
+          });
+          setLoginFormModel(true);
+          break;
+          
+        case 403:
+          // Forbidden - user doesn't have permission
+          setSnackbar({ 
+            open: true, 
+            message: data?.message || 'You don\'t have permission to perform this action', 
+            severity: 'error' 
+          });
+          break;
+          
+        case 404:
+          // Not found - property might not exist
+          setSnackbar({ 
+            open: true, 
+            message: data?.message || 'Property not found', 
+            severity: 'error' 
+          });
+          break;
+          
+        case 422:
+          // Validation error
+          setSnackbar({ 
+            open: true, 
+            message: data?.message || 'Invalid data provided', 
+            severity: 'error' 
+          });
+          break;
+          
+        case 429:
+          // Rate limit exceeded
+          setSnackbar({ 
+            open: true, 
+            message: data?.message || 'Too many requests. Please try again later.', 
+            severity: 'warning' 
+          });
+          break;
+          
+        case 500:
+          // Server error
+          setSnackbar({ 
+            open: true, 
+            message: 'Server error. Please try again later.', 
+            severity: 'error' 
+          });
+          break;
+          
+        default:
+          // Other HTTP errors
+          setSnackbar({ 
+            open: true, 
+            message: data?.message || 'Failed to update wishlist', 
+            severity: 'error' 
+          });
+      }
+    } else if (error.request) {
+      // Network error - no response received
+      setSnackbar({ 
+        open: true, 
+        message: 'Network error. Please check your connection and try again.', 
+        severity: 'error' 
+      });
+    } else {
+      // Other errors
+      setSnackbar({ 
+        open: true, 
+        message: 'An unexpected error occurred. Please try again.', 
+        severity: 'error' 
+      });
+    }
+  } finally {
+    setIsWishlistLoading(false);
+  }
+};
+
+// Helper function to check authentication status
+const checkAuthBeforeWishlist = () => {
+  // Check if user is authenticated (adjust based on your auth system)
+  const token = localStorage.getItem('authToken');
+  const isLoggedIn = !!token; // or use your auth context: const { isAuthenticated } = useAuth();
+  
+  if (!isLoggedIn) {
+    setSnackbar({ 
+      open: true, 
+      message: 'Please login to manage your wishlist', 
+      severity: 'warning' 
+    });
+    setLoginFormModel(true);
+    return false;
+  }
+  return true;
+};
+
+// Wishlist handler with pre-authentication check
+const handleWishlistClickWithPreCheck = async (e) => {
+  e.stopPropagation();
+  
+  // Check authentication before making API call
+  if (!checkAuthBeforeWishlist()) {
+    return;
+  }
+  
+  setIsWishlistLoading(true);
+
+  try {
+    if (isFavorite) {
+      // Remove from wishlist
+      await api.delete('/wishlist', {
+        data: {
+          wishable_type: "property",
+          wishable_id: property.id.toString()
+        }
+      });
+      setIsFavorite(false);
+      setSnackbar({ open: true, message: 'Removed from wishlist', severity: 'info' });
+    } else {
+      // Add to wishlist
+      await api.post('/wishlist', {
+        wishable_type: "property",
+        wishable_id: property.id
+      });
+      setIsFavorite(true);
+      setSnackbar({ open: true, message: 'Added to wishlist', severity: 'success' });
+    }
+  } catch (error) {
+    console.error('Wishlist error:', error);
+    
+    if (error.response && error.response.status === 401) {
+      // Even with pre-check, token might have expired
+      setSnackbar({ 
+        open: true, 
+        message: 'Session expired. Please login again.', 
+        severity: 'warning' 
+      });
+      setLoginFormModel(true);
+      
+      // Optional: Clear expired token
+      localStorage.removeItem('authToken');
+    } else {
+      const errorMessage = error.response?.data?.message || 'Failed to update wishlist';
+      setSnackbar({ 
+        open: true, 
+        message: errorMessage, 
+        severity: 'error' 
+      });
+    }
+  } finally {
+    setIsWishlistLoading(false);
+  }
+};
 
   // Share functionality
   const handleShareClick = (e) => {
@@ -183,6 +447,23 @@ const PropertyDetails = ({ property }) => {
 
   return (
     <>
+
+
+{loginFormModel && (
+  <LoginFormModel
+    setSignupFormModel={setSignupFormModel}
+    setLoginFormModel={setLoginFormModel}
+    setForgotPasswordModal={setForgotPasswordModal}
+  />
+)}
+
+{signupFormModel && (
+  <SignupFormModel
+   setSignupFormModel={setSignupFormModel}
+    setLoginFormModel={setLoginFormModel}
+    setForgotPasswordModal={setForgotPasswordModal}
+  />
+)}
       {/* Enquiry Modal */}
       {showEnquiryPopup && (
         <EnquiryForm
@@ -344,7 +625,7 @@ const PropertyDetails = ({ property }) => {
               <div className="flex items-center mb-4 p-3 bg-gray-50 rounded-lg">
                 <div className="w-12 h-12 rounded-full overflow-hidden">
                   <img
-                    src={property.profile_image || IMAGES.profile}
+                    src={property.profile_image || IMAGES.placeholderprofile}
                     alt="Owner"
                     className="w-full h-full object-cover"
                   />
@@ -373,8 +654,9 @@ const PropertyDetails = ({ property }) => {
                     sx={{ color: "red" }}
                   />
                   <div className="ml-2">
-                    <p className="text-sm text-gray-500">{property.city}</p>
-                    <p className="font-semibold text-xl">{property.district}</p>
+                    <p className="text-gray-500 text-sm">{property.district}</p>
+                    <p className="font-semibold text-xl ">{property.state}</p>
+
                   </div>
                   <div className="ml-auto">
                     <div className="w-[150px] h-[150px] rounded-lg overflow-hidden cursor-pointer"
@@ -415,23 +697,23 @@ const PropertyDetails = ({ property }) => {
                 </div>
               </div>
 
-              {property.bhk && (
+             
                 <div className="flex items-center mt-2 mb-2">
-                  <p className="mr-4">({property.bhk})</p>
+                   {property.bhk && (<p className="mr-4">({property.bhk})</p> )}
                   <p className="mr-4">{property.post_year}</p>
                   <div className="flex items-center">
                     <StarIcon className="text-orange-500" />
                     <span className="ml-1">
-                      {property.average_rating || "4.5"}
+                      {property.total_ratings || "4.5"}
                     </span>
                   </div>
                 </div>
-              )}
+             
 
               <div className="flex items-center text-red-500 mt-4 gap-[10px]">
                 <LocationOnIcon fontSize="small" />
                 <p className="text-sm text-black">
-                  {property.city}, {property.district}
+                  {property.district}, {property.state}
                 </p>
               </div>
             </div>
@@ -481,7 +763,7 @@ const PropertyDetails = ({ property }) => {
         open={snackbar.open}
         autoHideDuration={3000}
         onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
         <Alert
           onClose={handleSnackbarClose}
@@ -494,7 +776,7 @@ const PropertyDetails = ({ property }) => {
 
       {/* Zoom Modal */}
       {showZoom && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-[#000000c4] bg-opacity-40 z-999 flex items-center justify-center p-4">
           <div className="relative w-full max-w-4xl h-[80vh] bg-white rounded-lg overflow-hidden">
             <button
               onClick={handleZoomOut}
