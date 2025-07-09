@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import LoadMoreButton from '../common/LoadMoreButton';
 import { api } from '../../api/axios';
 
 const VendorCarPost = () => {
   const navigate = useNavigate();
+        const { vendorId } = useParams();
+  
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -21,7 +23,7 @@ const VendorCarPost = () => {
         setLoadingMore(true);
       }
 
-      const response = await api.get(`/gcar/list/foruse?page=${page}`);
+      const response = await api.get(`/gcar/list/foruse?page=${page}&vendor_id=${vendorId}`);
       
       // Handle the nested response structure (similar to properties)
       const responseData = response.data;

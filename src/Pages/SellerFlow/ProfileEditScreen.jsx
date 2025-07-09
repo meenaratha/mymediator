@@ -15,10 +15,13 @@ const ProfileEditScreen = () => {
   const [profileData, setProfileData] = useState(null);
   const [profileImage, setProfileImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
-  const [isEditMode, setIsEditMode] = useState(false); // Add or Edit mode
+  // Removed edit mode - this is always a profile update form
   const [currentUserId, setCurrentUserId] = useState(null);
   const fileInputRef = useRef(null);
   const nameInputRef = useRef(null);
+  const phoneInputRef = useRef(null);
+  const emailInputRef = useRef(null);
+  const addressInputRef = useRef(null);
 
   // Validation schema - simplified to match backend rules
   const validationSchema = Yup.object({
@@ -27,7 +30,7 @@ const ProfileEditScreen = () => {
       .max(255, 'Name must be less than 255 characters'),
     phone: Yup.string()
       .required('Phone is required')
-      .max(20, 'Phone must be less than 20 characters'),
+      .max(12, 'Phone must be less than 12 characters'),
     email: Yup.string()
       .email('Invalid email format')
       .nullable(),
@@ -49,24 +52,16 @@ const ProfileEditScreen = () => {
     }
   });
 
-  // Fetch profile data for editing (only if userId exists)
+  // Fetch profile data using /getuser/profile endpoint
   const fetchProfileData = async () => {
-    if (!userId) {
-      // No userId means add mode
-      setIsEditMode(false);
-      setLoading(false);
-      return;
-    }
-
     try {
       setLoading(true);
       setError(null);
-      setIsEditMode(true);
       
-      console.log('Fetching profile data for user ID:', userId);
+      console.log('Fetching profile data from /getuser/profile');
       
-      const response = await apiForFiles.get(`/profile/${userId}/edit`);
-      console.log('Profile edit response:', response.data);
+      const response = await apiForFiles.get('/getuser/profile');
+      console.log('Profile response:', response.data);
 
       if (response.data.success || response.data.data) {
         const userData = response.data.data || response.data;
@@ -82,8 +77,8 @@ const ProfileEditScreen = () => {
         });
 
         // Set profile image preview
-        if (userData.profile_image) {
-          setImagePreview(userData.profile_image);
+        if (userData.image_url) {
+          setImagePreview(userData.image_url);
         }
 
         console.log('Profile data loaded and form populated');
@@ -93,13 +88,8 @@ const ProfileEditScreen = () => {
     } catch (error) {
       console.error('Error fetching profile data:', error);
       
-      if (error.response?.status === 404) {
-        // Profile not found, switch to add mode
-        setIsEditMode(false);
-        setError(null);
-        console.log('Profile not found, switching to add mode');
-      } else if (error.response?.status === 401) {
-        setError('Please login to edit profile');
+      if (error.response?.status === 401) {
+        setError('Please login to update profile');
       } else {
         setError('Failed to load profile data');
       }
@@ -108,7 +98,7 @@ const ProfileEditScreen = () => {
     }
   };
 
-  // Handle form submission for both add and update
+  // Handle form submission for profile update
   const handleSubmit = async (values) => {
     setSubmitting(true);
     setError(null);
@@ -117,7 +107,7 @@ const ProfileEditScreen = () => {
     formik.setErrors({});
 
     try {
-      console.log(`Submitting profile ${isEditMode ? 'update' : 'add'}:`, values);
+      console.log('Submitting profile update:', values);
       console.log('Profile image selected:', profileImage);
 
       // Create FormData for file upload support
@@ -135,7 +125,7 @@ const ProfileEditScreen = () => {
         formData.append('address', values.address);
       }
       
-      // Always add profile image if selected
+      // Add profile image if selected
       if (profileImage) {
         formData.append('image', profileImage);
         console.log('Image file added to FormData:', {
@@ -145,10 +135,8 @@ const ProfileEditScreen = () => {
         });
       }
 
-      // Add _method for Laravel PATCH request (only for update)
-      if (isEditMode) {
-        formData.append('_method', 'PATCH');
-      }
+      // Add _method for Laravel PATCH request
+      formData.append('_method', 'POST');
 
       // Debug: Log FormData contents
       console.log('FormData contents:');
@@ -160,54 +148,39 @@ const ProfileEditScreen = () => {
         }
       }
 
-      // Choose endpoint based on mode
-      let response;
-      if (isEditMode) {
-        // Update existing profile
-        response = await apiForFiles.post(`/profile/update`, formData);
-      } else {
-        // Add new profile
-        response = await apiForFiles.post(`profile/update`, formData);
-      }
+      // Use /profile/update endpoint
+      const response = await apiForFiles.post('/profile/update', formData);
 
-      console.log(`Profile ${isEditMode ? 'update' : 'add'} response:`, response.data);
+      console.log('Profile update response:', response.data);
 
       if (response.data.success) {
-        // Get user ID from response data.id (works for both add and update)
+        // Get user ID from response
         const userIdFromResponse = response.data.data.id;
-        console.log(`User ID from profile ${isEditMode ? 'update' : 'add'}:`, userIdFromResponse);
+        console.log('User ID from profile update:', userIdFromResponse);
         
-        // Update current user ID
+        // Update current user ID and profile data
         setCurrentUserId(userIdFromResponse);
-        
-        // If this was add mode, switch to edit mode now
-        if (!isEditMode) {
-          setIsEditMode(true);
-          setProfileData(response.data.data);
-          console.log('Switched from add mode to edit mode');
-        }
+        setProfileData(response.data.data);
 
         // Show success alert
         await Swal.fire({
           icon: 'success',
-          title: `Profile ${isEditMode ? 'Updated' : 'Created'}!`,
-          text: `Your profile has been ${isEditMode ? 'updated' : 'created'} successfully.`,
+          title: 'Profile Updated!',
+          text: 'Your profile has been updated successfully.',
           confirmButtonText: 'OK',
           confirmButtonColor: '#10b981',
           timer: 3000,
           timerProgressBar: true
         });
 
-        // Navigate to profile with the user ID
-        // navigate(`/profile/${userIdFromResponse}`);
-                navigate(`/profile-edit`);
-
+        // Navigate to profile edit page
+        navigate(`/profile-edit`);
         
       } else {
-        setError(response.data.message || `Failed to ${isEditMode ? 'update' : 'create'} profile`);
+        setError(response.data.message || 'Failed to update profile');
       }
     } catch (error) {
-      console.error(`Error ${isEditMode ? 'updating' : 'creating'} profile:`, error);
+      console.error('Error updating profile:', error);
       
       if (error.response?.status === 422 && error.response?.data?.errors) {
         // Handle Laravel validation errors - map to specific fields
@@ -248,6 +221,25 @@ const ProfileEditScreen = () => {
         // Set the field errors in formik
         formik.setErrors(formikErrors);
         
+        // Auto-focus the first field with an error
+        setTimeout(() => {
+          const fieldOrder = ['name', 'phone', 'email', 'address'];
+          const refMap = {
+            name: nameInputRef,
+            phone: phoneInputRef,
+            email: emailInputRef,
+            address: addressInputRef
+          };
+          
+          for (const fieldName of fieldOrder) {
+            if (formikErrors[fieldName] && refMap[fieldName]?.current) {
+              refMap[fieldName].current.focus();
+              console.log(`Auto-focused field: ${fieldName}`);
+              break;
+            }
+          }
+        }, 100);
+        
         // If there are field errors, don't show general error alert
         if (Object.keys(formikErrors).length === 0) {
           // Only show alert if no field-specific errors
@@ -264,12 +256,12 @@ const ProfileEditScreen = () => {
         }
       } else {
         // Handle other types of errors
-        let errorMessage = `Failed to ${isEditMode ? 'update' : 'create'} profile`;
+        let errorMessage = 'Failed to update profile';
         
         if (error.response?.data?.message) {
           errorMessage = error.response.data.message;
         } else if (error.response?.status === 401) {
-          errorMessage = `Please login to ${isEditMode ? 'update' : 'create'} profile`;
+          errorMessage = 'Please login to update profile';
         } else if (error.response?.status === 403) {
           errorMessage = 'You do not have permission to perform this action';
         } else if (error.response?.status === 500) {
@@ -281,7 +273,7 @@ const ProfileEditScreen = () => {
         // Show error alert for non-validation errors
         Swal.fire({
           icon: 'error',
-          title: `${isEditMode ? 'Update' : 'Create'} Failed`,
+          title: 'Update Failed',
           text: errorMessage,
           confirmButtonText: 'OK',
           confirmButtonColor: '#ef4444'
@@ -342,8 +334,8 @@ const ProfileEditScreen = () => {
 
   // Load profile data on component mount
   useEffect(() => {
-    fetchProfileData(); // This will handle both add and edit modes
-  }, [userId]);
+    fetchProfileData();
+  }, []); // Removed userId dependency since we're not using it anymore
 
   // Auto-focus name field after data loads
   useEffect(() => {
@@ -386,21 +378,16 @@ const ProfileEditScreen = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen ">
       {/* Header */}
-      <div className="bg-white shadow-sm">
-        <div className="max-w-md mx-auto px-4 py-4">
-          <div className="flex items-center">
-            <button
-              onClick={() => navigate(-1)}
-              className="mr-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
-            >
-              <ArrowLeft className="w-6 h-6 text-gray-600" />
-            </button>
-            <h1 className="text-xl font-semibold text-gray-900">
-              {isEditMode ? 'Edit Profile' : 'Create Profile'}
-            </h1>
-          </div>
+      <div className="">
+        <div className=" mx-auto px-4 py-4">
+          <div className="w-full max-w-full flex items-center justify-center">
+  <h1 className="text-xl font-semibold text-center text-gray-900">
+    Update Profile
+  </h1>
+</div>
+
         </div>
       </div>
 
@@ -442,7 +429,7 @@ const ProfileEditScreen = () => {
           </div>
           
           <h2 className="text-xl font-semibold text-gray-900 mt-4">
-            {profileData?.name || (isEditMode ? 'User' : 'New User')}
+            {profileData?.name || 'User'}
           </h2>
           <p className="text-gray-600 text-sm">Tap the camera icon to change photo</p>
         </div>
@@ -492,6 +479,7 @@ const ProfileEditScreen = () => {
             </label>
             <div className="relative">
               <input
+                ref={phoneInputRef}
                 id="phone"
                 name="phone"
                 type="tel"
@@ -520,6 +508,7 @@ const ProfileEditScreen = () => {
             </label>
             <div className="relative">
               <input
+                ref={emailInputRef}
                 id="email"
                 name="email"
                 type="email"
@@ -548,6 +537,7 @@ const ProfileEditScreen = () => {
             </label>
             <div className="relative">
               <textarea
+                ref={addressInputRef}
                 id="address"
                 name="address"
                 placeholder="Enter your address (optional)"
@@ -587,32 +577,13 @@ const ProfileEditScreen = () => {
             ) : (
               <>
                 <Edit3 className="w-5 h-5 mr-2" />
-                Save Changes
+                Update Profile
               </>
             )}
           </button>
         </form>
 
-        {/* Debug Info (Development) */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="mt-6 p-4 bg-yellow-100 rounded-lg text-xs">
-            <strong>Debug Info:</strong>
-            <div>URL User ID: {userId || 'Not provided'}</div>
-            <div>Current User ID: {currentUserId || 'Not set'}</div>
-            <div>Mode: {isEditMode ? 'Edit' : 'Add'}</div>
-            <div>Form Valid: {formik.isValid ? 'Yes' : 'No'}</div>
-            <div>Form Dirty: {formik.dirty ? 'Yes' : 'No'}</div>
-            <div>Has Profile Data: {profileData ? 'Yes' : 'No'}</div>
-            <div>Image Selected: {profileImage ? 'Yes' : 'No'}</div>
-            {profileImage && (
-              <div className="mt-2">
-                <div>Image Name: {profileImage.name}</div>
-                <div>Image Size: {(profileImage.size / 1024).toFixed(2)} KB</div>
-                <div>Image Type: {profileImage.type}</div>
-              </div>
-            )}
-          </div>
-        )}
+       
       </div>
     </div>
   );

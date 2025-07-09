@@ -27,7 +27,7 @@ const baseFormSchema = {
   longitude: Yup.string().required("Longitude is required"),
   state_id: Yup.string().required("State is required"),
   district_id: Yup.string().required("District is required"),
-  city_id: Yup.string().required("City is required"),
+  // city_id: Yup.string().required("City is required"),
   
   number_of_owner_id: Yup.string().required("Number of owners is required"),
   

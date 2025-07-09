@@ -107,24 +107,42 @@ const BikeDescription = () => {
             <div className="bg-white p-6 shadow-lg rounded-lg h-full border border-gray-200">
               {/* Upper section with icons and details */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 border-b border-[#E1E1E1] pb-4">
-                <div className="flex items-center space-x-2">
+                
+                {bike.engine_cc !==null ?(
+<div className="flex items-center space-x-2">
                   <TwoWheelerOutlined className="text-gray-500" />
                   <span className="text-sm font-medium text-gray-600">
                     {bike.engine_cc}
                   </span>
                 </div>
+                ):("")}
+                
+
+                  {bike.engine_cc !==null ?(
                 <div className="flex items-center space-x-2">
                   <SpeedOutlined className="text-gray-500" />
                   <span className="text-sm font-medium text-gray-600">
                     {bike.kilometers} km
                   </span>
                 </div>
-                <div className="flex items-center space-x-2">
+                  ):""}
+
+                  {bike.brand !==null ?(
+<div className="flex items-center space-x-2">
                   <LocalGasStationOutlined className="text-gray-500" />
                   <span className="text-sm font-medium text-gray-600">
-                    {bike.fuelType}
+                    {bike.brand}
                   </span>
                 </div>
+                  ):(
+                    <div className="flex items-center space-x-2">
+                  <LocalGasStationOutlined className="text-gray-500" />
+                  <span className="text-sm font-medium text-gray-600">
+                    {bike.brand_name}
+                  </span>
+                </div>
+                  )}
+                
               </div>
 
               {/* Middle section with owner, location, and date */}
@@ -138,7 +156,7 @@ const BikeDescription = () => {
                 <div className="flex items-center space-x-2">
                   <LocationOnOutlined className="text-gray-500" />
                   <span className="text-sm font-medium text-gray-600">
-                    {bike.city}
+                    {bike.district}
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -165,7 +183,7 @@ const BikeDescription = () => {
                 <div className="flex items-center">
                   <img
                     className="w-10 h-10 rounded-full object-cover"
-                    src={IMAGES.profile}
+                    src={bike.profile_image || IMAGES.placeholderprofile}
                     alt="Profile"
                   />
                   <div className="ml-3">
@@ -232,7 +250,7 @@ const BikeDescription = () => {
               {/* Ad ID and Report Section */}
               <div className="flex justify-between items-center text-gray-600 pt-4 border-t">
                 <div className="text-sm">
-                  <span className="font-semibold">ADS ID :</span> {bike.id}
+                  <span className="font-semibold">ADS ID :</span> {bike.unique_code}
                 </div>
                 <div
                   onClick={handleReportClick}
@@ -271,48 +289,33 @@ const BikeDescription = () => {
             </div>
             <span className="px-[10px]">{bike.year}</span>
           </div>
-          <div className="grid grid-cols-2">
+
+          {bike.engine_cc !==null ?(
+<div className="grid grid-cols-2">
             <div className="flex gap-[15px] justify-between">
               <span>Engine </span>
               <span>:</span>
             </div>
-            <span className="px-[10px]">{bike.engineCapacity}</span>
+            <span className="px-[10px]">{bike.engine_cc}</span>
           </div>
-          <div className="grid grid-cols-2">
+          ):("")}
+          
+
+
+         {bike.kilometers !==null ?(
+<div className="grid grid-cols-2">
             <div className="flex gap-[15px] justify-between">
-              <span>Mileage </span>
+              <span>Kilometer </span>
               <span>:</span>
             </div>
-            <span className="px-[10px]">{bike.mileage}</span>
+            <span className="px-[10px]">{bike.kilometers}</span>
           </div>
-          <div className="grid grid-cols-2">
-            <div className="flex gap-[15px] justify-between">
-              <span>Fuel Type </span>
-              <span>:</span>
-            </div>
-            <span className="px-[10px]">{bike.fuelType}</span>
-          </div>
-          <div className="grid grid-cols-2">
-            <div className="flex gap-[15px] justify-between">
-              <span>Condition </span>
-              <span>:</span>
-            </div>
-            <span className="px-[10px]">{bike.condition}</span>
-          </div>
-          <div className="grid grid-cols-2">
-            <div className="flex gap-[15px] justify-between">
-              <span>Kilometers </span>
-              <span>:</span>
-            </div>
-            <span className="px-[10px]">{bike.kilometers} km</span>
-          </div>
-          <div className="grid grid-cols-2">
-            <div className="flex gap-[15px] justify-between">
-              <span>Color</span>
-              <span>:</span>
-            </div>
-            <span className="px-[10px]">{bike.color}</span>
-          </div>
+         ):("")}
+          
+
+          
+         
+          
         </div>
       </div>
     </>

@@ -187,8 +187,12 @@ const fetchCars = async (page = 1, loadMore = false, filters = null) => {
       console.log("Response Data:", response.data);
       
       // Based on your API response structure, the data is directly in response.data.data
-      const result = response.data;
-      const carData = response.data.data || [];
+      // const result = response.data;
+      // const carData = response.data.data || [];
+
+      // Fixed the data path
+const result = response.data.data;
+const carData = result?.data || [];
 
       // Debug: Log processed data
       console.log("=== PROCESSED DATA ===");
@@ -200,7 +204,8 @@ const fetchCars = async (page = 1, loadMore = false, filters = null) => {
       // Validate that we have an array
       if (!Array.isArray(carData)) {
         console.error("Cars data is not an array:", typeof carData);
-        carData = [];
+        setCars([]);
+  return;
       }
 
       // Update cars based on whether we're loading more or starting fresh
@@ -270,9 +275,6 @@ const fetchCars = async (page = 1, loadMore = false, filters = null) => {
   };
 
 
-
-
-
   useEffect(() => {
     fetchCars(1);
   }, []);
@@ -328,6 +330,8 @@ const fetchCars = async (page = 1, loadMore = false, filters = null) => {
   }, [currentPage, lastPage, loadingMore, hasMoreData]);
 
   const images = [IMAGES.car4, IMAGES.car4, IMAGES.car4, IMAGES.car4];
+
+  
 
   return (
     <>

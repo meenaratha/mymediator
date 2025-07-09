@@ -29,7 +29,7 @@ export const uploadCarFormSchema = Yup.object().shape({
 
   district_id: Yup.string().required("District is required"),
 
-  city_id: Yup.string().required("City is required"),
+  // city_id: Yup.string().required("City is required"),
   fuel_type_id: Yup.string().required("Fuel type is required"),
 
   transmission_id: Yup.string().required("Transmission type is required"),

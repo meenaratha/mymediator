@@ -128,12 +128,7 @@ const CarCard = ({
           </div>
         </div>
 
-        {/* Car Specifications */}
-        {/* <div className="flex items-center mt-1 text-gray-600 flex-wrap md:flex-nowrap gap-[8px] mb-2">
-          <span className="text-sm">{brand}</span>
-          <span className="text-sm">({model})</span>
-          <span className="text-sm">{year}</span>
-        </div> */}
+       
 
         {/* Fuel Type and Transmission */}
         <div className="flex items-center mt-1 text-gray-600 flex-wrap md:flex-nowrap gap-[8px] mb-2">
@@ -149,12 +144,7 @@ const CarCard = ({
               <span className="text-sm">{fuelType}</span>
             </>
           )}
-          {transmission && (
-            <>
-              <DriveEtaIcon style={{ fontSize: 14 }} />
-              <span className="text-sm">{transmission}</span>
-            </>
-          )}
+          
         </div>
 
         {/* Price and Actions */}

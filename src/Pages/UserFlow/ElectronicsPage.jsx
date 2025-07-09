@@ -19,16 +19,16 @@ const ElectronicsFilterPage = () => {
   const [total, setTotal] = useState(0);
 
   // Add state for current filters
-    const [currentFilters, setCurrentFilters] = useState({
-      type: "electronics",
-      price_range: "",
-      subcategory_id: "",
-      year_filter: "",
-      brand_id: "",
-      model_id: "",
-      latitude: "",
-      longitude: "",
-    });
+  const [currentFilters, setCurrentFilters] = useState({
+    type: "electronics",
+    price_range: "",
+    subcategory_id: "",
+    year_filter: "",
+    brand_id: "",
+    model_id: "",
+    latitude: "",
+    longitude: "",
+  });
 
   const toggleFilter = () => {
     setIsFilterOpen(!isFilterOpen);
@@ -53,7 +53,6 @@ const ElectronicsFilterPage = () => {
       return {
         latitude: parseFloat(selectedLocation.latitude),
         longitude: parseFloat(selectedLocation.longitude),
-       
       };
     } catch (error) {
       console.error("Error reading selectedLocation from localStorage:", error);
@@ -61,79 +60,7 @@ const ElectronicsFilterPage = () => {
     }
   };
 
-
-// listing electronics
-
-  // const fetchElectronics = async (page = 1, loadMore = false) => {
-  //   if (loadMore) setLoadingMore(true);
-  //   else setLoading(true);
-
-  //   try {
-  //     // Get location from localStorage
-  //     const location = getLocationFromStorage();
-      
-  //     // Build API parameters
-  //     const params = new URLSearchParams({
-  //       page: page.toString()
-  //     });
-      
-  //     // Add location parameters if available
-  //     if (location) {
-  //       params.append('latitude', location.latitude.toString());
-  //       params.append('longitude', location.longitude.toString());
-        
-  //       // Optionally add other location details
-  //       if (location.city) params.append('city', location.city);
-  //       if (location.state) params.append('state', location.state);
-  //       if (location.country) params.append('country', location.country);
-  //     }
-
-  //     const response = await api.get(`/gelectronics/list?${params.toString()}`);
-  //     const result = response.data?.data;
-
-  //     // Debug: Log API response
-  //     console.log("Electronics API Pagination Data:", {
-  //       current_page: result.current_page,
-  //       last_page: result.last_page,
-  //       data_length: result.data.length,
-  //       total: result.total,
-  //       next_page_url: result.next_page_url,
-  //       location_params: location ? `lat: ${location.latitude}, lng: ${location.longitude}, city: ${location.city || 'N/A'}` : 'No location data'
-  //     });
-
-  //     // Update electronics based on whether we're loading more or starting fresh
-  //     if (page === 1) {
-  //       setElectronics(result.data || []);
-  //     } else {
-  //       setElectronics((prev) => [...prev, ...(result.data || [])]);
-  //     }
-
-  //     // Update pagination state
-  //     setCurrentPage(result.current_page);
-  //     setLastPage(result.last_page);
-  //     setTotal(result.total);
-
-  //     // Check if there's more data to load
-  //     setHasMoreData(
-  //       result.next_page_url !== null &&
-  //         result.current_page < result.last_page &&
-  //         result.data &&
-  //         result.data.length > 0
-  //     );
-  //   } catch (err) {
-  //     console.error("Failed to load electronics", err);
-  //     // Reset states on error
-  //     if (page === 1) {
-  //       setElectronics([]);
-  //     }
-  //     setHasMoreData(false);
-  //   } finally {
-  //     if (loadMore) setLoadingMore(false);
-  //     else setLoading(false);
-  //   }
-  // };
-
-const fetchElectronics = async (page = 1, loadMore = false, filters = null) => {
+  const fetchElectronics = async (page = 1, loadMore = false, filters = null) => {
     if (loadMore) setLoadingMore(true);
     else setLoading(true);
 
@@ -183,9 +110,9 @@ const fetchElectronics = async (page = 1, loadMore = false, filters = null) => {
       console.log("Response Status:", response.status);
       console.log("Response Data:", response.data);
       
-      // Based on your API response structure, the data is directly in response.data.data
-      const result = response.data;
-      const electronicData = response.data.data || [];
+      // Based on your API response structure, the data is in response.data.data.data
+      const result = response.data.data;
+      const electronicData = result?.data || [];
 
       // Debug: Log processed data
       console.log("=== PROCESSED DATA ===");
@@ -197,13 +124,14 @@ const fetchElectronics = async (page = 1, loadMore = false, filters = null) => {
       // Validate that we have an array
       if (!Array.isArray(electronicData)) {
         console.error("Electronics data is not an array:", typeof electronicData);
-        electronicData = [];
+        setElectronics([]);
+        return;
       }
 
       // Update electronics based on whether we're loading more or starting fresh
       if (page === 1) {
         console.log("Setting electronics (fresh load):", electronicData.length, "items");
-        setElectronics(electronicData); // ✅ Fixed: was setProperties, now setElectronics
+        setElectronics(electronicData);
       } else {
         console.log("Adding electronics (load more):", electronicData.length, "items");
         setElectronics((prev) => {
@@ -235,7 +163,7 @@ const fetchElectronics = async (page = 1, loadMore = false, filters = null) => {
       
       // Reset states on error
       if (page === 1) {
-        setElectronics([]); // ✅ Fixed: was setProperties, now setElectronics
+        setElectronics([]);
       }
       setHasMoreData(false);
     } finally {
@@ -244,27 +172,27 @@ const fetchElectronics = async (page = 1, loadMore = false, filters = null) => {
     }
   };
 
-// Fixed applyFilters function
-const applyFilters = (newFilters) => {
-  console.log("=== APPLY FILTERS CALLED ===");
-  console.log("New filters received:", newFilters);
-  console.log("Previous filters:", currentFilters);
-  
-  // Update current filters
-  setCurrentFilters(newFilters);
-  
-  // Reset pagination to first page
-  setCurrentPage(1);
-  setElectronics([]); // ✅ Fixed: was setProperties, now setElectronics
-  
-  // Fetch new electronics with filters
-  fetchElectronics(1, false, newFilters); // ✅ Fixed: was fetchProperties, now fetchElectronics
-  
-  // Close filter on mobile after applying
-  if (isMobile) {
-    setIsFilterOpen(false);
-  }
-};
+  // Fixed applyFilters function
+  const applyFilters = (newFilters) => {
+    console.log("=== APPLY FILTERS CALLED ===");
+    console.log("New filters received:", newFilters);
+    console.log("Previous filters:", currentFilters);
+    
+    // Update current filters
+    setCurrentFilters(newFilters);
+    
+    // Reset pagination to first page
+    setCurrentPage(1);
+    setElectronics([]);
+    
+    // Fetch new electronics with filters
+    fetchElectronics(1, false, newFilters);
+    
+    // Close filter on mobile after applying
+    if (isMobile) {
+      setIsFilterOpen(false);
+    }
+  };
 
   useEffect(() => {
     fetchElectronics(1);

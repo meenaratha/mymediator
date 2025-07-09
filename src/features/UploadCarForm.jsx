@@ -1644,7 +1644,7 @@ if (isEditMode && isLoading && !formData.title) {
               />
             </div>
 
-            <div>
+            {/* <div>
               <label className="block text-gray-800 font-medium mb-2 px-4">
                 Select City
               </label>
@@ -1672,6 +1672,26 @@ if (isEditMode && isLoading && !formData.title) {
                   !formData.district_id || loadingCities || isAutoPopulating
                 }
                 loading={loadingCities || isAutoPopulating}
+              />
+            </div> */}
+
+             <div>
+              <label className="block text-gray-800 font-medium mb-2 px-4">
+                Enter Mobile No.
+              </label>
+              <DynamicInputs
+                type="text"
+                name="mobile_number"
+                id="mobile_number"
+                className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border 
+                border-[#bfbfbf] bg-white focus:outline-none "
+                placeholder="Enter mobile no.  "
+                onChange={handleChange}
+                value={formData.mobile_number || ""}
+                onBlur={handleBlur}
+                error={errors.mobile_number}
+                touched={touched.mobile_number}
+                focusedField={focusedField}
               />
             </div>
           </div>
@@ -1763,25 +1783,7 @@ if (isEditMode && isLoading && !formData.title) {
               />
             </div>
 
-            <div>
-              <label className="block text-gray-800 font-medium mb-2 px-4">
-                Enter Mobile No.
-              </label>
-              <DynamicInputs
-                type="text"
-                name="mobile_number"
-                id="mobile_number"
-                className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border 
-                border-[#bfbfbf] bg-white focus:outline-none "
-                placeholder="Enter mobile no.  "
-                onChange={handleChange}
-                value={formData.mobile_number || ""}
-                onBlur={handleBlur}
-                error={errors.mobile_number}
-                touched={touched.mobile_number}
-                focusedField={focusedField}
-              />
-            </div>
+           
           </div>
           {/* Description text area - Common for all types */}
           <div className="mb-6">

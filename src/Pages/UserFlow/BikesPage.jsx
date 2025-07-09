@@ -182,8 +182,10 @@ const fetchBikes = async (page = 1, loadMore = false, filters = null) => {
       console.log("Response Data:", response.data);
       
       // Based on your API response structure, the data is directly in response.data.data
-      const result = response.data;
-      const bikeData = response.data.data || [];
+     
+
+const result = response.data.data;
+const bikeData = result?.data || [];
 
       // Debug: Log processed data
       console.log("=== PROCESSED DATA ===");
@@ -195,7 +197,8 @@ const fetchBikes = async (page = 1, loadMore = false, filters = null) => {
       // Validate that we have an array
       if (!Array.isArray(bikeData)) {
         console.error("Bikes data is not an array:", typeof bikeData);
-        bikeData = [];
+        setBikes([]);
+        return;
       }
 
       // Update bikes based on whether we're loading more or starting fresh

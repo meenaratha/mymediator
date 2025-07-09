@@ -129,36 +129,22 @@ const BikeCard = ({
         </div>
 
         {/* Bike Specifications */}
-        <div className="flex items-center mt-1 text-gray-600 flex-wrap md:flex-nowrap gap-[8px] mb-2">
+        {/* <div className="flex items-center mt-1 text-gray-600 flex-wrap md:flex-nowrap gap-[8px] mb-2">
           <span className="text-sm">{brand}</span>
           <span className="text-sm">({model})</span>
-          {subcategory && (
-            <span className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
-              {subcategory}
-            </span>
-          )}
-        </div>
+         
+        </div> */}
 
         {/* Year, Kilometers, and Engine CC */}
-        <div className="flex items-center mt-1 text-gray-600 flex-wrap md:flex-nowrap gap-[8px] mb-2">
+        <div className="flex  gap-4 items-center mt-1 text-gray-600 flex-wrap md:flex-nowrap gap-[8px] mb-2">
           {kilometers && (
             <>
               <SpeedIcon style={{ fontSize: 14 }} />
               <span className="text-sm">{kilometers} km</span>
             </>
           )}
-          {kilometers && (
-            <>
-              <SpeedIcon style={{ fontSize: 14 }} />
-              <span className="text-sm">{kilometers} km</span>
-            </>
-          )}
-          {engineCC && (
-            <>
-              <TwoWheelerIcon style={{ fontSize: 14 }} />
-              <span className="text-sm">{engineCC} CC</span>
-            </>
-          )}
+         
+          
           {year && (
             <>
               <CalendarTodayIcon style={{ fontSize: 14 }} />

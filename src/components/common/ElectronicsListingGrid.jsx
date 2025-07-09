@@ -4,14 +4,39 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import { red } from "@mui/material/colors";
 import { useMediaQuery } from "react-responsive";
 import { useNavigate } from "react-router-dom";
+import IMAGES from "@/utils/images.js";
 
 const ElectronicsCard = ({ item }) => {
   const navigate = useNavigate();
   const isMobile = useMediaQuery({ maxWidth: 767 });
 
   const handleCardClick = () => {
-    // Adjust the navigation path based on your routing structure
-    navigate(`/electronic/${item.slug}`);
+    // Use action_slug for navigation
+    navigate(`/electronic/${item.action_slug}`);
+  };
+
+  // Format price for better display
+  const formatPrice = (price) => {
+    if (!price) return "Price not specified";
+    const numPrice = parseFloat(price);
+    if (numPrice >= 100000) {
+      return `₹${(numPrice / 100000).toFixed(1)}L`;
+    } else if (numPrice >= 1000) {
+      return `₹${(numPrice / 1000).toFixed(1)}K`;
+    }
+    return `₹${numPrice.toLocaleString()}`;
+  };
+
+  // Get location string
+  const getLocation = () => {
+    const locationParts = [];
+    if (item.city) locationParts.push(item.city);
+    if (item.district) locationParts.push(item.district);
+    if (item.state) locationParts.push(item.state);
+    
+    return locationParts.length > 0 
+      ? locationParts.join(', ') 
+      : item.address || 'Location not specified';
   };
 
   return (
@@ -19,57 +44,58 @@ const ElectronicsCard = ({ item }) => {
       onClick={handleCardClick}
       className={`${
         isMobile ? "max-w-[300px]" : ""
-      } max-w-[275px] w-full rounded-lg shadow-md overflow-hidden hover:shadow-lg mx-auto cursor-pointer`}
+      } max-w-[275px] w-full rounded-lg shadow-md overflow-hidden hover:shadow-lg mx-auto cursor-pointer transition-shadow duration-200`}
     >
       <div className="relative">
         <img
-          src={item.image_url || item.image}
-          alt={item.product_name || item.productname}
+          src={item.image_url || IMAGES.placeholderimg}
+          alt={item.title}
           className="w-full h-36 object-cover"
+          onError={(e) => {
+            e.target.src = IMAGES.placeholderimg;
+          }}
         />
+        
+        {/* Category badge */}
+        {item.subcategory && (
+          <div className="absolute top-2 left-2 bg-blue-900 text-white px-2 py-1 rounded text-xs font-semibold">
+            {item.subcategory}
+          </div>
+        )}
       </div>
 
       <CardContent className="p-3">
-        <h3 className="font-bold text-lg">
-          {item.product_name || item.productname}
+        <h3 className="font-bold text-lg line-clamp-2 mb-2">
+          {item.title}
         </h3>
 
-        <div className="flex items-center text-sm text-gray-500 mt-1">
-          <LocationOnIcon sx={{ color: red[500] }} />
-          <span>
-            {item.city && item.district 
-              ? `${item.city}, ${item.district}`
-              : item.location || 'Location not specified'
-            }
+        <div className="flex items-center text-sm text-gray-500 mt-1 mb-2">
+          <LocationOnIcon sx={{ color: red[500], fontSize: 16 }} className="mr-1" />
+          <span className="line-clamp-1">
+            {getLocation()}
           </span>
         </div>
 
-        {/* Additional product details */}
-        {item.brand && (
-          <div className="mt-2">
-            <span className="text-sm text-gray-600">Brand: {item.brand}</span>
-          </div>
-        )}
-
-        {item.condition && (
-          <div className="mt-1">
+        {/* Brand and Model */}
+        {(item.brand || item.model) && (
+          <div className="mb-2">
             <span className="text-sm text-gray-600">
-              Condition: {item.status_label}
+              {item.brand && item.model 
+                ? `${item.brand} ${item.model}`
+                : item.brand || item.model
+              }
             </span>
           </div>
         )}
 
+       
+
         <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">
           <span className="text-sm text-gray-500">
-            {item.post_year || item.year || "2022"}
+            {item.post_year || "2025"}
           </span>
-          <span className="font-bold text-lg">
-            ₹ {typeof item.amount === 'number' 
-                ? item.amount.toLocaleString() 
-                : typeof item.price === 'string' 
-                  ? item.price 
-                  : (item.price || 0).toLocaleString()
-              }
+          <span className="font-bold text-lg text-black">
+            {formatPrice(item.price)}
           </span>
         </div>
       </CardContent>
@@ -91,6 +117,13 @@ const SkeletonCard = () => (
 
 const ElectronicsListingGrid = ({ electronics = [], loading = false }) => {
   const skeletonCount = 6;
+
+  console.log("ElectronicsListingGrid received:", {
+    electronics: electronics,
+    electronicsLength: electronics?.length,
+    loading: loading,
+    firstItem: electronics?.[0]
+  });
 
   return (
     <div className="container mx-auto px-4 py-8 pt-[10px]">

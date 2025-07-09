@@ -6,6 +6,7 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import { red } from "@mui/material/colors";
 import { useMediaQuery } from "react-responsive";
 import { useNavigate } from "react-router-dom";
+import IMAGES from "../../utils/images";
 
 const BikeCard = ({ item }) => {
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ const BikeCard = ({ item }) => {
 
   const handleCardClick = () => {
     // Navigate using the action_slug from API response
-    navigate(`/bike/${item.slug}`);
+    navigate(`/bike/${item.action_slug}`);
   };
 
   return (
@@ -25,7 +26,7 @@ const BikeCard = ({ item }) => {
     >
       <div className="relative">
         <img
-          src={item.image_url}
+          src={item.image_url || IMAGES.placeholderimg}
           alt={item.title}
           className="w-full h-36 object-cover"
         />
@@ -45,36 +46,38 @@ const BikeCard = ({ item }) => {
         <div className="flex items-center text-sm text-gray-500 mt-1">
           <LocationOnIcon sx={{ color: red[500] }} />
           <span>
-            {item.city}, {item.district}
+            {item.district}, {item.state}
           </span>
         </div>
 
-        {/* Bike details */}
-        <div className="mt-2 space-y-1">
-          {item.brand && (
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Brand:</span>
-              <span className="text-sm font-medium">{item.brand}</span>
-            </div>
-          )}
-          
-          {item.model && (
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Model:</span>
-              <span className="text-sm font-medium">{item.model}</span>
-            </div>
-          )}
-
-          {item.subcategory && (
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Type:</span>
-              <span className="text-sm font-medium">{item.subcategory}</span>
-            </div>
-          )}
-        </div>
+       
 
         {/* Additional bike info */}
         <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
+          {item.brand !== null ?(
+             <div className="flex items-center">
+              <SpeedIcon sx={{ fontSize: 14, marginRight: 0.5 }} />
+              <span>{item.brand} </span>
+            </div>
+          ):(
+            <div className="flex items-center">
+              <SpeedIcon sx={{ fontSize: 14, marginRight: 0.5 }} />
+              <span>{item.brand_name} </span>
+            </div>
+          )
+
+          }
+           {item.kilometers && (
+            <div className="flex items-center">
+              <SpeedIcon sx={{ fontSize: 14, marginRight: 0.5 }} />
+              <span>{item.kilometers} km</span>
+            </div>
+          )}
+          
+         
+        </div>
+
+        <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">
           {item.year && (
             <div className="flex items-center">
               <CalendarTodayIcon sx={{ fontSize: 14, marginRight: 0.5 }} />
@@ -82,29 +85,13 @@ const BikeCard = ({ item }) => {
             </div>
           )}
           
-          {item.kilometers && (
-            <div className="flex items-center">
-              <SpeedIcon sx={{ fontSize: 14, marginRight: 0.5 }} />
-              <span>{item.kilometers} km</span>
-            </div>
-          )}
-        </div>
-
-        <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">
-          <span className="text-sm text-gray-500">
-            Code: {item.unique_code}
-          </span>
-          <span className="font-bold text-lg text-green-600">
+        
+          <span className="font-bold text-lg text-black">
             ₹ {parseFloat(item.price).toLocaleString()}
           </span>
         </div>
 
-        {/* View count */}
-        {item.view_count && (
-          <div className="mt-2 text-xs text-gray-400 text-center">
-            {item.view_count} views
-          </div>
-        )}
+       
       </CardContent>
     </Card>
   );

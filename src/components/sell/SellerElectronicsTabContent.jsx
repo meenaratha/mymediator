@@ -100,10 +100,10 @@ const SellerElectronicsTabContent = ({
         
         if (activeEnquiryType === "property") {
           // Property enquiry - delete from user API
-          endpoint = `/enquiries/user/${id}`;
+          endpoint = `/enquiries/${id}`;
         } else {
           // Post enquiry - delete from vendor API
-          endpoint = `/enquiries/vendor/${id}`;
+          endpoint = `/enquiries/${id}`;
         }
 
         await api.delete(endpoint);
@@ -202,7 +202,7 @@ const SellerElectronicsTabContent = ({
                         </span>
                       </div>
                     </div>
-                    <div className="text-sm mt-1 flex items-center flex-wrap gap-2">
+                    {/* <div className="text-sm mt-1 flex items-center flex-wrap gap-2">
                       <span className="flex items-center">
                         <DevicesIcon style={{ fontSize: 14 }} className="mr-1" />
                         {item.brand}
@@ -212,40 +212,17 @@ const SellerElectronicsTabContent = ({
                           {item.model}
                         </span>
                       )}
-                      <span className={`text-xs px-2 py-1 rounded ${
-                        item.condition === 'New' 
-                          ? 'bg-blue-100 text-blue-800' 
-                          : item.condition === 'Used'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}>
-                        {item.condition}
-                      </span>
-                    </div>
-                    <div className="text-sm mt-1 flex items-center flex-wrap gap-2">
-                      {item.category && (
-                        <span className="text-xs text-gray-600">
-                          {item.category}
-                        </span>
-                      )}
-                      {item.productCode && (
-                        <span className="text-xs text-gray-500">
-                          #{item.productCode}
-                        </span>
-                      )}
-                    </div>
+                     
+                    </div> */}
+                   
                     <div className="flex items-center justify-between mt-3 pb-[10px]">
                       <div className="font-bold">
                         ₹ {item.price ? item.price.toLocaleString() : "Not specified"}
                       </div>
                       <div className="flex items-center gap-2">
-                        {item.status && (
-                          <span className={`text-xs px-2 py-1 rounded ${
-                            item.status === 'available' 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
-                          }`}>
-                            {item.status}
+                        {item.year && (
+                          <span className="text-xs px-2 py-1 ">
+                            {item.year}
                           </span>
                         )}
                         <button
@@ -300,14 +277,14 @@ const SellerElectronicsTabContent = ({
 
                     <div className="text-sm pb-[15px]">
                       <strong>Mobile number :</strong> &nbsp;
-                      <a href={`tel:${item.customerDetails?.mobileNumber}`} className="text-blue-600 hover:underline">
+                      <a href={`tel:${item.customerDetails?.mobileNumber}`} className="text-black hover:underline">
                         {item.customerDetails?.mobileNumber || "Not provided"}
                       </a>
                     </div>
 
                     <div className="text-sm pb-[15px]">
                       <strong>E-mail Id :</strong> &nbsp;
-                      <a href={`mailto:${item.customerDetails?.email}`} className="text-blue-600 hover:underline">
+                      <a href={`mailto:${item.customerDetails?.email}`} className="text-black hover:underline">
                         {item.customerDetails?.email || "Not provided"}
                       </a>
                     </div>
@@ -318,7 +295,7 @@ const SellerElectronicsTabContent = ({
                         href={`https://wa.me/${item.customerDetails?.whatsappNumber?.replace(/[^0-9]/g, '')}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-green-600 hover:underline"
+                        className="text-black hover:underline"
                       >
                         {item.customerDetails?.whatsappNumber || "Not provided"}
                       </a>
@@ -331,12 +308,12 @@ const SellerElectronicsTabContent = ({
                       </div>
                     )}
 
-                    {item.warranty && item.warranty !== "No warranty info" && (
+                    {/* {item.warranty && item.warranty !== "No warranty info" && (
                       <div className="pb-[15px] text-sm">
                         <strong>Warranty :</strong> &nbsp;
                         {item.warranty}
                       </div>
-                    )}
+                    )} */}
 
                     <div className="text-sm align-top overflow-hidden line-clamp-4">
                       <strong>Message :</strong> &nbsp;{" "}

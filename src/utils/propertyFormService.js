@@ -97,7 +97,7 @@ class PropertyFormService {
       city_id: parseInt(formData.city) || formData.city,
       description: formData.description,
       amount: parseInt(formData.amount) || formData.amount,
-      listed_by: parseInt(formData.listedBy) || formData.listedBy,
+      // listed_by: parseInt(formData.listedBy) || formData.listedBy,
       building_direction_id:
         parseInt(formData.buildingDirection) || formData.buildingDirection,
       status: "available",
@@ -116,6 +116,7 @@ class PropertyFormService {
           length: parseInt(formData.length) || formData.length,
           breadth: parseInt(formData.breadth) || formData.breadth,
         };
+
 
       case "for-sale-houses-apartments":
       case "for-rent-houses-apartments":
@@ -161,7 +162,12 @@ class PropertyFormService {
         };
 
       default:
-        return basePayload;
+        return {
+           ...basePayload,
+          plot_area: parseInt(formData.plotArea) || formData.plotArea,
+          length: parseInt(formData.length) || formData.length,
+          breadth: parseInt(formData.breadth) || formData.breadth,
+        };
     }
   }
 

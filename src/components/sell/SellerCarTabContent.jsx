@@ -112,10 +112,10 @@ const SellerCarTabContent = ({
         
         if (activeEnquiryType === "property") {
           // Property enquiry - delete from user API
-          endpoint = `/enquiries/user/${id}`;
+          endpoint = `/enquiries/${id}`;
         } else {
           // Post enquiry - delete from vendor API
-          endpoint = `/enquiries/vendor/${id}`;
+          endpoint = `/enquiries/${id}`;
         }
 
         await api.delete(endpoint);
@@ -215,10 +215,7 @@ const SellerCarTabContent = ({
                       </div>
                     </div>
                     <div className="text-sm mt-1 flex items-center flex-wrap gap-2">
-                      <span className="flex items-center">
-                        <span className="mr-1">📅</span>
-                        {car.year}
-                      </span>
+                     
                       <span className="flex items-center">
                         <SpeedIcon style={{ fontSize: 14 }} className="mr-1" />
                         {car.kilometers} km
@@ -228,34 +225,17 @@ const SellerCarTabContent = ({
                         {car.fuelType}
                       </span>
                     </div>
-                    <div className="text-sm mt-1 flex items-center flex-wrap gap-2">
-                      <span className="flex items-center">
-                        <SettingsIcon style={{ fontSize: 14 }} className="mr-1" />
-                        {car.transmission}
-                      </span>
-                      <span className="text-xs text-gray-600">
-                        {car.owners}
-                      </span>
-                      {car.carCode && (
-                        <span className="text-xs text-gray-500">
-                          #{car.carCode}
-                        </span>
-                      )}
-                    </div>
+                    
                     <div className="flex items-center justify-between mt-3 pb-[10px]">
                       <div className="font-bold">
                         ₹ {car.price ? car.price.toLocaleString() : "Not specified"}
                       </div>
+                       <span className="flex items-center">
+                        <span className="mr-1">📅</span>
+                        {car.year}
+                      </span>
                       <div className="flex items-center gap-2">
-                        {car.status && (
-                          <span className={`text-xs px-2 py-1 rounded ${
-                            car.status === 'available' 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
-                          }`}>
-                            {car.status}
-                          </span>
-                        )}
+                       
                         <button
                           className="text-sm flex items-center cursor-pointer"
                           onClick={() => toggleExpand(car.id)}
@@ -308,14 +288,14 @@ const SellerCarTabContent = ({
 
                     <div className="text-sm pb-[15px]">
                       <strong>Mobile number :</strong> &nbsp;
-                      <a href={`tel:${car.customerDetails?.mobileNumber}`} className="text-blue-600 hover:underline">
+                      <a href={`tel:${car.customerDetails?.mobileNumber}`} className="text-gray hover:underline">
                         {car.customerDetails?.mobileNumber || "Not provided"}
                       </a>
                     </div>
 
                     <div className="text-sm pb-[15px]">
                       <strong>E-mail Id :</strong> &nbsp;
-                      <a href={`mailto:${car.customerDetails?.email}`} className="text-blue-600 hover:underline">
+                      <a href={`mailto:${car.customerDetails?.email}`} className="text-gray hover:underline">
                         {car.customerDetails?.email || "Not provided"}
                       </a>
                     </div>
@@ -326,7 +306,7 @@ const SellerCarTabContent = ({
                         href={`https://wa.me/${car.customerDetails?.whatsappNumber?.replace(/[^0-9]/g, '')}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-green-600 hover:underline"
+                        className="text-gray hover:underline"
                       >
                         {car.customerDetails?.whatsappNumber || "Not provided"}
                       </a>

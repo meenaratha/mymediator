@@ -5,6 +5,9 @@ import LoadMoreButton from '../../components/common/LoadMoreButton';
 import LoginFormModal from '../../components/common/LoginFormModel';
 import { Heart, MapPin, Calendar, Car, Home, Smartphone } from 'lucide-react';
 import SignupFormModel from '../../components/common/SignupFormModel';
+import IMAGES from '../../utils/images';
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
 
 const WishlistPage = () => {
   const navigate = useNavigate();
@@ -16,18 +19,49 @@ const WishlistPage = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [error, setError] = useState(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
-    const [signupFormModel, setSignupFormModel] = useState(false);
+  const [signupFormModel, setSignupFormModel] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [removingItemId, setRemovingItemId] = useState(null);
+
+  // State to manage active tab
+  const [activeTab, setActiveTab] = useState("property");
+
+  // Property types for filter buttons
+  const [propertyTypes, setPropertyTypes] = useState([
+    {
+      id: "property",
+      name: "PROPERTY",
+      img: IMAGES.sellerproperty,
+      selected: true,
+    },
+    {
+      id: "electronics", // Note: using 'electronic' to match API
+      name: "ELECTRONICS",
+      img: IMAGES.electronicscategory,
+      selected: false,
+    },
+    {
+      id: "car",
+      name: "CAR",
+      img: IMAGES.carcategory,
+      selected: false,
+    },
+    {
+      id: "bike",
+      name: "BIKE",
+      img: IMAGES.sellerbike,
+      selected: false,
+    },
+  ]);
 
   // Check authentication status
   const checkAuthStatus = () => {
     const token = localStorage.getItem('auth_token') || localStorage.getItem('access_token');
-    return !!(token );
+    return !!(token);
   };
 
-  // Fetch wishlist items
-  const fetchWishlistItems = async (page = 1, append = false) => {
+  // Fetch wishlist items with category filter
+  const fetchWishlistItems = async (page = 1, append = false, type = activeTab) => {
     try {
       if (page === 1) {
         setLoading(true);
@@ -36,9 +70,11 @@ const WishlistPage = () => {
       }
       setError(null);
 
-      console.log('Fetching wishlist items for page:', page);
+      console.log('Fetching wishlist items for page:', page, 'type:', type);
 
-      const response = await api.get(`/wishlist?page=${page}`);
+      // Build API URL with type parameter
+      const apiUrl = `/wishlist?page=${page}&type=${type}`;
+      const response = await api.get(apiUrl);
       
       console.log('Wishlist API response:', response.data);
 
@@ -75,6 +111,29 @@ const WishlistPage = () => {
     }
   };
 
+  // Function to handle tab click
+  const handleTabClick = (tabId) => {
+    // Update the active tab
+    setActiveTab(tabId);
+
+    // Update the selected state of property types
+    const updatedPropertyTypes = propertyTypes.map((type) => ({
+      ...type,
+      selected: type.id === tabId,
+    }));
+
+    setPropertyTypes(updatedPropertyTypes);
+
+    // Reset pagination and fetch new data for the selected category
+    setCurrentPage(1);
+    setWishlistItems([]);
+    
+    // Fetch wishlist items for the new category
+    if (isAuthenticated) {
+      fetchWishlistItems(1, false, tabId);
+    }
+  };
+
   // Remove item from wishlist
   const removeFromWishlist = async (item) => {
     setRemovingItemId(item.id);
@@ -82,8 +141,8 @@ const WishlistPage = () => {
     try {
       await api.delete('/wishlist', {
         data: {
-          wishable_type: item.wishable_type,
-          wishable_id: item.wishable_id.toString()
+          wishable_type: item.form_type || "property",
+          wishable_id: item.id.toString()
         }
       });
 
@@ -105,30 +164,30 @@ const WishlistPage = () => {
   // Load more items
   const handleLoadMore = () => {
     if (hasMorePages && !loadingMore) {
-      fetchWishlistItems(currentPage + 1, true);
+      fetchWishlistItems(currentPage + 1, true, activeTab);
     }
   };
 
   // Handle item click
   const handleItemClick = (item) => {
-    const type = item.wishable_type;
-    const slug = item.wishable?.slug;
+    const type = item.form_type;
+    const slug = item.action_slug;
     
     if (slug) {
       let routePath = '';
       
-      // Map the full type names to route paths
+      // Map the form types to route paths
       switch (type) {
-        case 'App\\Models\\Property':
+        case 'property':
           routePath = `/properties/${slug}`;
           break;
-        case 'App\\Models\\Car':
+        case 'car':
           routePath = `/car/${slug}`;
           break;
-        case 'App\\Models\\Bike':
+        case 'bike':
           routePath = `/bike/${slug}`;
           break;
-        case 'App\\Models\\Electronic':
+        case 'electronic':
           routePath = `/electronic/${slug}`;
           break;
         default:
@@ -142,13 +201,13 @@ const WishlistPage = () => {
   // Get item icon based on type
   const getItemIcon = (type) => {
     switch (type) {
-      case 'App\\Models\\Property':
+      case 'property':
         return <Home className="w-5 h-5 text-blue-600" />;
-      case 'App\\Models\\Car':
+      case 'car':
         return <Car className="w-5 h-5 text-green-600" />;
-      case 'App\\Models\\Bike':
+      case 'bike':
         return <Heart className="w-5 h-5 text-orange-600" />;
-      case 'App\\Models\\Electronic':
+      case 'electronic':
         return <Smartphone className="w-5 h-5 text-purple-600" />;
       default:
         return <Heart className="w-5 h-5 text-red-600" />;
@@ -157,62 +216,94 @@ const WishlistPage = () => {
 
   // Get item details based on type
   const getItemDetails = (item) => {
-    const wishable = item.wishable;
-    if (!wishable) return null;
+    if (!item) return null;
 
     // Helper function to get location info
-    const getLocation = (wishableItem) => {
-      if (wishableItem.address) {
-        return wishableItem.address;
-      }
-      // You might need to fetch state/district/city names from IDs if needed
-      return 'Location not specified';
+    const getLocation = (itemData) => {
+      const locationParts = [];
+      if (itemData.district) locationParts.push(itemData.district);
+      if (itemData.state) locationParts.push(itemData.state);
+      
+      return locationParts.length > 0 ? locationParts.join(', ') : (itemData.address || 'Location not specified');
     };
 
-    switch (item.wishable_type) {
-      case 'App\\Models\\Property':
+    // Format price with proper currency
+    const formatPrice = (amount) => {
+      if (!amount) return 'Price not specified';
+      const numAmount = parseFloat(amount);
+      if (numAmount >= 100000) {
+        return `₹${(numAmount / 100000).toFixed(1)}L`;
+      } else if (numAmount >= 1000) {
+        return `₹${(numAmount / 1000).toFixed(1)}K`;
+      }
+      return `₹${numAmount.toLocaleString()}`;
+    };
+
+    switch (item.form_type) {
+      case 'property':
+        const propertyDetails = [];
+                if (item.super_builtup_area) propertyDetails.push(`${item.super_builtup_area} sq ft`);
+
+        if (item.bhk) propertyDetails.push(item.bhk);
+      
+        
         return {
-          title: wishable.property_name || 'Property',
-          price: wishable.amount ? `₹${wishable.amount}` : 'Price not specified',
-          location: getLocation(wishable),
-          details: `${wishable.plot_area ? `${wishable.plot_area} sq ft` : ''} ${wishable.bedrooms ? `${wishable.bedrooms} BHK` : ''}`.trim() || 'Details not available',
-          image: wishable.image || null
+          title: item.property_name || 'Property',
+          price: formatPrice(item.amount),
+          location: getLocation(item),
+          details: propertyDetails.length > 0 ? propertyDetails.join(' • ') : item.subcategory || 'Property details',
+          image: item.image_url,
+          year: item.post_year
         };
       
-      case 'App\\Models\\Electronic':
+      case 'electronic':
         return {
-          title: wishable.title || 'Electronic Item',
-          price: wishable.price ? `₹${parseFloat(wishable.price).toLocaleString()}` : 'Price not specified',
-          location: getLocation(wishable),
-          details: `${wishable.brand_name || 'Electronics'} ${wishable.model_name || ''}`.trim() || 'Electronic device',
-          image: wishable.image || null
+          title: item.title || item.property_name || 'Electronic Item',
+          price: formatPrice(item.amount || item.price),
+          location: getLocation(item),
+          details: `${item.brand_name || 'Electronics'} ${item.model_name || ''}`.trim() || 'Electronic device',
+          image: item.image_url,
+          year: item.post_year
         };
       
-      case 'App\\Models\\Car':
+      case 'car':
+        const carDetails = [];
+        if (item.model_year) carDetails.push(item.model_year);
+        if (item.fuel_type) carDetails.push(item.fuel_type);
+        if (item.brand) carDetails.push(item.brand);
+        
         return {
-          title: wishable.car_name || wishable.brand || 'Car',
-          price: wishable.amount ? `₹${(wishable.amount / 100000).toFixed(1)}L` : 'Price not specified',
-          location: getLocation(wishable),
-          details: `${wishable.model_year || ''} ${wishable.fuel_type || ''}`.trim() || 'Car details',
-          image: wishable.image || null
+          title: item.title || item.property_name || 'Car',
+          price: formatPrice(item.price),
+          location: getLocation(item),
+          details: carDetails.length > 0 ? carDetails.join(' • ') : 'Car details',
+          image: item.image_url,
+          year: item.post_year
         };
       
-      case 'App\\Models\\Bike':
+      case 'bike':
+        const bikeDetails = [];
+        if (item.model_year) bikeDetails.push(item.model_year);
+        if (item.engine_cc) bikeDetails.push(`${item.engine_cc}cc`);
+        if (item.brand) bikeDetails.push(item.brand);
+        
         return {
-          title: wishable.bike_name || wishable.brand || 'Bike',
-          price: wishable.amount ? `₹${(wishable.amount / 100000).toFixed(1)}L` : 'Price not specified',
-          location: getLocation(wishable),
-          details: `${wishable.model_year || ''} ${wishable.engine_cc ? `${wishable.engine_cc}cc` : ''}`.trim() || 'Bike details',
-          image: wishable.image || null
+          title: item.title || item.property_name || 'Bike',
+          price: formatPrice(item.price),
+          location: getLocation(item),
+          details: bikeDetails.length > 0 ? bikeDetails.join(' • ') : 'Bike details',
+          image: item.image_url,
+          year: item.post_year
         };
       
       default:
         return {
-          title: wishable.title || wishable.name || 'Item',
-          price: wishable.price || wishable.amount ? `₹${wishable.price || wishable.amount}` : 'Price not specified',
-          location: getLocation(wishable),
-          details: 'Item details',
-          image: wishable.image || null
+          title: item.property_name || item.title || item.name || 'Item',
+          price: formatPrice(item.amount || item.price),
+          location: getLocation(item),
+          details: item.description || 'Item details',
+          image: item.image_url,
+          year: item.post_year
         };
     }
   };
@@ -223,7 +314,7 @@ const WishlistPage = () => {
     setIsAuthenticated(authStatus);
     
     if (authStatus) {
-      fetchWishlistItems(1);
+      fetchWishlistItems(1, false, activeTab);
     } else {
       setShowLoginModal(true);
       setLoading(false);
@@ -234,7 +325,7 @@ const WishlistPage = () => {
   const handleLoginSuccess = () => {
     setShowLoginModal(false);
     setIsAuthenticated(true);
-    fetchWishlistItems(1);
+    fetchWishlistItems(1, false, activeTab);
   };
 
   // Loading state
@@ -254,7 +345,6 @@ const WishlistPage = () => {
       {/* Login Modal */}
       {showLoginModal && (
         <LoginFormModal
-          // onClose={() => setShowLoginModal(false)}
           setLoginFormModel={setShowLoginModal}
           onSuccess={handleLoginSuccess}
           message="Please login to access your wishlist"
@@ -265,7 +355,7 @@ const WishlistPage = () => {
       {signupFormModel && (
         <SignupFormModel
           setLoginFormModel={setShowLoginModal}
-           setSignupFormModel={setSignupFormModel}
+          setSignupFormModel={setSignupFormModel}
         />
       )}
 
@@ -279,9 +369,7 @@ const WishlistPage = () => {
                   <Heart className="w-8 h-8 text-red-500" />
                   My Wishlist
                 </h1>
-                <p className="text-gray-600 mt-2">
-                  {totalItems > 0 ? `${totalItems} item${totalItems > 1 ? 's' : ''} saved` : 'No items in wishlist'}
-                </p>
+                
               </div>
               <button
                 onClick={() => navigate('/')}
@@ -289,6 +377,47 @@ const WishlistPage = () => {
               >
                 Continue Shopping
               </button>
+            </div>
+          </div>
+
+          {/* Property Type Filter */}
+          <div className="border-b border-[#EAEAEA] mb-10">
+            <div className="mx-auto max-w-[800px] pb-6">
+              <Swiper
+                slidesPerView={2}
+                spaceBetween={10}
+                breakpoints={{
+                  640: {
+                    slidesPerView: 4,
+                    spaceBetween: 20,
+                  },
+                  768: {
+                    slidesPerView: 5,
+                    spaceBetween: 30,
+                  },
+                }}
+              >
+                {propertyTypes.map((type) => (
+                  <SwiperSlide key={type.id}>
+                    <div
+                      className={`mymediator-seller-tab-item flex flex-col items-center p-3 border-gray-100 cursor-pointer${
+                        type.selected
+                          ? " shadow-md rounded-md bg-white border-1 border-gray-200"
+                          : ""
+                      }`}
+                      onClick={() => handleTabClick(type.id)}
+                    >
+                      <div
+                        className={`p-1 mb-2 w-16 h-16 flex items-center justify-center 
+                        ${type.selected ? "" : ""}`}
+                      >
+                        <img src={type.img} alt="img" />
+                      </div>
+                      <span className="text-xs font-semibold">{type.name}</span>
+                    </div>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
             </div>
           </div>
 
@@ -307,8 +436,16 @@ const WishlistPage = () => {
             </div>
           )}
 
+          {/* Loading state for tab change */}
+          {loading && (
+            <div className="flex items-center justify-center py-16">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600"></div>
+              <p className="ml-4 text-gray-600">Loading {activeTab} items...</p>
+            </div>
+          )}
+
           {/* Wishlist Items */}
-          {wishlistItems.length > 0 ? (
+          {!loading && wishlistItems.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {wishlistItems.map((item) => {
                 const itemDetails = getItemDetails(item);
@@ -323,11 +460,11 @@ const WishlistPage = () => {
                     {/* Image */}
                     <div className="relative h-48 overflow-hidden">
                       <img
-                        src={itemDetails.image }
+                        src={itemDetails.image || IMAGES.placeholderimg}
                         alt={itemDetails.title}
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          e.target.src = '/placeholder-image.jpg';
+                          e.target.src = IMAGES.placeholderimg;
                         }}
                       />
                       
@@ -347,13 +484,7 @@ const WishlistPage = () => {
                         )}
                       </button>
 
-                      {/* Type badge */}
-                      <div className="absolute top-2 left-2 bg-white bg-opacity-90 px-2 py-1 rounded-full flex items-center gap-1">
-                        {getItemIcon(item.wishable_type)}
-                        <span className="text-xs font-medium capitalize">
-                          {item.wishable_type.replace('App\\Models\\', '').toLowerCase()}
-                        </span>
-                      </div>
+                     
                     </div>
 
                     {/* Content */}
@@ -367,18 +498,16 @@ const WishlistPage = () => {
                         {itemDetails.location}
                       </div>
                       
-                      <p className="text-gray-600 text-sm mb-3">
-                        {itemDetails.details}
-                      </p>
-                      
+                    
                       <div className="flex items-center justify-between">
+                         <div className="flex items-center text-gray-500 text-xs">
+                          <Calendar className="w-3 h-3 mr-1" />
+                          {itemDetails.year || "2025"}
+                        </div>
                         <span className="text-lg font-bold text-black">
                           {itemDetails.price}
                         </span>
-                        <div className="flex items-center text-gray-500 text-xs">
-                          <Calendar className="w-3 h-3 mr-1" />
-                         {itemDetails.price || "2025"}
-                        </div>
+                       
                       </div>
                     </div>
                   </div>
@@ -388,9 +517,11 @@ const WishlistPage = () => {
           ) : !loading && (
             <div className="text-center py-16">
               <Heart className="w-24 h-24 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Your wishlist is empty</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                No {activeTab} items in your wishlist
+              </h3>
               <p className="text-gray-600 mb-6">
-                Start adding items you love to see them here
+                Start adding {activeTab} items you love to see them here
               </p>
               <button
                 onClick={() => navigate('/')}
@@ -402,7 +533,7 @@ const WishlistPage = () => {
           )}
 
           {/* Load More Button */}
-          {hasMorePages && wishlistItems.length > 0 && (
+          {hasMorePages && wishlistItems.length > 0 && !loading && (
             <div className="mt-8">
               <LoadMoreButton
                 onClick={handleLoadMore}
@@ -415,9 +546,9 @@ const WishlistPage = () => {
           )}
 
           {/* Items count info */}
-          {wishlistItems.length > 0 && (
+          {wishlistItems.length > 0 && !loading && (
             <div className="text-center mt-6 text-sm text-gray-600">
-              Showing {wishlistItems.length} of {totalItems} items
+              Showing {wishlistItems.length} of {totalItems} {activeTab} items
             </div>
           )}
         </div>

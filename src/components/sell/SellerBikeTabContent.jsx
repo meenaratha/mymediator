@@ -121,10 +121,10 @@ const SellerBikeTabContent = ({
         
         if (activeEnquiryType === "property") {
           // Property enquiry - delete from user API
-          endpoint = `/enquiries/user/${id}`;
+          endpoint = `/enquiries/${id}`;
         } else {
           // Post enquiry - delete from vendor API
-          endpoint = `/enquiries/vendor/${id}`;
+          endpoint = `/enquiries/${id}`;
         }
 
         await api.delete(endpoint);
@@ -224,62 +224,41 @@ const SellerBikeTabContent = ({
                       </div>
                     </div>
                     <div className="text-sm mt-1 flex items-center flex-wrap gap-2">
-                      <span className="flex items-center">
-                        <TwoWheelerIcon style={{ fontSize: 14 }} className="mr-1" />
-                        {bike.brand}
+                      
+                     {bike.kilometers !== null ?(
+<span className="flex items-center">
+                        <SpeedIcon style={{ fontSize: 14 }} className="mr-1" />
+                        {bike.kilometers} 
                       </span>
-                      {bike.model !== "Unknown" && (
+                     ):(
+                     <span className="flex items-center">
+                        <TwoWheelerIcon style={{ fontSize: 14 }} className="mr-1" />
+                       {bike.model !== nul ?(
                         <span className="text-xs text-gray-600">
                           {bike.model}
                         </span>
+                      ):(
+                        <span className="text-xs text-gray-600">
+                          {bike.brand_name}
+                        </span>
                       )}
-                      <span className="flex items-center">
+                      </span>)} 
+                      
+                     
+                    </div>
+                  
+                  
+                    <div className="flex items-center justify-between mt-3 pb-[10px]">
+                       <span className="flex items-center">
                         <span className="mr-1">📅</span>
                         {bike.year}
                       </span>
-                    </div>
-                    <div className="text-sm mt-1 flex items-center flex-wrap gap-2">
-                      <span className="flex items-center">
-                        <SpeedIcon style={{ fontSize: 14 }} className="mr-1" />
-                        {bike.kilometers} km
-                      </span>
-                      <span className="flex items-center">
-                        <LocalGasStationIcon style={{ fontSize: 14 }} className="mr-1" />
-                        {bike.fuelType}
-                      </span>
-                      {bike.engineCC !== "Not specified" && (
-                        <span className="text-xs text-gray-600">
-                          {bike.engineCC}
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-sm mt-1 flex items-center flex-wrap gap-2">
-                      <span className="text-xs text-gray-600">
-                        {bike.bikeType}
-                      </span>
-                      <span className="text-xs text-gray-600">
-                        {bike.owners}
-                      </span>
-                      {bike.bikeCode && (
-                        <span className="text-xs text-gray-500">
-                          #{bike.bikeCode}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center justify-between mt-3 pb-[10px]">
                       <div className="font-bold">
                         ₹ {bike.price ? bike.price.toLocaleString() : "Not specified"}
                       </div>
+                      
                       <div className="flex items-center gap-2">
-                        {bike.status && (
-                          <span className={`text-xs px-2 py-1 rounded ${
-                            bike.status === 'available' 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
-                          }`}>
-                            {bike.status}
-                          </span>
-                        )}
+                       
                         <button
                           className="text-sm flex items-center cursor-pointer"
                           onClick={() => toggleExpand(bike.id)}

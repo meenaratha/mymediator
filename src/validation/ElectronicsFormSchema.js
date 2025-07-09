@@ -29,7 +29,7 @@ export const uploadElectronicsFormSchema = Yup.object().shape({
   longitude: Yup.string().required("Longitude is required"),
   state_id: Yup.string().required("State is required"),
   district_id: Yup.string().required("District is required"),
-  city_id: Yup.string().required("City is required"),
+  // city_id: Yup.string().required("City is required"),
  
    mobile_number: Yup.string()
     .required("Mobile number is required")

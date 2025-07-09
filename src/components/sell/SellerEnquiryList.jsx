@@ -32,7 +32,7 @@ const SellerEnquiryList = () => {
       selected: true,
     },
     {
-      id: "electronics",
+      id: "electronic",
       name: "ELECTRONICS",
       img: IMAGES.electronicscategory,
       selected: false,

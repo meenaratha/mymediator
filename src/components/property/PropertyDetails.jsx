@@ -9,6 +9,7 @@ import { IconButton, Snackbar, Alert } from "@mui/material";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import ShareIcon from "@mui/icons-material/Share";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import FavoriteIcon from "@mui/icons-material/Favorite";
 import StarIcon from "@mui/icons-material/Star";
 import CallIcon from "@mui/icons-material/Call";
 import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
@@ -30,7 +31,7 @@ import ForgotPassword from "../common/ForgotPassword.jsx";
 
 const PropertyDetails = ({ property }) => {
   const isMobile = useMediaQuery({ maxWidth: 767 });
-  const [isFavorite, setIsFavorite] = useState(property.is_wishlisted || false);
+  const [isFavorite, setIsFavorite] = useState(property.wishlist  || false);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
@@ -156,6 +157,8 @@ const handleWishlistClick = async (e) => {
         severity: 'error' 
       });
     }
+
+    
   } finally {
     setIsWishlistLoading(false);
   }
@@ -586,12 +589,21 @@ const handleWishlistClickWithPreCheck = async (e) => {
                               }
                             }}
                           >
-                            <FavoriteBorderIcon
-                              sx={{ 
-                                fontSize: 20,
-                                color: isFavorite ? red[500] : 'gray'
-                              }}
-                            />
+                           {isFavorite ? (
+                              <FavoriteIcon
+                                sx={{ 
+                                  fontSize: 20,
+                                  color: red[500]
+                                }}
+                              />
+                            ) : (
+                              <FavoriteBorderIcon
+                                sx={{ 
+                                  fontSize: 20,
+                                  color: 'gray'
+                                }}
+                              />
+                            )}
                           </IconButton>
 
                           <IconButton

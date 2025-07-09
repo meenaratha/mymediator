@@ -21,7 +21,7 @@ const LaptopCard = ({ laptop, onClick }) => {
     >
       <div className="relative">
         <img 
-          src={laptop.image_url || IMAGES.mac1} 
+          src={laptop.image_url || IMAGES.placeholderimg} 
           alt={`${laptop.title} ${laptop.model}`} 
           className="w-full h-36 object-cover"
         />
@@ -49,8 +49,7 @@ const LaptopCard = ({ laptop, onClick }) => {
         
         <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">
           <div className="flex items-center">
-            <StarIcon className="text-yellow-400 mr-1" sx={{ fontSize: 14 }} />
-            <span className="text-sm">{laptop.rating || 4.5}</span>
+            <span className="text-sm">{laptop.post_year || 4.5}</span>
           </div>
           <span className="font-bold text-lg">
             ₹ {laptop.price || laptop.amount}
@@ -93,7 +92,9 @@ const RecommendedLaptops = () => {
   }, []);
 
   const handleCardClick = (laptop) => {
-    navigate(`/electronic/${laptop.action_slug}`);
+    // navigate(`/electronic/${laptop.action_slug}`);
+          window.location.href = `/electronic/${laptop.action_slug}`;
+
   };
 
   return (

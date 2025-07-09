@@ -7,7 +7,7 @@ const BikeFormPage = () => {
   return (
     <>
 
-    <HeroSection tittle="Property Upload" />
+    <HeroSection tittle="Bike Upload" />
                <div className="max-w-screen-xl max-w-[1200px] mx-auto px-4 py-12">
                
                     <UploadBikeForm/>

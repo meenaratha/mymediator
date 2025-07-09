@@ -10,6 +10,7 @@ import { IconButton, Snackbar, Alert, Card, CardContent } from "@mui/material";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import ShareIcon from "@mui/icons-material/Share";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import FavoriteIcon from "@mui/icons-material/Favorite";
 import StarIcon from "@mui/icons-material/Star";
 import CallIcon from "@mui/icons-material/Call";
 import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
@@ -32,6 +33,9 @@ import { Link } from "react-router-dom";
 import { api } from "@/api/axios";
 import ShareModal from "../../components/common/ShareModal";
 import { HeroSection } from "@/components";
+import IMAGES from "../../utils/images.js";
+import LoginFormModel from "./LoginFormModel.jsx";
+import SignupFormModel from "./SignupFormModel.jsx";
 
 // Fix for default markers in React Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -55,14 +59,29 @@ const BikeDetails = ({ bike }) => {
   const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
   const [zoomLevel, setZoomLevel] = useState(2);
   const [showEnquiryPopup, setShowEnquiryPopup] = useState(false);
-
+const [loginFormModel, setLoginFormModel] = useState(false);
+const [signupFormModel, setSignupFormModel] = useState(false);
+const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
   // Default Chennai coordinates
   const defaultLocation = { lat: 13.0827, lng: 80.2707 };
+
+   // Prepare images - handle both single image and array, fallback to dummy images
+  const dummyImages = [
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
+  ];
+
+
 
   // Prepare images from API response
   const images = bike?.image_url 
     ? (Array.isArray(bike.image_url) ? bike.image_url : [bike.image_url])
-    : [];
+    : dummyImages;
 
   // Get map coordinates
   const mapCenter = {
@@ -95,7 +114,31 @@ const BikeDetails = ({ bike }) => {
       }
     } catch (error) {
       console.error('Wishlist error:', error);
-      setSnackbar({ open: true, message: 'Failed to update wishlist', severity: 'error' });
+       // Check if it's an authentication error (401 Unauthorized)
+    if (error.response && error.response.status === 401) {
+      // User is not authenticated, show login modal
+      setSnackbar({ 
+        open: true, 
+        message: 'Please login to add items to wishlist', 
+        severity: 'warning' 
+      });
+      
+      // Show login modal
+      setLoginFormModel(true);
+      
+      // Optional: You can also close any other modals that might be open
+      // setSignupFormModel(false);
+      // setForgotPasswordModal(false);
+    } else {
+      // Other errors (network, server error, etc.)
+      const errorMessage = error.response?.data?.message || 'Failed to update wishlist';
+      setSnackbar({ 
+        open: true, 
+        message: errorMessage, 
+        severity: 'error' 
+      });
+    }
+
     } finally {
       setIsWishlistLoading(false);
     }
@@ -178,6 +221,23 @@ const BikeDetails = ({ bike }) => {
     enquirableType={bike.form_type}
         />
       )}
+
+      {loginFormModel && (
+  <LoginFormModel
+    setSignupFormModel={setSignupFormModel}
+    setLoginFormModel={setLoginFormModel}
+    setForgotPasswordModal={setForgotPasswordModal}
+  />
+)}
+
+{signupFormModel && (
+  <SignupFormModel
+   setSignupFormModel={setSignupFormModel}
+    setLoginFormModel={setLoginFormModel}
+    setForgotPasswordModal={setForgotPasswordModal}
+  />
+)}
+
 
       <div className="">
         <div className="flex flex-col md:flex-row py-10">
@@ -281,12 +341,21 @@ const BikeDetails = ({ bike }) => {
                                 }
                               }}
                             >
+                              {isFavorite ? (
+                              <FavoriteIcon
+                                sx={{ 
+                                  fontSize: 20,
+                                  color: red[500]
+                                }}
+                              />
+                            ) : (
                               <FavoriteBorderIcon
                                 sx={{ 
                                   fontSize: 20,
-                                  color: isFavorite ? red[500] : 'gray'
+                                  color: 'gray'
                                 }}
                               />
+                            )}
                             </IconButton>
 
                             <IconButton
@@ -326,7 +395,7 @@ const BikeDetails = ({ bike }) => {
                 <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-300">
                   {bike.profile_image ? (
                     <img
-                      src={bike.profile_image}
+                      src={bike.profile_image  || IMAGES.placeholderprofile}
                       alt="Seller"
                       className="w-full h-full object-cover"
                     />
@@ -343,7 +412,8 @@ const BikeDetails = ({ bike }) => {
                   <p className="text-sm text-gray-500">Owner</p>
                 </div>
                 <div className="ml-auto">
-                  <Link to="/seller-profile" className="text-blue-600 text-sm font-medium cursor-pointer">
+                  <Link  to= {`/seller-profile/${bike.vendor_id}`} 
+                  className="text-blue-600 text-sm font-medium cursor-pointer">
                     See Profile
                   </Link>
                 </div>
@@ -357,8 +427,8 @@ const BikeDetails = ({ bike }) => {
                     sx={{ color: "red" }}
                   />
                   <div className="ml-2">
-                    <p className="text-sm text-gray-500">{bike.city}</p>
-                    <p className="font-semibold text-xl">{bike.district}</p>
+                    <p className="text-sm text-gray-500">{bike.district}</p>
+                    <p className="font-semibold text-xl">{bike.state}</p>
                   </div>
                   <div className="ml-auto">
                     <div 
@@ -430,20 +500,22 @@ const BikeDetails = ({ bike }) => {
               <div className="flex items-center text-red-500 mt-4 gap-[10px]">
                 <LocationOnIcon fontSize="small" />
                 <p className="text-sm text-black">
-                  {bike.city}, {bike.district}
+                  {bike.district}, {bike.state}
                 </p>
               </div>
             </div>
             
             <div className="w-full md:w-1/2 flex flex-col md:items-center md:mt-[10px]">
               <div className="mt-1 md:mt-0">
-                <h3 className="md:text-2xl text-[20px] font-bold md:text-center text-green-600">
+                <h3 className="md:text-2xl text-[20px] font-bold md:text-center text-black">
                   ₹ {bike.price ? parseFloat(bike.price).toLocaleString() : "N/A"}
                 </h3>
                 <div className="flex mt-4 space-x-4 justify-center">
                   <button
                     onClick={() => setShowEnquiryPopup(true)}
-                    className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] cursor-pointer flex items-center justify-center flex-1"
+                    className="bg-[#02487C]
+                     text-white px-6 py-3 rounded-[25px]
+                      cursor-pointer flex items-center justify-center flex-1"
                   >
                     <QuestionAnswerIcon fontSize="small" className="mr-2" />
                     Enquiry
@@ -496,7 +568,7 @@ const BikeDetails = ({ bike }) => {
 
       {/* Zoom Modal */}
       {showZoom && images.length > 0 && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-75 z-999 flex items-center justify-center p-4">
           <div className="relative w-full max-w-4xl h-[80vh] bg-white rounded-lg overflow-hidden">
             <button
               onClick={handleZoomOut}

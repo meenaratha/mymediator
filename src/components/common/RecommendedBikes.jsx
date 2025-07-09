@@ -73,7 +73,9 @@ const RecommendedBikes = () => {
   }, []);
 
    const handleCardClick = (bike) => {
-    navigate(`/bike/${bike.action_slug}`);
+    // navigate(`/bike/${bike.action_slug}`);
+          window.location.href = `/bike/${bike.action_slug}`;
+
   };
 
   if (loading) {
@@ -118,7 +120,7 @@ const RecommendedBikes = () => {
               className="cursor-pointer max-w-[275px] w-full rounded-lg shadow-md overflow-hidden hover:shadow-lg mx-auto">
                 <div className="relative">
                   <img
-                    src={bike.image_url}
+                    src={bike.image_url || IMAGES.placeholderimg}
                     alt={bike.title}
                     className="w-full h-36 object-cover"
                   />
@@ -137,7 +139,7 @@ const RecommendedBikes = () => {
 
                   <div className="flex items-center text-sm text-gray-500 mt-1">
                     <LocationOnIcon sx={{ color: red[500] }} fontSize="small" />
-                    <span className="truncate">{bike.city}, {bike.district}</span>
+                    <span className="truncate"> {bike.district},{bike.state}</span>
                   </div>
 
                   <div className="flex items-center mt-2">
@@ -148,7 +150,7 @@ const RecommendedBikes = () => {
                   </div>
 
                   <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">
-                    <span className="text-sm text-gray-500">{bike.manufacturing_year}</span>
+                    <span className="text-sm text-gray-500">{bike.year}</span>
                     <span className="font-bold text-lg">
                       ₹ {bike.price ? (parseFloat(bike.price) / 100000).toFixed(2) : "N/A"}L
                     </span>

@@ -97,10 +97,10 @@ const SellerPropertyTabContent = ({
         
         if (activeEnquiryType === "property") {
           // Property enquiry - delete from user API
-          endpoint = `/enquiries/user/${id}`;
+          endpoint = `/enquiries/${id}`;
         } else {
           // Post enquiry - delete from vendor API
-          endpoint = `/enquiries/vendor/${id}`;
+          endpoint = `/enquiries/${id}`;
         }
 
         await api.delete(endpoint);
@@ -164,7 +164,7 @@ const SellerPropertyTabContent = ({
                 <div className="flex">
                   <div className="w-20 h-20 flex-shrink-0">
                     <img
-                      src={property.image || IMAGES.propertydetails}
+                      src={property.image || IMAGES.placeholderimg}
                       alt={property.title}
                       className="w-full h-full object-cover rounded-md"
                     />
@@ -199,32 +199,28 @@ const SellerPropertyTabContent = ({
                         </span>
                       </div>
                     </div>
-                    <div className="text-sm mt-1 flex items-center flex-wrap">
-                      <span className="mr-2">{property.type}</span>
-                      {property.bhk !== "N/A" && (
-                        <span className="border border-gray-300 rounded px-1 mr-2">
-                          {property.bhk}
-                        </span>
-                      )}
-                      <span className="flex items-center">
+                    <div className="text-sm mt-1 flex items-center flex-wrap gap-4">
+                       <span className="flex items-center">
                         <AspectRatioIcon
                           style={{ fontSize: 16 }}
                           className="mr-1"
                         />
                         {property.sqft} {property.type === "Plot" ? "Sq. Ft" : "Sq. Ft"}
                       </span>
-                      {property.propertyCode && (
-                        <span className="ml-2 text-xs text-gray-500">
-                          #{property.propertyCode}
+                      {property.bhk !== "null" && (
+                        <span className="border border-gray-300 rounded px-1 mr-2">
+                          {property.bhk}
                         </span>
                       )}
+                     
+                     
                     </div>
                     <div className="flex items-center justify-between mt-3 pb-[10px]">
                       <div className="font-bold">
                         ₹ {property.price ? property.price.toLocaleString() : "Not specified"}
                       </div>
                       <div className="flex items-center gap-2">
-                        {property.status && (
+                        {/* {property.status && (
                           <span className={`text-xs px-2 py-1 rounded ${
                             property.status === 'available' 
                               ? 'bg-green-100 text-green-800' 
@@ -232,7 +228,7 @@ const SellerPropertyTabContent = ({
                           }`}>
                             {property.status}
                           </span>
-                        )}
+                        )} */}
                         <button
                           className=" text-sm flex items-center cursor-pointer"
                           onClick={() => toggleExpand(property.id)}
@@ -268,7 +264,7 @@ const SellerPropertyTabContent = ({
                   <div className="">
                     <div className="flex">
                       <div className=" text-sm pb-[15px]">
-                        <strong>Name :</strong> &nbsp;                         {property.customerDetails?.name || "Customer Name"}
+                        <strong>Name :</strong> &nbsp;   {property.customerDetails?.name || "Customer Name"}
                       </div>
 
                       <button className="text-red-500 ml-auto cursor-pointer">
@@ -284,14 +280,14 @@ const SellerPropertyTabContent = ({
 
                     <div className="  text-sm pb-[15px]">
                       <strong>Mobile number :</strong> &nbsp;
-                      <a href={`tel:${property.customerDetails?.mobileNumber}`} className="text-blue-600 hover:underline">
+                      <a href={`tel:${property.customerDetails?.mobileNumber}`} className="text-gray hover:underline">
                         {property.customerDetails?.mobileNumber || "Not provided"}
                       </a>
                     </div>
 
                     <div className="  text-sm pb-[15px]">
                       <strong>E-mail Id :</strong> &nbsp;
-                      <a href={`mailto:${property.customerDetails?.email}`} className="text-blue-600 hover:underline">
+                      <a href={`mailto:${property.customerDetails?.email}`} className="text-gray hover:underline">
                         {property.customerDetails?.email || "Not provided"}
                       </a>
                     </div>
@@ -302,7 +298,7 @@ const SellerPropertyTabContent = ({
                         href={`https://wa.me/${property.customerDetails?.whatsappNumber?.replace(/[^0-9]/g, '')}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-green-600 hover:underline"
+                        className="text-gray hover:underline"
                       >
                         {property.customerDetails?.whatsappNumber || "Not provided"}
                       </a>

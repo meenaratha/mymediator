@@ -1553,8 +1553,11 @@ const isBicycle = slug?.toLowerCase().includes('bicycles');
 
           {/* Row 2 - Bike specific fields */}
 
-          {!isBicycle && (
+         
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+           
+          {!isBicycle && (
+              <>
             <div>
               <label className="block text-gray-800 font-medium mb-2 px-4">
                 Enter kilometers
@@ -1594,30 +1597,12 @@ const isBicycle = slug?.toLowerCase().includes('bicycles');
                 focusedField={focusedField}
               />
             </div>
-           <div>
-              <label className="block text-gray-800 font-medium mb-2 px-4">
-                Enter Fuel type
-              </label>
-              <DynamicInputs
-                type="select"
-                name="fuel_type_id"
-                id="fuel_type_id"
-                className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border 
-                border-[#bfbfbf] bg-white focus:outline-none "
-                placeholder="Select Fuel type "
-                onChange={handleChange}
-                value={formData.fuel_type_id || ""}
-                onBlur={handleBlur}
-                error={errors.fuel_type_id}
-                touched={touched.fuel_type_id}
-                focusedField={focusedField}
-               options={renderDropdownOptions(dropdownData.fuelTypes)}
-    disabled={loadingDropdowns}
-              />
-            </div>
+           </>
+             )}
+           
            
           </div>
-          )}
+        
 
           {/* Row 3 - Location fields */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -1702,7 +1687,7 @@ const isBicycle = slug?.toLowerCase().includes('bicycles');
 
           {/* Row 4 - More location and specification fields */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div>
+            {/* <div>
               <label className="block text-gray-800 font-medium mb-2 px-4">
                 Select City
               </label>
@@ -1731,9 +1716,27 @@ const isBicycle = slug?.toLowerCase().includes('bicycles');
                 }
                 loading={loadingCities || isAutoPopulating}
               />
-            </div>
+            </div> */}
 
-            
+              <div>
+              <label className="block text-gray-800 font-medium mb-2 px-4">
+                Enter Mobile No.
+              </label>
+              <DynamicInputs
+                type="text"
+                  name="mobile_number"
+                id="mobile_number"
+                className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border 
+                border-[#bfbfbf] bg-white focus:outline-none "
+                placeholder="Enter mobile no."
+               onChange={handleChange}
+                value={formData.mobile_number || ""}
+                onBlur={handleBlur}
+                error={errors.mobile_number}
+                touched={touched.mobile_number}
+                focusedField={focusedField}
+              />
+            </div>
 
              <div>
               <label className="block text-gray-800 font-medium mb-2 px-4">
@@ -1782,6 +1785,27 @@ const isBicycle = slug?.toLowerCase().includes('bicycles');
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div>
               <label className="block text-gray-800 font-medium mb-2 px-4">
+                Enter Fuel type
+              </label>
+              <DynamicInputs
+                type="select"
+                name="fuel_type_id"
+                id="fuel_type_id"
+                className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border 
+                border-[#bfbfbf] bg-white focus:outline-none "
+                placeholder="Select Fuel type "
+                onChange={handleChange}
+                value={formData.fuel_type_id || ""}
+                onBlur={handleBlur}
+                error={errors.fuel_type_id}
+                touched={touched.fuel_type_id}
+                focusedField={focusedField}
+               options={renderDropdownOptions(dropdownData.fuelTypes)}
+    disabled={loadingDropdowns}
+              />
+            </div>
+            <div>
+              <label className="block text-gray-800 font-medium mb-2 px-4">
                 Enter Price
               </label>
               <DynamicInputs
@@ -1800,25 +1824,7 @@ const isBicycle = slug?.toLowerCase().includes('bicycles');
               />
             </div>
 
-            <div>
-              <label className="block text-gray-800 font-medium mb-2 px-4">
-                Enter Mobile No.
-              </label>
-              <DynamicInputs
-                type="text"
-                  name="mobile_number"
-                id="mobile_number"
-                className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border 
-                border-[#bfbfbf] bg-white focus:outline-none "
-                placeholder="Enter mobile no."
-               onChange={handleChange}
-                value={formData.mobile_number || ""}
-                onBlur={handleBlur}
-                error={errors.mobile_number}
-                touched={touched.mobile_number}
-                focusedField={focusedField}
-              />
-            </div>
+          
           </div>
 
           {/* Description text area - Common for all types */}
@@ -1989,7 +1995,7 @@ const isBicycle = slug?.toLowerCase().includes('bicycles');
                text-lg font-medium rounded-full px-10 py-3 hover:bg-blue-900 focus:outline-none disabled:opacity-50"
               disabled={isLoading}
             >
-              {isLoading ? "Submitting..." : isEditMode ? "Update Bike" : "Submit Bike"}
+              {isLoading ? "Submitting..." : isEditMode ? "Update " : "Submit "}
             </button>
           </div>
         </form>

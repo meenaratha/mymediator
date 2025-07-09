@@ -1397,7 +1397,7 @@ const UploadElectronicsForm = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div>
+          {/* <div>
             <label className="block text-gray-800 font-medium mb-2 px-4">
               Select City <span className="text-red-500">*</span>
             </label>
@@ -1426,7 +1426,7 @@ const UploadElectronicsForm = () => {
               }
               loading={loadingCities || isAutoPopulating}
             />
-          </div>
+          </div> */}
 
           <div>
             <label className="block text-gray-800 font-medium mb-2 px-4">
@@ -1469,6 +1469,7 @@ const UploadElectronicsForm = () => {
                 focusedField={focusedField}
               />
             </div>
+       
         </div>
 
         <div className="mb-6">

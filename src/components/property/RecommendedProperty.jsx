@@ -47,7 +47,8 @@ const RecommendedProperty = () => {
   }, []);
 
   const handleCardClick = (property) => {
-    navigate(`/properties/${property.action_slug}`);
+    // navigate(`/properties/${property.action_slug}`);
+      window.location.href = `/properties/${property.action_slug}`;
   };
 
   return (
@@ -91,13 +92,13 @@ const RecommendedProperty = () => {
                 </div>
 
                 <CardContent className="p-3">
-                  <h3 className="font-bold text-lg">
+                  <h3 className="font-bold text-lg truncate">
                     {property.property_name}
                   </h3>
 
                   <div className="flex items-center text-sm text-gray-500 mt-1">
                     <LocationOnIcon sx={{ color: red[500] }} />
-                    <span>
+                    <span  className="truncate">
                       {property.district}, {property.state}
                     </span>
                   </div>

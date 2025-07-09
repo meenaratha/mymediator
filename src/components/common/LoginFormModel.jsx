@@ -219,7 +219,7 @@ const LoginFormModel = ({
         setLoginFormModel(false);
 
         // Navigate to dashboard
-        navigate("/seller-profile");
+        navigate("/profile-edit");
       } else {
         // Handle API errors
         let errorData = null;
@@ -241,46 +241,6 @@ const LoginFormModel = ({
           });
         }
       }
-
-      // Option 2: Alternative direct API call (uncomment if needed)
-      /*
-      const result = await loginUser(formData);
-
-      if (result.success) {
-        // Handle successful login
-        // Store token, update auth state, etc.
-        localStorage.setItem('authToken', result.data.token);
-        
-        // Reset form
-        setFormData({
-          mobileNumber: "",
-          password: "",
-        });
-        setErrors({});
-        setLoginFormModel(false);
-
-        // Navigate to dashboard
-        navigate("/seller-profile");
-      } else {
-        // Handle API errors
-        let errorData = null;
-        
-        if (result.data) {
-          errorData = result.data;
-        }
-
-        // Handle field-specific errors
-        const fieldErrors = handleBackendErrors(errorData);
-        
-        if (Object.keys(fieldErrors).length > 0) {
-          setErrors(fieldErrors);
-        } else {
-          setErrors({
-            general: result.error || "Login failed. Please try again.",
-          });
-        }
-      }
-      */
 
     } catch (error) {
       console.error("Unexpected login error:", error);
