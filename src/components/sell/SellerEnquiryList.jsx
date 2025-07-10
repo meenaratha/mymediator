@@ -66,7 +66,7 @@ const SellerEnquiryList = () => {
       }
 
       const response = await api.get(endpoint);
-      setEnquiryData(response.data?.data || response.data || []);
+      setEnquiryData(response.data?.data?.data || response.data || []);
     } catch (error) {
       console.error('Error fetching enquiry data:', error);
       setEnquiryData([]);

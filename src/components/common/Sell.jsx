@@ -17,7 +17,7 @@ const Sell = () => {
 
   // State management
   const [categories, setCategories] = useState([]);
-  const [activeCategory, setActiveCategory] = useState(null);
+  const [activeCategory, setActiveCategory] = useState(null); // Store the full category object
   const [subcategories, setSubcategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [subcategoriesLoading, setSubcategoriesLoading] = useState(false);
@@ -37,7 +37,7 @@ const Sell = () => {
           // Set the first category as active by default
           if (categoriesData.length > 0) {
             const firstCategory = categoriesData[0];
-            setActiveCategory(firstCategory.id);
+            setActiveCategory(firstCategory); // Store the full object
             // Load subcategories for the first category
             await fetchSubcategories(firstCategory.id);
           }
@@ -73,27 +73,27 @@ const Sell = () => {
   };
 
   // Handler to switch categories
-  // const handleCategoryClick = async (categoryId) => {
-  //   if (activeCategory === categoryId) return; // Don't refetch if same category
-
-  //   setActiveCategory(categoryId);
-  //   await fetchSubcategories(categoryId);
-  // };
-
   const handleCategoryClick = async (categoryId) => {
+    console.log("Clicked category ID:", categoryId);
+    console.log("Current active category:", activeCategory);
+
     // If already selected, skip
-    if (activeCategory?.id === categoryId) return;
+    if (activeCategory?.id === categoryId) {
+      console.log("Category already active, skipping");
+      return;
+    }
 
     const selectedCategory = categories.find(
       (category) => category.id === categoryId
     );
 
+    console.log("Found selected category:", selectedCategory);
+
     if (selectedCategory) {
-      setActiveCategory(selectedCategory); // ✅ store the full object
+      setActiveCategory(selectedCategory); // ✅ Store the full object
       await fetchSubcategories(categoryId);
     }
   };
-  
 
   // Get fallback image for categories
   const getCategoryImage = (category) => {
@@ -263,51 +263,69 @@ const Sell = () => {
           </h2>
 
           <div className="grid grid-cols-2 gap-4">
-            {categories.map((category) => (
-              <div key={category.id} className="flex flex-col items-center">
-                <div
-                  onClick={() => handleCategoryClick(category.id)}
-                  className={`${
-                    activeCategory === category.id
-                      ? "bg-[#012D49]"
-                      : "bg-[#FFFFFF] border border-[#E6E6E6]"
-                  } rounded-lg w-full aspect-square flex flex-col gap-2 items-center justify-center mb-2 relative overflow-hidden cursor-pointer transition-colors duration-200 hover:shadow-lg`}
-                >
+            {categories.map((category) => {
+              const isActive = activeCategory?.id === category.id;
+              console.log(
+                `Category ${category.name} (ID: ${category.id}) is active:`,
+                isActive
+              );
+
+              return (
+                <div key={category.id} className="flex flex-col items-center">
                   <div
-                    className="absolute bottom-0 w-full h-1/3 border border-[#A5BBC9]"
-                    style={{
-                      background:
-                        activeCategory === category.id
+                    onClick={() => handleCategoryClick(category.id)}
+                    className={`${
+                      isActive
+                        ? "bg-[#012D49]"
+                        : "bg-[#FFFFFF] border border-[#E6E6E6]"
+                    } rounded-lg w-full aspect-square flex flex-col gap-2 items-center justify-center mb-2 relative overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-lg transform hover:scale-105`}
+                  >
+                    <div
+                      className="absolute bottom-0 w-full h-1/3 border border-[#A5BBC9] transition-all duration-300"
+                      style={{
+                        background: isActive
                           ? "#02487C"
                           : "linear-gradient(90deg, rgba(200, 214, 224, 0.61) 0%, rgba(176, 213, 234, 0.61) 100%)",
-                    }}
-                  ></div>
-                  <img
-                    src={getCategoryImage(category)}
-                    alt={category.name}
-                    className="w-16 h-16 object-contain"
-                    onError={(e) => {
-                      // Fallback to local image if API image fails
-                      e.target.src = getCategoryImage({ slug: category.slug });
-                    }}
-                  />
-                  <span
-                    className={`text-sm font-medium text-center pt-8 ${
-                      activeCategory === category.id
-                        ? "text-white"
-                        : "text-black"
-                    } relative z-[10]`}
-                  >
-                    {category.name}
-                  </span>
+                      }}
+                    ></div>
+                    <img
+                      src={getCategoryImage(category)}
+                      alt={category.name}
+                      className={`w-16 h-16 object-contain transition-all duration-300 ${
+                        isActive ? "" : ""
+                      }`}
+                      onError={(e) => {
+                        // Fallback to local image if API image fails
+                        e.target.src = getCategoryImage({
+                          slug: category.slug,
+                        });
+                      }}
+                    />
+                    <span
+                      className={`text-sm font-medium text-center pt-8 transition-colors duration-300 ${
+                        isActive ? "text-white" : "text-black"
+                      } relative z-[10]`}
+                    >
+                      {category.name}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
         {/* Right Subcategories Section */}
         <div className="flex flex-col gap-4 flex-1">
+          {/* Show active category title */}
+          {activeCategory && (
+            <div className="bg-white rounded-lg shadow-sm p-4 mb-2">
+              <h3 className="text-lg font-semibold text-[#012D49] text-center">
+                {activeCategory.name} Subcategories
+              </h3>
+            </div>
+          )}
+
           {subcategoriesLoading ? (
             // Show skeleton for individual items when switching categories
             <>
@@ -323,19 +341,21 @@ const Sell = () => {
                 to={`/${activeCategory?.slug || "property"}/${
                   subcategory.slug
                 }/${subcategory.id}`}
-                className="shadow-sm cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.02]"
+                state={{ subName: subcategory.name }}
+                className="shadow-sm cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.02] border-l-4 border-transparent hover:border-l-[#012D49]"
                 sx={{
                   borderRadius: 2,
                   textDecoration: "none",
                   color: "inherit",
                   "&:hover": {
                     boxShadow: 3,
+                    backgroundColor: "#f8fafc",
                   },
                 }}
               >
                 <CardContent className="!p-4">
                   <div className="flex justify-between items-center">
-                    <span className="font-medium text-gray-800">
+                    <span className="font-medium text-gray-800 hover:text-[#012D49] transition-colors duration-200">
                       {subcategory.name}
                     </span>
                     <img
@@ -358,9 +378,25 @@ const Sell = () => {
                     gap: 2,
                   }}
                 >
-                  <Skeleton variant="circular" width={60} height={60} />
-                  <Skeleton variant="text" width="80%" height={24} />
-                  <Skeleton variant="text" width="60%" height={20} />
+                  <div className="text-gray-500">
+                    <svg
+                      className="w-16 h-16 mx-auto mb-4"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <p className="text-gray-600 font-medium">
+                    No subcategories available
+                  </p>
+                  <p className="text-gray-400 text-sm">
+                    This category doesn't have any subcategories yet.
+                  </p>
                 </Box>
               </CardContent>
             </Card>

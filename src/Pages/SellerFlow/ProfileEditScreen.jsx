@@ -29,8 +29,7 @@ const ProfileEditScreen = () => {
       .required('Name is required')
       .max(255, 'Name must be less than 255 characters'),
     phone: Yup.string()
-      .required('Phone is required')
-      .max(12, 'Phone must be less than 12 characters'),
+      .required('Phone is required'),
     email: Yup.string()
       .email('Invalid email format')
       .nullable(),

@@ -2,7 +2,7 @@ import { Outlet, Link, useLocation } from "react-router-dom";
 import { Header, Footer, HeroSection,AccountDeleteModel } from "@/components";
 import IMAGES from "@/utils/images.js";
 import { useMediaQuery } from "react-responsive";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import LogoutIcon from "@mui/icons-material/Logout";
 import {
@@ -18,8 +18,8 @@ import {
   FaEdit,
 } from "react-icons/fa";
 import { Heart,  } from 'lucide-react';
-
 import { useAuth } from "../auth/AuthContext"; 
+import { api } from "../api/axios";
 const UserDashboardLayout = () => {
   const isMobile = useMediaQuery({ maxWidth: 767 });
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -69,6 +69,31 @@ const UserDashboardLayout = () => {
     // },
   ];
 
+  const [userProfile, setUserProfile] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get("/getuser/profile");
+        const userData = response?.data?.data;
+        if (userData && typeof userData === "object") {
+          setUserProfile(userData);
+          console.log("User profile fetched:", userData);
+        }
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
+  
+
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
@@ -104,11 +129,14 @@ const [accountDelete, setAccountDelete] = useState(false);
       setIsLoggingOut(false);
     }
   };
+
+
+
   return (
     <>
       {/* Header with fixed height */}
       <Header />
-      {!isMobile && <HeroSection tittle="Dinesh Kumar" />}
+      {!isMobile && <HeroSection tittle={userProfile?.name} />}
 
       <div className="flex flex-col min-h-screen max-w-[1200px] mx-auto">
         <div className="flex flex-1">
@@ -141,7 +169,7 @@ const [accountDelete, setAccountDelete] = useState(false);
               <div className="flex flex-col items-center">
                 <div className="relative">
                   <img
-                    src={IMAGES.userImg}
+                    src={userProfile?.image_url || IMAGES.placeholderprofile}
                     alt="User Profile"
                     className="w-[90px] h-[90px] rounded-full border-4 border-white"
                   />
@@ -251,13 +279,13 @@ const [accountDelete, setAccountDelete] = useState(false);
                   onClick={toggleSidebar}
                 >
                   <img
-                    src={IMAGES.userImg}
+                    src={userProfile?.image_url || IMAGES.placeholderprofile}
                     alt="User Profile"
                     className="w-15 h-15 rounded-full"
                   />
                 </motion.button>
                 <div className="text-xl font-semibold text-[#fff]">
-                  Dinesh Kumar
+                  {userProfile?.name}
                 </div>
                 <div className="w-10"></div> {/* Spacer for alignment */}
               </div>

@@ -23,7 +23,7 @@ const VendorCarPost = () => {
         setLoadingMore(true);
       }
 
-      const response = await api.get(`/gcar/list/foruse?page=${page}&vendor_id=${vendorId}`);
+      const response = await api.get(`/gcar/list/foruser?page=${page}&vendor_id=${vendorId}`);
       
       // Handle the nested response structure (similar to properties)
       const responseData = response.data;

@@ -27,6 +27,7 @@ import { Skeleton } from "@mui/material";
 import { useAuth } from "../../auth/AuthContext"; // Import the useAuth hook
 import { useLoadScript, Autocomplete } from "@react-google-maps/api";
 import { Heart, } from 'lucide-react';
+import IMAGES from "../../utils/images";
 
 const GOOGLE_MAP_LIBRARIES = ["places"];
 const Header = () => {
@@ -57,6 +58,109 @@ const Header = () => {
   const [isLoading, setIsLoading] = useState(false);
   const autocompleteRef = useRef(null);
 
+  // profile api
+
+  // Local state for user profile data (independent of auth context)
+  const [userProfile, setUserProfile] = useState(null);
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [profileError, setProfileError] = useState(null);
+
+  // Function to fetch user profile directly from API
+  const fetchUserProfile = async () => {
+    if (!isAuthenticated) {
+      setUserProfile(null);
+      return;
+    }
+    console.log("isAuthenticated:", isAuthenticated);
+
+
+    try {
+      setProfileLoading(true);
+      setProfileError(null);
+
+      const response = await api.get("/getuser/profile");
+
+      // Safely extract user profile
+      const userData = response?.data?.data;
+
+      if (userData && typeof userData === "object") {
+        setUserProfile(userData);
+      } else {
+        throw new Error("User profile data is missing or invalid");
+      }
+      
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      setProfileError(error.message);
+
+      // If token is invalid, user will be logged out by axios interceptor
+      if (error.response?.status === 401) {
+        setUserProfile(null);
+      }
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
+  // Fetch profile when authentication status changes
+  useEffect(() => {
+    fetchUserProfile();
+  }, [isAuthenticated]);
+
+  // Listen for profile update events from other components
+  useEffect(() => {
+    const handleProfileUpdate = (event) => {
+      console.log("Header: Received profile update event");
+      fetchUserProfile(); // Refresh profile data
+    };
+
+    const handleStorageChange = (event) => {
+      if (event.key === "profileUpdated") {
+        console.log("Header: Received storage update event");
+        fetchUserProfile(); // Refresh profile data
+      }
+    };
+
+    // Listen for custom events
+    window.addEventListener("profileUpdated", handleProfileUpdate);
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("profileUpdated", handleProfileUpdate);
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
+
+  // Auto-refresh profile data periodically (optional)
+  useEffect(() => {
+    if (isAuthenticated && userProfile) {
+      const interval = setInterval(() => {
+        fetchUserProfile();
+      }, 5 * 60 * 1000); // Refresh every 5 minutes
+
+      return () => clearInterval(interval);
+    }
+  }, [isAuthenticated, userProfile]);
+
+  const getUserDisplayName = () => userProfile?.name || "User";
+
+  const getUserAvatar = () => userProfile?.image_url || IMAGES.placeholderprofile;
+
+  const getUserPhone = () => userProfile?.mobile_number || "";
+
+  const getUserEmail = () => userProfile?.email || "";
+
+  const getUserInitials = () => {
+    if (!userProfile) return "U";
+
+    const name = getUserDisplayName();
+    if (name.includes(" ")) {
+      const names = name.split(" ");
+      return `${names[0][0]}${names[1][0]}`.toUpperCase();
+    }
+    return name.charAt(0).toUpperCase();
+  };
+  
   // Add scroll event listener to check scroll position
   useEffect(() => {
     const handleScroll = () => {
@@ -219,62 +323,6 @@ const Header = () => {
     );
   }, []);
 
-  // const handleCurrentLocation = () => {
-  //   setIsLoading(true);
-  //   navigator.geolocation.getCurrentPosition(
-  //     async (position) => {
-  //       const { latitude, longitude } = position.coords;
-  //       try {
-  //         const res = await fetch(
-  //           `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${
-  //             import.meta.env.VITE_GOOGLE_MAPS_API_KEY
-  //           }`
-  //         );
-  //         const data = await res.json();
-  //         const result = data.results[0];
-  //         const address = result?.formatted_address || "";
-  //         const components = result?.address_components || [];
-
-  //         const getComponent = (type) =>
-  //           components.find((c) => c.types.includes(type))?.long_name || "";
-
-  //         const city =
-  //           getComponent("locality") ||
-  //           getComponent("sublocality") ||
-  //           getComponent("administrative_area_level_2");
-
-  //         const state = getComponent("administrative_area_level_1");
-  //         const country = getComponent("country");
-
-  //         const locationData = {
-  //           address,
-  //           city,
-  //           state,
-  //           country,
-  //           latitude,
-  //           longitude,
-  //         };
-
-  //         localStorage.setItem(
-  //           "selectedLocation",
-  //           JSON.stringify(locationData)
-  //         );
-  //         setSelectedLocation(address || `${city}, ${state}`);
-  //         setIsLocationOpen(false);
-  //       } catch (err) {
-  //         console.error("Geocode error:", err);
-  //       }
-  //       setIsLoading(false);
-  //     },
-  //     (err) => {
-  //       console.error("Geolocation error:", err);
-  //       setIsLoading(false);
-  //     }
-  //   );
-  // };
-
-  // Load recent locations on open
-
   const handleCurrentLocation = () => {
     setIsLoading(true);
     if (navigator.geolocation) {
@@ -313,8 +361,6 @@ const Header = () => {
       alert("Geolocation not supported");
     }
   };
-
-
 
   useEffect(() => {
     if (isLocationOpen) {
@@ -415,20 +461,6 @@ const Header = () => {
     setIsProfileMenuOpen(false);
   };
 
-  // Get user display name
-  const getUserDisplayName = () => {
-    if (!user) return "";
-    return user.name || user.username || user.email?.split("@")[0] || "User";
-  };
-
-  // Get user avatar
-  const getUserAvatar = () => {
-    if (user?.avatar || user?.profile_picture) {
-      return user.avatar || user.profile_picture;
-    }
-    return null;
-  };
-
   // Megamenu skeleton loader
   const MegaMenuSkeleton = () => (
     <div className="grid grid-cols-4 gap-8">
@@ -467,11 +499,13 @@ const Header = () => {
   }, [isLocationOpen]);
 
   if (loadError) return <div>Google Maps failed to load.</div>;
-  if (!isLoaded){ return (
-    <div className="flex justify-center items-center h-screen">
-      <div className="loader"></div>
-    </div>
-  );}
+  if (!isLoaded) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="loader"></div>
+      </div>
+    );
+  }
   return (
     <>
       {/* Mobile Header */}
@@ -489,9 +523,12 @@ const Header = () => {
         <div className="w-full h-[70px] bg-[rgba(246,246,246,1)] border-b-[1px] border-b-solid border-b-[rgba(225,225,225,1)]">
           <div className="flex max-w-[1200px] mx-auto px-2.5 mymediator__container">
             <div className="w-[150px] bg-gray-200 h-[70px]">
-              <img src={Logo} 
-               onClick={() => navigate("/")}
-              alt="" className="relative z-[99] h-[140px] cursor-pointer " />
+              <img
+                src={Logo}
+                onClick={() => navigate("/")}
+                alt=""
+                className="relative z-[99] h-[140px] cursor-pointer "
+              />
             </div>
             <div className="w-[100%] h-[70px] flex items-center gap-5 px-3 justify-between">
               {/* search box */}
@@ -543,10 +580,10 @@ const Header = () => {
 
               {/* notification box */}
               <div className="flex gap-8 items-center">
-
-<Heart className="w-[30px] h-[30px] text-red-600 cursor-pointer"   
- onClick={() => navigate("/wishlist")}
-                              />
+                <Heart
+                  className="w-[30px] h-[30px] text-red-600 cursor-pointer"
+                  onClick={() => navigate("/wishlist")}
+                />
                 <motion.div
                   animate={
                     isNotificationShaking
@@ -604,14 +641,16 @@ const Header = () => {
                         alt={getUserDisplayName()}
                         src={getUserAvatar()}
                       >
-                        {!getUserAvatar() &&
-                          getUserDisplayName().charAt(0).toUpperCase()}
+                        {/* {!getUserAvatar() &&
+                          getUserDisplayName().charAt(0).toUpperCase()} */}
                       </Avatar>
                       <div className="hidden lg:block">
                         <p className="text-sm font-medium text-gray-700">
                           {getUserDisplayName()}
                         </p>
-                        <p className="text-xs text-gray-500">{user?.phone}</p>
+                        <p className="text-xs text-gray-500">
+                          {getUserPhone() || "No phone number"}
+                        </p>
                       </div>
                       <KeyboardArrowDownIcon
                         className={`w-5 h-5 text-gray-700 transition-transform duration-200 ${
@@ -634,7 +673,7 @@ const Header = () => {
                               {getUserDisplayName()}
                             </p>
                             <p className="text-sm text-gray-500">
-                              {user?.email}
+                              {getUserPhone()}
                             </p>
                           </div>
 

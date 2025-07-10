@@ -24,6 +24,7 @@ const PropertyCard = ({
   price,
   id,
   slug,
+  editformslug,
   status,
   isPublished,
   buildingDirection,
@@ -50,7 +51,7 @@ const PropertyCard = ({
 
   const handleEdit = (e) => {
     e.stopPropagation();
-    navigate(`/property/${slug}/${id}/edit`);
+    navigate(`/property/${editformslug}/${id}/edit`);
   };
 
   const handleDelete = async (e) => {
@@ -443,7 +444,8 @@ const PropertyPostDetails = () => {
                 <PropertyCard
                   key={property.id}
                   id={property.id}
-                  slug={property.action_slug || "property"}
+                slug={property.action_slug || "property"}
+                editformslug={property.slug}
                   propertyImage={
                     property.image_url || property.images?.[0]?.url
                   }

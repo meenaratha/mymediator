@@ -48,6 +48,8 @@ const UploadCarForm = () => {
   const dispatch = useDispatch();
   const { slug, id } = useParams(); // Get both slug and id from URL params
   const location = useLocation();
+  const { subName } = location.state || {}; 
+  const formTittle = subName || humanized;
   const isEditMode = location.pathname.includes("edit");
 
   const [autocomplete, setAutocomplete] = useState(null);
@@ -1373,7 +1375,7 @@ if (isEditMode && isLoading && !formData.title) {
       <div className="bg-gray-50 p-6 rounded-3xl w-full max-w-6xl shadow-[0_0_10px_rgba(176,_176,_176,_0.25)] mx-auto border border-[#b9b9b9] bg-[#f6f6f6]">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-center text-xl font-medium text-[#02487C] flex-1">
-            Car Upload Form
+            {formTittle} Form
           </h1>
         </div>
         <form onSubmit={handleSubmit}>
@@ -1445,18 +1447,22 @@ if (isEditMode && isLoading && !formData.title) {
                     disabled={isAutoPopulating}
                   />
                   {!isAutoPopulating && (
-        <button
-          type="button"
-          onClick={() => {
-            setShowOtherBrand(false);
-            dispatch(updateFormField({ field: "brand_id", value: "" }));
-            dispatch(updateFormField({ field: "brand_name", value: "" }));
-          }}
-          className="text-sm text-blue-600 hover:text-blue-800"
-        >
-          ← Back to brand selection
-        </button>
-      )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowOtherBrand(false);
+                        dispatch(
+                          updateFormField({ field: "brand_id", value: "" })
+                        );
+                        dispatch(
+                          updateFormField({ field: "brand_name", value: "" })
+                        );
+                      }}
+                      className="text-sm text-blue-600 hover:text-blue-800"
+                    >
+                      ← Back to brand selection
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -1483,7 +1489,9 @@ if (isEditMode && isLoading && !formData.title) {
                     dropdownData.carModel,
                     "model"
                   )}
-                  disabled={!formData.brand_id || loadingDropdowns || isAutoPopulating}
+                  disabled={
+                    !formData.brand_id || loadingDropdowns || isAutoPopulating
+                  }
                 />
               )}
 
@@ -1504,18 +1512,22 @@ if (isEditMode && isLoading && !formData.title) {
                     focusedField={focusedField}
                   />
                   {!isAutoPopulating && (
-        <button
-          type="button"
-          onClick={() => {
-            setShowOtherModel(false);
-            dispatch(updateFormField({ field: "model_id", value: "" }));
-            dispatch(updateFormField({ field: "model_name", value: "" }));
-          }}
-          className="text-sm text-blue-600 hover:text-blue-800"
-        >
-          ← Back to model selection
-        </button>
-      )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowOtherModel(false);
+                        dispatch(
+                          updateFormField({ field: "model_id", value: "" })
+                        );
+                        dispatch(
+                          updateFormField({ field: "model_name", value: "" })
+                        );
+                      }}
+                      className="text-sm text-blue-600 hover:text-blue-800"
+                    >
+                      ← Back to model selection
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -1675,7 +1687,7 @@ if (isEditMode && isLoading && !formData.title) {
               />
             </div> */}
 
-             <div>
+            <div>
               <label className="block text-gray-800 font-medium mb-2 px-4">
                 Enter Mobile No.
               </label>
@@ -1736,7 +1748,7 @@ if (isEditMode && isLoading && !formData.title) {
                 error={errors.transmission_id}
                 touched={touched.transmission_id}
                 focusedField={focusedField}
-               options={renderDropdownOptions(dropdownData.transmissions)}
+                options={renderDropdownOptions(dropdownData.transmissions)}
               />
             </div>
 
@@ -1782,8 +1794,6 @@ if (isEditMode && isLoading && !formData.title) {
                 focusedField={focusedField}
               />
             </div>
-
-           
           </div>
           {/* Description text area - Common for all types */}
           <div className="mb-6">
@@ -1948,13 +1958,13 @@ if (isEditMode && isLoading && !formData.title) {
 
           <div className="flex justify-center">
             <button
-            type="submit"
-            className="cursor-pointer bg-[#02487c] text-white
+              type="submit"
+              className="cursor-pointer bg-[#02487c] text-white
              text-lg font-medium rounded-full px-10 py-3 hover:bg-blue-900 focus:outline-none disabled:opacity-50"
-            disabled={isLoading}
-          >
-            {isLoading ? "Submitting..." : "Submit"}
-          </button>
+              disabled={isLoading}
+            >
+              {isLoading ? "Submitting..." : "Submit"}
+            </button>
           </div>
         </form>
       </div>

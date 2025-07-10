@@ -27,6 +27,7 @@ const CarCard = ({
   price,
   id,
   slug,
+  editformslug,
   status,
   isPublished,
   onStatusChange,
@@ -55,7 +56,7 @@ const CarCard = ({
 
   const handleEdit = (e) => {
     e.stopPropagation();
-    navigate(`/car/${slug}/${id}/edit`);
+    navigate(`/car/${editformslug}/${id}/edit`);
   };
 
   const handleDelete = async (e) => {
@@ -438,9 +439,10 @@ const CarPostDetails = () => {
                   key={car.id}
                   id={car.id}
                   slug={car.action_slug}
+                  editformslug={car.slug}
                   carImage={car.image_url || car.images?.[0]?.url}
                   carTitle={car.title}
-                  location={`${car.city || ''}${
+                  location={`${car.city || ""}${
                     car.district ? `, ${car.district}` : ""
                   }`}
                   brand={car.brand_name || car.brand}
@@ -449,9 +451,7 @@ const CarPostDetails = () => {
                   kilometers={car.kilometers}
                   fuelType={car.fuel_type_name || car.fuel_type}
                   transmission={car.transmission_name || car.transmission}
-                  price={
-                    car.price ? parseInt(car.price).toLocaleString() : ""
-                  }
+                  price={car.price ? parseInt(car.price).toLocaleString() : ""}
                   status={car.status || "available"}
                   isPublished={car.is_published || 0}
                   onStatusChange={handleStatusChange}

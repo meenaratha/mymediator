@@ -1,8 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "@/styles/Home.module.css";
 import IMAGES from "@/utils/images.js";
+import CarCategoryFilter from "./filter/car/CarCategoryFilter";
 
-const CarFilter = ({ isFilterOpen, isMobile }) => {
+const CarFilter = ({
+  isFilterOpen,
+  isMobile,
+  onApplyFilters,
+  currentFilters,
+}) => {
   const [expandedSections, setExpandedSections] = useState({
     categories: true,
     location: true,
@@ -27,6 +33,124 @@ const CarFilter = ({ isFilterOpen, isMobile }) => {
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [selectedFuelType, setSelectedFuelType] = useState(null);
 
+  // Initialize filters state with current filters or default values
+      const [filters, setFilters] = useState({
+        type: "car",
+        price_range: "",
+        brand: "",
+        model: "",
+        year_filter: "",
+        fuelType: "",
+        transmission: "",
+        owner: "",
+        subcategory_id: "",
+        latitude: "",
+        longitude: "",
+        ...currentFilters, // Override with current filters from parent
+      });
+  
+  
+  
+   // Function to handle filter application
+    const handleApplyFilters = () => {
+      console.log("=== HANDLE APPLY FILTERS ===");
+      console.log("Current filters state:", filters);
+      
+      // Clean up filters - remove empty values
+      const cleanedFilters = Object.entries(filters).reduce((acc, [key, value]) => {
+        if (value && value !== "" && value !== null && value !== undefined) {
+          // Handle arrays
+          if (Array.isArray(value)) {
+            if (value.length > 0) {
+              acc[key] = value;
+            }
+          } else {
+            acc[key] = value;
+          }
+        }
+        return acc;
+      }, {});
+      
+      console.log("Cleaned filters to send:", cleanedFilters);
+      
+      // Call the parent's apply filters function
+      if (onApplyFilters) {
+        onApplyFilters(cleanedFilters);
+      } else {
+        console.error("onApplyFilters function not provided!");
+      }
+  };
+  
+   // Update local filters when currentFilters prop changes
+      useEffect(() => {
+        setFilters(prev => ({
+          ...prev,
+          ...currentFilters
+        }));
+      }, [currentFilters]);
+  
+    const [locationData, setLocationData] = useState({
+      address: "Chennai, Tamil Nadu", // Default fallback
+      city: "Chennai",
+      state: "Tamil Nadu",
+      latitude: "",
+      longitude: ""
+    });
+  
+    // Helper functions for extracting city and state
+    const extractCityFromAddress = (address) => {
+      if (!address) return "";
+      const parts = address.split(",");
+      return parts[0]?.trim() || "";
+    };
+  
+    const extractStateFromAddress = (address) => {
+      if (!address) return "";
+      const parts = address.split(",");
+      return parts[1]?.trim() || "";
+    };
+  
+    // Function to get location from localStorage
+    const loadLocationFromStorage = () => {
+      try {
+        const selectedLocationStr = localStorage.getItem('selectedLocation');
+        
+        if (!selectedLocationStr) {
+          console.log("No location found in localStorage, using default");
+          return;
+        }
+        
+        const selectedLocation = JSON.parse(selectedLocationStr);
+        console.log("Loaded location from localStorage:", selectedLocation);
+        
+        if (selectedLocation.latitude && selectedLocation.longitude) {
+          const newLocationData = {
+            address: selectedLocation.address || selectedLocation.formatted_address || "Location Selected",
+            city: selectedLocation.city || extractCityFromAddress(selectedLocation.address) || "Unknown City",
+            state: selectedLocation.state || extractStateFromAddress(selectedLocation.address) || "Unknown State", 
+            latitude: parseFloat(selectedLocation.latitude),
+            longitude: parseFloat(selectedLocation.longitude)
+          };
+          
+          setLocationData(newLocationData);
+          
+          // Update filters with latitude and longitude (hidden values)
+          setFilters(prev => ({
+            ...prev,
+            latitude: newLocationData.latitude,
+            longitude: newLocationData.longitude
+          }));
+        }
+      } catch (error) {
+        console.error("Error reading selectedLocation from localStorage:", error);
+      }
+    };
+  
+    // Load location from localStorage on component mount
+    useEffect(() => {
+      loadLocationFromStorage();
+    }, []);
+
   return (
     <div
       className={`${
@@ -40,45 +164,25 @@ const CarFilter = ({ isFilterOpen, isMobile }) => {
       }`}
     >
       <div className="h-full overflow-y-auto pb-4 px-2">
-        {/* Categories Section */}
         <div className="mb-4">
-          <div
-            className="flex justify-between items-center cursor-pointer py-2 border-b"
-            onClick={() => toggleSection("categories")}
+          <button
+            onClick={handleApplyFilters}
+            className="w-full bg-blue-900 my-4 cursor-pointer text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors"
           >
-            <h2 className="font-medium text-gray-800">Categories</h2>
-            <svg
-              className={`w-5 h-5 transition-transform duration-300 ${
-                expandedSections.categories ? "rotate-180" : ""
-              }`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </div>
-
-          <div
-            className={`transition-all duration-300 ease-in-out ${
-              expandedSections.categories
-                ? "max-h-60 py-2"
-                : "max-h-0 overflow-hidden"
-            }`}
-          >
-            <div className="text-sm py-1 font-medium bg-gray-100 p-4 py-4 rounded">
-              Car (15,000)
-            </div>
-          </div>
+            Apply Filters
+          </button>
         </div>
 
+        {/* Categories Section */}
+        <CarCategoryFilter
+          filters={filters}
+          setFilters={setFilters}
+          expandedSections={expandedSections}
+          toggleSection={toggleSection}
+        />
+
         {/* Location Section */}
-        <div className="mb-4">
+        <div className="mb-4 sticky top-0">
           <div
             className="flex justify-between items-center cursor-pointer py-2 border-b"
             onClick={() => toggleSection("location")}
@@ -102,13 +206,30 @@ const CarFilter = ({ isFilterOpen, isMobile }) => {
           </div>
 
           <div
-            className={`transition-all duration-300 ease-in-out ${
-              expandedSections.location
-                ? "max-h-20 py-2"
-                : "max-h-0 overflow-hidden"
+            className={`transition-all duration-300 ease-in-out overflow-hidden custom-scrollbar ${
+              expandedSections.location ? "max-h-20 py-2" : "max-h-0"
             }`}
           >
-            <div className="text-sm py-1">Chennai, Tamil Nadu</div>
+            <div className="flex items-center">
+              <svg
+                className="w-4 h-4 mr-2 text-blue-500"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              {locationData.city && locationData.state ? (
+                <span>
+                  {locationData.city}, {locationData.state}
+                </span>
+              ) : (
+                <span></span>
+              )}
+            </div>
           </div>
         </div>
 

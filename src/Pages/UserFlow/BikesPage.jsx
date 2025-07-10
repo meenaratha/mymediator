@@ -322,14 +322,96 @@ const bikeData = result?.data || [];
     };
   }, [currentPage, lastPage, loadingMore, hasMoreData]);
 
-  const images = [IMAGES.bike2, IMAGES.bike2, IMAGES.bike2, IMAGES.bike2];
+// slider
 
+  // State for slider images
+  const [sliderImages, setSliderImages] = useState([]);
+  const [loadingImages, setLoadingImages] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  // Fallback images in case API fails
+  const fallbackImages = [
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
+  ];
+
+  // Fetch slider images from API
+  const fetchSliderImages = async () => {
+    setLoadingImages(true);
+    setImageError(false);
+
+    try {
+      const response = await api.get("/sliderimage?category_id=4"); // Adjust endpoint as needed
+      const result = response.data;
+
+      // Handle different API response structures
+      let images = [];
+      if (result.data && Array.isArray(result.data)) {
+        images = result.data;
+      } else if (Array.isArray(result)) {
+        images = result;
+      } else if (result.images && Array.isArray(result.images)) {
+        images = result.images;
+      }
+
+      // Extract image URLs from the response
+      const imageUrls = images
+        .map((item) => {
+          // Handle different possible image URL field names
+          return (
+            item.image_url ||
+            item.url ||
+            item.image ||
+            item.path ||
+            item.src ||
+            item
+          ); // In case it's already a URL string
+        })
+        .filter((url) => url); // Remove any null/undefined values
+
+      if (imageUrls.length > 0) {
+        setSliderImages(imageUrls);
+        console.log(
+          "✅ Slider images loaded successfully:",
+          imageUrls.length,
+          "images"
+        );
+      } else {
+        console.warn("⚠️ No valid image URLs found in API response");
+        setSliderImages(fallbackImages);
+        setImageError(true);
+      }
+    } catch (error) {
+      console.error("❌ Failed to fetch slider images:", error);
+      setSliderImages(fallbackImages);
+      setImageError(true);
+
+      // Only show error toast if it's a network error or 500 error
+      // Don't show for 404 or other expected errors
+      if (error.response?.status >= 500 || !error.response) {
+        toast.error("Failed to load slider images");
+      }
+    } finally {
+      setLoadingImages(false);
+    }
+  };
+
+  // Load images on component mount
+  useEffect(() => {
+    fetchSliderImages();
+  }, []);
   return (
     <>
       <HeroSection tittle="Bikes for Sale" />
 
       <div className="max-w-screen-xl max-w-[1200px] mx-auto px-4">
-        <BannerSlider images={images} />
+        <BannerSlider
+          images={sliderImages}
+          isLoading={loadingImages}
+          hasError={imageError}
+        />
 
         {/* space div */}
         <div className="h-[10px]"></div>
@@ -372,11 +454,11 @@ const bikeData = result?.data || [];
             )}
 
             <BikeFilter
-             isFilterOpen={isFilterOpen}
+              isFilterOpen={isFilterOpen}
               isMobile={isMobile}
               onApplyFilters={applyFilters}
               currentFilters={currentFilters}
-               />
+            />
           </div>
 
           {/* Overlay background - only on mobile when filter is open */}

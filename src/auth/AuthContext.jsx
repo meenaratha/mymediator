@@ -265,7 +265,7 @@ export const AuthProvider = ({ children }) => {
   // Update profile function - NO localStorage for user data
   const updateProfile = async (profileData) => {
     try {
-      const response = await api.put("/profile", profileData);
+      const response = await api.get("/getuser/profile", profileData);
       const updatedUser = response.data.user || response.data;
 
       // Update user data only in memory - NOT in localStorage

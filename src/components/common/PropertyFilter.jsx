@@ -169,26 +169,22 @@ const PropertyFilter = ({ isFilterOpen, isMobile, onApplyFilters, currentFilters
           isFilterOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         } `}
       >
-        <div className="p-4">
-         
-          
-          {/* Categories Section */}
-          <div className="mb-4">
-            <button 
+        <div className="h-full  pb-4 px-2">
+          <div className="mb-4 sticky top-0">
+            <button
               onClick={handleApplyFilters}
               className="w-full bg-blue-900 my-4 cursor-pointer text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors"
             >
               Apply Filters
             </button>
-          
           </div>
-
-<CategoriesSection 
-  filters={filters}
-  setFilters={setFilters}
-  expandedSections={expandedSections}
-  toggleSection={toggleSection}
-/>
+          {/* Categories Section */}
+          <CategoriesSection
+            filters={filters}
+            setFilters={setFilters}
+            expandedSections={expandedSections}
+            toggleSection={toggleSection}
+          />
 
           {/* Location Section */}
           <div className="mb-4">
@@ -220,11 +216,21 @@ const PropertyFilter = ({ isFilterOpen, isMobile, onApplyFilters, currentFilters
               }`}
             >
               <div className="flex items-center">
-                <svg className="w-4 h-4 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/>
+                <svg
+                  className="w-4 h-4 mr-2 text-blue-500"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                    clipRule="evenodd"
+                  />
                 </svg>
                 {locationData.city && locationData.state ? (
-                  <span>{locationData.city}, {locationData.state}</span>
+                  <span>
+                    {locationData.city}, {locationData.state}
+                  </span>
                 ) : (
                   <span></span>
                 )}
@@ -235,7 +241,7 @@ const PropertyFilter = ({ isFilterOpen, isMobile, onApplyFilters, currentFilters
           <div className="py-1 text-sm font-medium">Filter</div>
 
           {/* Replace your existing price range section with this: */}
-          <PriceRangeSection 
+          <PriceRangeSection
             filters={filters}
             setFilters={setFilters}
             expandedSections={expandedSections}
@@ -243,7 +249,7 @@ const PropertyFilter = ({ isFilterOpen, isMobile, onApplyFilters, currentFilters
           />
 
           {/* Bedrooms Section */}
-          <BedroomsSection 
+          <BedroomsSection
             filters={filters}
             setFilters={setFilters}
             expandedSections={expandedSections}
@@ -251,7 +257,7 @@ const PropertyFilter = ({ isFilterOpen, isMobile, onApplyFilters, currentFilters
           />
 
           {/* Bathrooms Section */}
-          <BathroomsSection 
+          <BathroomsSection
             filters={filters}
             setFilters={setFilters}
             expandedSections={expandedSections}
@@ -259,7 +265,7 @@ const PropertyFilter = ({ isFilterOpen, isMobile, onApplyFilters, currentFilters
           />
 
           {/* Furnishing Section */}
-          <FurnishingSection 
+          <FurnishingSection
             filters={filters}
             setFilters={setFilters}
             expandedSections={expandedSections}
@@ -267,7 +273,7 @@ const PropertyFilter = ({ isFilterOpen, isMobile, onApplyFilters, currentFilters
           />
 
           {/* Construction Status Section */}
-          <ConstructionStatusSection 
+          <ConstructionStatusSection
             filters={filters}
             setFilters={setFilters}
             expandedSections={expandedSections}
@@ -283,7 +289,7 @@ const PropertyFilter = ({ isFilterOpen, isMobile, onApplyFilters, currentFilters
           /> */}
 
           {/* Building Direction Section */}
-          <BuildingDirectionSection 
+          <BuildingDirectionSection
             filters={filters}
             setFilters={setFilters}
             expandedSections={expandedSections}

@@ -46,6 +46,8 @@ const UploadElectronicsForm = () => {
   const dispatch = useDispatch();
   const { slug, id } = useParams();
   const location = useLocation();
+  const { subName } = location.state || {};
+  const formTittle = subName || humanized;
   const isEditMode = location.pathname.includes("edit");
 
   const [autocomplete, setAutocomplete] = useState(null);
@@ -1104,13 +1106,13 @@ const UploadElectronicsForm = () => {
     <div className="bg-gray-50 p-6 rounded-3xl w-full max-w-6xl shadow-[0_0_10px_rgba(176,_176,_176,_0.25)] mx-auto border border-[#b9b9b9] bg-[#f6f6f6]">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-center text-xl font-medium text-[#02487C] flex-1">
-          Electronics Upload Form
+          {formTittle} Form
         </h1>
       </div>
-      
+
       <form onSubmit={handleSubmit}>
         <input type="hidden" name="subcategory_id" value={id} />
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div>
             <label className="block text-gray-800 font-medium mb-2 px-4">
@@ -1181,8 +1183,12 @@ const UploadElectronicsForm = () => {
                     type="button"
                     onClick={() => {
                       setShowOtherBrand(false);
-                      dispatch(updateFormField({ field: "brand_id", value: "" }));
-                      dispatch(updateFormField({ field: "brand_name", value: "" }));
+                      dispatch(
+                        updateFormField({ field: "brand_id", value: "" })
+                      );
+                      dispatch(
+                        updateFormField({ field: "brand_name", value: "" })
+                      );
                     }}
                     className="text-sm text-blue-600 hover:text-blue-800"
                   >
@@ -1215,7 +1221,9 @@ const UploadElectronicsForm = () => {
                   dropdownData.electronicsModel,
                   "model"
                 )}
-                disabled={!formData.brand_id || loadingDropdowns || isAutoPopulating}
+                disabled={
+                  !formData.brand_id || loadingDropdowns || isAutoPopulating
+                }
               />
             )}
 
@@ -1240,8 +1248,12 @@ const UploadElectronicsForm = () => {
                     type="button"
                     onClick={() => {
                       setShowOtherModel(false);
-                      dispatch(updateFormField({ field: "model_id", value: "" }));
-                      dispatch(updateFormField({ field: "model_name", value: "" }));
+                      dispatch(
+                        updateFormField({ field: "model_id", value: "" })
+                      );
+                      dispatch(
+                        updateFormField({ field: "model_name", value: "" })
+                      );
                     }}
                     className="text-sm text-blue-600 hover:text-blue-800"
                   >
@@ -1293,7 +1305,7 @@ const UploadElectronicsForm = () => {
               focusedField={focusedField}
             />
           </div>
-<div>
+          <div>
             <label className="block text-gray-800 font-medium mb-2 px-4">
               Specifications
             </label>
@@ -1312,10 +1324,8 @@ const UploadElectronicsForm = () => {
               focusedField={focusedField}
             />
           </div>
-
         </div>
 
-        
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div>
             <label className="block text-gray-800 font-medium mb-2 px-4">
@@ -1379,9 +1389,7 @@ const UploadElectronicsForm = () => {
                   ? "Loading..."
                   : "Select district"
               }
-              onChange={(e) =>
-                handleFieldChange("district_id", e.target.value)
-              }
+              onChange={(e) => handleFieldChange("district_id", e.target.value)}
               value={formData.district_id || ""}
               onBlur={handleBlur}
               error={errors.district_id}
@@ -1451,25 +1459,24 @@ const UploadElectronicsForm = () => {
           </div>
 
           <div>
-              <label className="block text-gray-800 font-medium mb-2 px-4">
-                Manufacturing Year
-              </label>
-              <DynamicInputs
-                type="text"
-                name="year"
-                id="year"
-                className="appearance-none w-full px-4 py-3 rounded-full border 
+            <label className="block text-gray-800 font-medium mb-2 px-4">
+              Manufacturing Year
+            </label>
+            <DynamicInputs
+              type="text"
+              name="year"
+              id="year"
+              className="appearance-none w-full px-4 py-3 rounded-full border 
                 border-[#bfbfbf] bg-white focus:outline-none"
-                placeholder="Enter year (e.g., 2023)"
-                onChange={handleChange}
-                value={formData.year || ""}
-                onBlur={handleBlur}
-                error={errors.year}
-                touched={touched.year}
-                focusedField={focusedField}
-              />
-            </div>
-       
+              placeholder="Enter year (e.g., 2023)"
+              onChange={handleChange}
+              value={formData.year || ""}
+              onBlur={handleBlur}
+              error={errors.year}
+              touched={touched.year}
+              focusedField={focusedField}
+            />
+          </div>
         </div>
 
         <div className="mb-6">

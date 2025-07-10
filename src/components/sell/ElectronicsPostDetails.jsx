@@ -26,6 +26,7 @@ const ElectronicsCard = ({
   price,
   id,
   slug,
+  editformslug,
   status,
   isPublished,
   subcategory,
@@ -56,7 +57,7 @@ const ElectronicsCard = ({
 
   const handleEdit = (e) => {
     e.stopPropagation();
-    navigate(`/electronics/${slug}/${id}/edit`);
+    navigate(`/electronics/${editformslug}/${id}/edit`);
   };
 
   const handleDelete = async (e) => {
@@ -445,11 +446,12 @@ const ElectronicsPostDetails = () => {
                   key={item.id}
                   id={item.id}
                   slug={item.action_slug}
+                  editformslug={item.slug}
                   electronicsImage={item.image_url || item.images?.[0]?.url}
                   electronicsTitle={item.title}
-                  location={`${
-                    item.district ? `, ${item.district}` : ""
-                  }${item.state ? `, ${item.state}` : ""}`}
+                  location={`${item.district ? `, ${item.district}` : ""}${
+                    item.state ? `, ${item.state}` : ""
+                  }`}
                   brand={item.brand_name || item.brand}
                   model={item.model_name || item.model}
                   year={item.year}

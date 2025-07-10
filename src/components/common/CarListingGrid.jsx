@@ -8,6 +8,7 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import { red } from "@mui/material/colors";
 import { useMediaQuery } from "react-responsive";
 import { useNavigate } from "react-router-dom";
+import IMAGES from "../../utils/images";
 
 const CarCard = ({ item }) => {
   const navigate = useNavigate();
@@ -27,7 +28,7 @@ const CarCard = ({ item }) => {
     >
       <div className="relative">
         <img
-          src={item.image_url}
+          src={item.image_url || IMAGES.placeholderimg}
           alt={item.title}
           className="w-full h-36 object-cover"
         />
@@ -47,7 +48,7 @@ const CarCard = ({ item }) => {
         <div className="flex items-center text-sm text-gray-500 mt-1">
           <LocationOnIcon sx={{ color: red[500] }} />
           <span>
-            {item.city}, {item.district}
+            {item.district}, {item.state}
           </span>
         </div>
 
@@ -59,18 +60,11 @@ const CarCard = ({ item }) => {
               <span className="text-sm font-medium">{item.brand}</span>
             </div>
           )}
-          
+
           {item.model && (
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">Model:</span>
               <span className="text-sm font-medium">{item.model}</span>
-            </div>
-          )}
-
-          {item.subcategory && (
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Type:</span>
-              <span className="text-sm font-medium">{item.subcategory}</span>
             </div>
           )}
         </div>
@@ -78,13 +72,6 @@ const CarCard = ({ item }) => {
         {/* Additional car info */}
         <div className="mt-2 space-y-1">
           <div className="flex items-center justify-between text-xs text-gray-500">
-            {item.manufacturing_year && (
-              <div className="flex items-center">
-                <CalendarTodayIcon sx={{ fontSize: 14, marginRight: 0.5 }} />
-                <span>{item.manufacturing_year}</span>
-              </div>
-            )}
-            
             {item.kilometers_driven && (
               <div className="flex items-center">
                 <SpeedIcon sx={{ fontSize: 14, marginRight: 0.5 }} />
@@ -92,7 +79,7 @@ const CarCard = ({ item }) => {
               </div>
             )}
           </div>
-
+          {/* 
           <div className="flex items-center justify-between text-xs text-gray-500">
             {item.fuel_type && (
               <div className="flex items-center">
@@ -107,24 +94,15 @@ const CarCard = ({ item }) => {
                 <span>{item.transmission}</span>
               </div>
             )}
-          </div>
+          </div> */}
         </div>
 
         <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">
-          <span className="text-sm text-gray-500">
-            {item.year}
-          </span>
+          <span className="text-sm text-gray-500">{item.year}</span>
           <span className="font-bold text-lg text-black">
             ₹ {parseFloat(item.price).toLocaleString()}
           </span>
         </div>
-
-        {/* View count */}
-        {item.view_count && (
-          <div className="mt-2 text-xs text-gray-400 text-center">
-            {item.view_count} views
-          </div>
-        )}
       </CardContent>
     </Card>
   );

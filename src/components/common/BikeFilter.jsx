@@ -1,7 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "@/styles/Home.module.css";
+import BikeCategoryFilter from "./filter/bike/BikeCategoryFilter";
 
-const BikeFilter = ({ isFilterOpen, isMobile }) => {
+const BikeFilter = ({
+  isFilterOpen,
+  isMobile,
+  onApplyFilters,
+  currentFilters,
+}) => {
   const [expandedSections, setExpandedSections] = useState({
     categories: true,
     location: true,
@@ -21,6 +27,134 @@ const BikeFilter = ({ isFilterOpen, isMobile }) => {
   const [priceRange, setPriceRange] = useState([0, 100]);
   const [selectedBrands, setSelectedBrands] = useState([]);
 
+  // Initialize filters state with current filters or default values
+  const [filters, setFilters] = useState({
+    type: "bike",
+    price_range: "",
+    brand: "",
+    model: "",
+    year_filter: "",
+    fuelType: "",
+    kilometers: "",
+    enginecc: "",
+    owner: "",
+    subcategory_id: "",
+    latitude: "",
+    longitude: "",
+    ...currentFilters, // Override with current filters from parent
+  });
+  // Update local filters when currentFilters prop changes
+  useEffect(() => {
+    setFilters((prev) => ({
+      ...prev,
+      ...currentFilters,
+    }));
+  }, [currentFilters]);
+
+  // Function to handle filter application
+  const handleApplyFilters = () => {
+    console.log("=== HANDLE APPLY FILTERS ===");
+    console.log("Current filters state:", filters);
+
+    // Clean up filters - remove empty values
+    const cleanedFilters = Object.entries(filters).reduce(
+      (acc, [key, value]) => {
+        if (value && value !== "" && value !== null && value !== undefined) {
+          // Handle arrays
+          if (Array.isArray(value)) {
+            if (value.length > 0) {
+              acc[key] = value;
+            }
+          } else {
+            acc[key] = value;
+          }
+        }
+        return acc;
+      },
+      {}
+    );
+
+    console.log("Cleaned filters to send:", cleanedFilters);
+
+    // Call the parent's apply filters function
+    if (onApplyFilters) {
+      onApplyFilters(cleanedFilters);
+    } else {
+      console.error("onApplyFilters function not provided!");
+    }
+  };
+
+  const [locationData, setLocationData] = useState({
+    address: "Chennai, Tamil Nadu", // Default fallback
+    city: "Chennai",
+    state: "Tamil Nadu",
+    latitude: "",
+    longitude: "",
+  });
+
+  // Helper functions for extracting city and state
+  const extractCityFromAddress = (address) => {
+    if (!address) return "";
+    const parts = address.split(",");
+    return parts[0]?.trim() || "";
+  };
+
+  const extractStateFromAddress = (address) => {
+    if (!address) return "";
+    const parts = address.split(",");
+    return parts[1]?.trim() || "";
+  };
+
+  // Function to get location from localStorage
+  const loadLocationFromStorage = () => {
+    try {
+      const selectedLocationStr = localStorage.getItem("selectedLocation");
+
+      if (!selectedLocationStr) {
+        console.log("No location found in localStorage, using default");
+        return;
+      }
+
+      const selectedLocation = JSON.parse(selectedLocationStr);
+      console.log("Loaded location from localStorage:", selectedLocation);
+
+      if (selectedLocation.latitude && selectedLocation.longitude) {
+        const newLocationData = {
+          address:
+            selectedLocation.address ||
+            selectedLocation.formatted_address ||
+            "Location Selected",
+          city:
+            selectedLocation.city ||
+            extractCityFromAddress(selectedLocation.address) ||
+            "Unknown City",
+          state:
+            selectedLocation.state ||
+            extractStateFromAddress(selectedLocation.address) ||
+            "Unknown State",
+          latitude: parseFloat(selectedLocation.latitude),
+          longitude: parseFloat(selectedLocation.longitude),
+        };
+
+        setLocationData(newLocationData);
+
+        // Update filters with latitude and longitude (hidden values)
+        setFilters((prev) => ({
+          ...prev,
+          latitude: newLocationData.latitude,
+          longitude: newLocationData.longitude,
+        }));
+      }
+    } catch (error) {
+      console.error("Error reading selectedLocation from localStorage:", error);
+    }
+  };
+
+  // Load location from localStorage on component mount
+  useEffect(() => {
+    loadLocationFromStorage();
+  }, []);
+
   return (
     <div
       className={`${
@@ -34,52 +168,22 @@ const BikeFilter = ({ isFilterOpen, isMobile }) => {
       }`}
     >
       <div className="h-full overflow-y-auto pb-4 px-2">
-        {/* Categories Section */}
-        <div className="mb-4">
-          <div
-            className="flex justify-between items-center cursor-pointer py-2 border-b"
-            onClick={() => toggleSection("categories")}
+        <div className="mb-4 sticky top-0">
+          <button
+            onClick={handleApplyFilters}
+            className="w-full bg-blue-900 my-4 cursor-pointer text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors"
           >
-            <h2 className="font-medium text-gray-800">Categories</h2>
-            <svg
-              className={`w-5 h-5 transition-transform duration-300 ${
-                expandedSections.categories ? "rotate-180" : ""
-              }`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </div>
-
-          <div
-            className={`transition-all duration-300 ease-in-out ${
-              expandedSections.categories ? "max-h-60 py-2" : "max-h-0 overflow-hidden"
-            }`}
-          >
-            <div className="text-sm py-1 font-medium bg-gray-100 p-2 rounded">
-              Bike
-            </div>
-            <div className="flex items-center text-sm py-1">
-              <div className="w-4 h-4 rounded-full bg-black mr-2"></div>
-              <span>Motorcycles</span>
-            </div>
-            <div className="flex items-center text-sm py-1">
-              <div className="w-4 h-4 rounded-full bg-black mr-2"></div>
-              <span>Scooters</span>
-            </div>
-            <div className="flex items-center text-sm py-1">
-              <div className="w-4 h-4 rounded-full bg-black mr-2"></div>
-              <span>Bicycles</span>
-            </div>
-          </div>
+            Apply Filters
+          </button>
         </div>
+
+        {/* Categories Section */}
+        <BikeCategoryFilter
+          filters={filters}
+          setFilters={setFilters}
+          expandedSections={expandedSections}
+          toggleSection={toggleSection}
+        />
 
         {/* Location Section */}
         <div className="mb-4">
@@ -106,32 +210,30 @@ const BikeFilter = ({ isFilterOpen, isMobile }) => {
           </div>
 
           <div
-            className={`transition-all duration-300 ease-in-out ${
-              expandedSections.location ? "max-h-60 py-2" : "max-h-0 overflow-hidden"
+            className={`transition-all duration-300 ease-in-out overflow-hidden custom-scrollbar ${
+              expandedSections.location ? "max-h-20 py-2" : "max-h-0"
             }`}
           >
-            {/* Search bar */}
-            <div className="relative mb-4">
-              <input
-                type="text"
-                placeholder="Search Your Location Need"
-                className="w-full p-2 pl-8 border rounded-md text-sm"
-              />
+            <div className="flex items-center">
               <svg
-                className="absolute left-2 top-2.5 w-4 h-4 text-gray-500"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+                className="w-4 h-4 mr-2 text-blue-500"
+                fill="currentColor"
+                viewBox="0 0 20 20"
               >
                 <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  fillRule="evenodd"
+                  d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                  clipRule="evenodd"
                 />
               </svg>
+              {locationData.city && locationData.state ? (
+                <span>
+                  {locationData.city}, {locationData.state}
+                </span>
+              ) : (
+                <span></span>
+              )}
             </div>
-            <div className="text-sm py-1">Chennai, Tamil Nadu</div>
           </div>
         </div>
 
@@ -142,11 +244,7 @@ const BikeFilter = ({ isFilterOpen, isMobile }) => {
           <h3 className="text-sm font-medium mb-2">Select Brand</h3>
           <div className="h-40 overflow-y-auto">
             <div className="flex items-center py-1">
-              <input
-                type="checkbox"
-                id="maruti"
-                className="mr-2 h-4 w-4"
-              />
+              <input type="checkbox" id="maruti" className="mr-2 h-4 w-4" />
               <label htmlFor="maruti" className="text-sm">
                 Maruti Suzuki (3,561)
               </label>
@@ -256,7 +354,7 @@ const BikeFilter = ({ isFilterOpen, isMobile }) => {
             </div>
           </div>
         </div>
-        
+
         {/* Year Section */}
         <div className="mb-4">
           <div

@@ -26,6 +26,7 @@ const BikeCard = ({
   price,
   id,
   slug,
+  editformslug,
   status,
   isPublished,
   subcategory,
@@ -55,7 +56,7 @@ const BikeCard = ({
 
   const handleEdit = (e) => {
     e.stopPropagation();
-    navigate(`/bike/${slug}/${id}/edit`);
+    navigate(`/bike/${editformslug}/${id}/edit`);
   };
 
   const handleDelete = async (e) => {
@@ -441,7 +442,8 @@ const BikePostDetails = () => {
                 <BikeCard
                   key={bike.id}
                   id={bike.id}
-                    slug={bike.action_slug }
+                slug={bike.action_slug}
+                editformslug={bike.slug}
                   bikeImage={bike.image_url || bike.images?.[0]?.url}
                   bikeTitle={bike.title}
                   location={`${bike.city || ''}${

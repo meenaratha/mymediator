@@ -219,7 +219,8 @@ const LoginFormModel = ({
         setLoginFormModel(false);
 
         // Navigate to dashboard
-        navigate("/profile-edit");
+        // navigate("/profile-edit");
+        navigate("/");
       } else {
         // Handle API errors
         let errorData = null;
