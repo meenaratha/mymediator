@@ -43,6 +43,12 @@ const ElectronicsCard = ({
     setShowStatusDropdown(!showStatusDropdown);
   };
 
+
+  // Add navigation handler for card click
+  const handleCardClick = () => {
+    navigate(`/electronic/${slug}`);
+  };
+
   const toggleAds = (e) => {
     e.stopPropagation();
     setAdsEnabled(!adsEnabled);
@@ -104,7 +110,9 @@ const ElectronicsCard = ({
   };
 
   return (
-    <div className="cursor-pointer flex items-start p-2 bg-white rounded-lg shadow-sm border border-gray-100 w-full">
+    <div onClick={handleCardClick}
+    
+    className="cursor-pointer flex items-start p-2 bg-white rounded-lg shadow-sm border border-gray-100 w-full">
       {/* Electronics Image */}
       <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
         <img
@@ -172,7 +180,10 @@ const ElectronicsCard = ({
             {/* Status Dropdown */}
             <div className="relative">
               <button
-                onClick={toggleDropdown}
+              onClick={(e) => {
+                  e.stopPropagation();
+                  toggleDropdown();
+                }}
                 className="bg-[#0f1c5e] text-white px-4 py-1 rounded-md text-sm flex items-center"
               >
                 Status
@@ -433,10 +444,10 @@ const ElectronicsPostDetails = () => {
                 <ElectronicsCard
                   key={item.id}
                   id={item.id}
-                  slug={item.form_type}
+                  slug={item.action_slug}
                   electronicsImage={item.image_url || item.images?.[0]?.url}
                   electronicsTitle={item.title}
-                  location={`${item.city || ''}${
+                  location={`${
                     item.district ? `, ${item.district}` : ""
                   }${item.state ? `, ${item.state}` : ""}`}
                   brand={item.brand_name || item.brand}

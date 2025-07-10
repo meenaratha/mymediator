@@ -10,6 +10,7 @@ import { IconButton, Snackbar, Alert, Card, CardContent } from "@mui/material";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import ShareIcon from "@mui/icons-material/Share";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import FavoriteIcon from "@mui/icons-material/Favorite";
 import StarIcon from "@mui/icons-material/Star";
 import CallIcon from "@mui/icons-material/Call";
 import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
@@ -31,6 +32,9 @@ import EnquiryForm from "../../features/EnquiryForm.jsx";
 import { Link } from "react-router-dom";
 import { api } from "@/api/axios";
 import ShareModal from "../../components/common/ShareModal";
+import IMAGES from "../../utils/images.js";
+import SignupFormModel from "./SignupFormModel.jsx";
+import LoginFormModel from "./LoginFormModel.jsx";
 
 // Fix for default markers in React Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -42,7 +46,7 @@ L.Icon.Default.mergeOptions({
 
 const CarDetails = ({ car }) => {
   const isMobile = useMediaQuery({ maxWidth: 767 });
-  const [isFavorite, setIsFavorite] = useState(car?.is_wishlisted || false);
+  const [isFavorite, setIsFavorite] = useState(car?.wishlist || false);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
@@ -54,14 +58,28 @@ const CarDetails = ({ car }) => {
   const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
   const [zoomLevel, setZoomLevel] = useState(2);
   const [showEnquiryPopup, setShowEnquiryPopup] = useState(false);
+  const [loginFormModel, setLoginFormModel] = useState(false);
+  const [signupFormModel, setSignupFormModel] = useState(false);
+  const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
 
   // Default Chennai coordinates
   const defaultLocation = { lat: 13.0827, lng: 80.2707 };
 
+  // Prepare images - handle both single image and array, fallback to dummy images
+  const dummyImages = [
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
+  ];
+
   // Prepare images from API response
   const images = car?.image_url 
     ? (Array.isArray(car.image_url) ? car.image_url : [car.image_url])
-    : [];
+    : dummyImages;
 
   // Get map coordinates
   const mapCenter = {
@@ -94,7 +112,30 @@ const CarDetails = ({ car }) => {
       }
     } catch (error) {
       console.error('Wishlist error:', error);
-      setSnackbar({ open: true, message: 'Failed to update wishlist', severity: 'error' });
+      // Check if it's an authentication error (401 Unauthorized)
+    if (error.response && error.response.status === 401) {
+      // User is not authenticated, show login modal
+      setSnackbar({ 
+        open: true, 
+        message: 'Please login to add items to wishlist', 
+        severity: 'warning' 
+      });
+      
+      // Show login modal
+      setLoginFormModel(true);
+      
+      // Optional: You can also close any other modals that might be open
+      // setSignupFormModel(false);
+      // setForgotPasswordModal(false);
+    } else {
+      // Other errors (network, server error, etc.)
+      const errorMessage = error.response?.data?.message || 'Failed to update wishlist';
+      setSnackbar({ 
+        open: true, 
+        message: errorMessage, 
+        severity: 'error' 
+      });
+    }
     } finally {
       setIsWishlistLoading(false);
     }
@@ -170,6 +211,21 @@ const CarDetails = ({ car }) => {
 
   return (
     <>
+    {loginFormModel && (
+  <LoginFormModel
+    setSignupFormModel={setSignupFormModel}
+    setLoginFormModel={setLoginFormModel}
+    setForgotPasswordModal={setForgotPasswordModal}
+  />
+)}
+
+{signupFormModel && (
+  <SignupFormModel
+   setSignupFormModel={setSignupFormModel}
+    setLoginFormModel={setLoginFormModel}
+    setForgotPasswordModal={setForgotPasswordModal}
+  />
+)}
       {/* Enquiry Modal */}
       {showEnquiryPopup && (
         <EnquiryForm onClose={() => setShowEnquiryPopup(false)}
@@ -280,12 +336,21 @@ const CarDetails = ({ car }) => {
                                 }
                               }}
                             >
+                             {isFavorite ? (
+                              <FavoriteIcon
+                                sx={{ 
+                                  fontSize: 20,
+                                  color: red[500]
+                                }}
+                              />
+                            ) : (
                               <FavoriteBorderIcon
                                 sx={{ 
                                   fontSize: 20,
-                                  color: isFavorite ? red[500] : 'gray'
+                                  color: 'gray'
                                 }}
                               />
+                            )}
                             </IconButton>
 
                             <IconButton
@@ -325,7 +390,7 @@ const CarDetails = ({ car }) => {
                 <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-300">
                   {car.profile_image ? (
                     <img
-                      src={car.profile_image}
+                      src={car.profile_image || IMAGES.placeholderprofile}
                       alt="Seller"
                       className="w-full h-full object-cover"
                     />
@@ -358,8 +423,8 @@ const CarDetails = ({ car }) => {
                     sx={{ color: "red" }}
                   />
                   <div className="ml-2">
-                    <p className="text-sm text-gray-500">{car.city}</p>
-                    <p className="font-semibold text-xl">{car.district}</p>
+                    <p className="text-sm text-gray-500">{car.district}</p>
+                    <p className="font-semibold text-xl">{car.state}</p>
                   </div>
                   <div className="ml-auto">
                     <div 
@@ -420,7 +485,7 @@ const CarDetails = ({ car }) => {
 
               <div className="flex items-center mt-2 mb-2">
                 <p className="mr-4">
-                  {car.manufacturing_year || car.year} - {car.kilometers || 'N/A'} km
+                  { car.year} - {car.kilometers || 'N/A'} km
                 </p>
                 <div className="flex items-center">
                   <StarIcon className="text-orange-500" />
@@ -431,7 +496,7 @@ const CarDetails = ({ car }) => {
               <div className="flex items-center text-red-500 mt-4 gap-[10px]">
                 <LocationOnIcon fontSize="small" />
                 <p className="text-sm text-black">
-                  {car.city}, {car.district}
+                  {car.district} {car.state},
                 </p>
               </div>
             </div>

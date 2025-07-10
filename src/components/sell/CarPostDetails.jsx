@@ -42,6 +42,11 @@ const CarCard = ({
   const toggleDropdown = () => {
     setShowStatusDropdown(!showStatusDropdown);
   };
+// Add navigation handler for card click
+  const handleCardClick = () => {
+    navigate(`/car/${slug}`);
+  };
+
 
   const toggleAds = (e) => {
     e.stopPropagation();
@@ -104,7 +109,9 @@ const CarCard = ({
   };
 
   return (
-    <div className="cursor-pointer flex items-start p-2 bg-white rounded-lg shadow-sm border border-gray-100 w-full">
+    <div onClick={handleCardClick}
+    
+    className="cursor-pointer flex items-start p-2 bg-white rounded-lg shadow-sm border border-gray-100 w-full">
       {/* Car Image */}
       <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
         <img
@@ -168,7 +175,10 @@ const CarCard = ({
             {/* Status Dropdown */}
             <div className="relative">
               <button
-                onClick={toggleDropdown}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleDropdown();
+                }}
                 className="bg-[#0f1c5e] text-white px-4 py-1 rounded-md text-sm flex items-center"
               >
                 Status
@@ -427,7 +437,7 @@ const CarPostDetails = () => {
                 <CarCard
                   key={car.id}
                   id={car.id}
-                  slug={car.form_type}
+                  slug={car.action_slug}
                   carImage={car.image_url || car.images?.[0]?.url}
                   carTitle={car.title}
                   location={`${car.city || ''}${

@@ -42,10 +42,11 @@ const PropertyCard = ({
     setShowStatusDropdown(!showStatusDropdown);
   };
 
-  const toggleAds = (e) => {
-    e.stopPropagation();
-    setAdsEnabled(!adsEnabled);
+ // Add navigation handler for card click
+  const handleCardClick = () => {
+    navigate(`/properties/${slug}`);
   };
+
 
   const handleEdit = (e) => {
     e.stopPropagation();
@@ -107,11 +108,12 @@ const PropertyCard = ({
   };
 
   return (
-    <div className="cursor-pointer flex items-start p-2 bg-white rounded-lg shadow-sm border border-gray-100 w-full">
+    <div  onClick={handleCardClick}
+    className="cursor-pointer flex items-start p-2 bg-white rounded-lg shadow-sm border border-gray-100 w-full">
       {/* Property Image */}
       <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
         <img
-          src={propertyImage || IMAGES.propertybanner1}
+          src={propertyImage || IMAGES.placeholderimg}
           alt={propertyName}
           className="w-full h-full object-cover"
         />
@@ -175,7 +177,10 @@ const PropertyCard = ({
             {/* Status Dropdown */}
             <div className="relative">
               <button
-                onClick={toggleDropdown}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleDropdown();
+                }}
                 className="bg-[#0f1c5e] text-white px-4 py-1 rounded-md text-sm flex items-center"
               >
                 Status
@@ -438,7 +443,7 @@ const PropertyPostDetails = () => {
                 <PropertyCard
                   key={property.id}
                   id={property.id}
-                  slug={property.slug || "property"}
+                  slug={property.action_slug || "property"}
                   propertyImage={
                     property.image_url || property.images?.[0]?.url
                   }

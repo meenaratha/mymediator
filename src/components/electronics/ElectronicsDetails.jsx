@@ -9,6 +9,7 @@ import { IconButton, Snackbar, Alert } from "@mui/material";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import ShareIcon from "@mui/icons-material/Share";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import FavoriteIcon from "@mui/icons-material/Favorite";
 import StarIcon from "@mui/icons-material/Star";
 import CallIcon from "@mui/icons-material/Call";
 import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
@@ -25,6 +26,8 @@ import EnquiryForm from "../../features/EnquiryForm.jsx";
 import { Link } from "react-router-dom";
 import { api } from "@/api/axios";
 import ShareModal from "../../components/common/ShareModal"; // Import reusable ShareModal
+import LoginFormModel from "../common/LoginFormModel.jsx";
+import SignupFormModel from "../common/SignupFormModel.jsx";
 
 // Fix for default markers in React Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -36,7 +39,7 @@ L.Icon.Default.mergeOptions({
 
 const ElectronicsDetails = ({ electronics }) => {
   const isMobile = useMediaQuery({ maxWidth: 767 });
-  const [isFavorite, setIsFavorite] = useState(electronics.is_wishlisted || false);
+  const [isFavorite, setIsFavorite] = useState(electronics.wishlist || false);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
@@ -50,17 +53,22 @@ const ElectronicsDetails = ({ electronics }) => {
   const mainImageRef = useRef(null);
   const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
   const [showEnquiryPopup, setShowEnquiryPopup] = useState(false);
+  const [loginFormModel, setLoginFormModel] = useState(false);
+  const [signupFormModel, setSignupFormModel] = useState(false);
+  const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
 
   // Default Chennai coordinates
   const defaultLocation = { lat: 13.0827, lng: 80.2707 };
 
-  // Prepare images - handle both single image and array, fallback to dummy images
+ // Prepare images - handle both single image and array, fallback to dummy images
   const dummyImages = [
-    IMAGES.tv1,
-    IMAGES.tv2,
-    IMAGES.tv3,
-    IMAGES.tv4,
-    IMAGES.tv5,
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
+    IMAGES.placeholderimg,
   ];
 
   const images = electronics.image_url 
@@ -100,7 +108,31 @@ const ElectronicsDetails = ({ electronics }) => {
       }
     } catch (error) {
       console.error('Wishlist error:', error);
-      setSnackbar({ open: true, message: 'Failed to update wishlist', severity: 'error' });
+      // Check if it's an authentication error (401 Unauthorized)
+    if (error.response && error.response.status === 401) {
+      // User is not authenticated, show login modal
+      setSnackbar({ 
+        open: true, 
+        message: 'Please login to add items to wishlist', 
+        severity: 'warning' 
+      });
+      
+      // Show login modal
+      setLoginFormModel(true);
+      
+      // Optional: You can also close any other modals that might be open
+      // setSignupFormModel(false);
+      // setForgotPasswordModal(false);
+    } else {
+      // Other errors (network, server error, etc.)
+      const errorMessage = error.response?.data?.message || 'Failed to update wishlist';
+      setSnackbar({ 
+        open: true, 
+        message: errorMessage, 
+        severity: 'error' 
+      });
+    }
+
     } finally {
       setIsWishlistLoading(false);
     }
@@ -190,6 +222,22 @@ const ElectronicsDetails = ({ electronics }) => {
 
   return (
     <>
+
+    {loginFormModel && (
+  <LoginFormModel
+    setSignupFormModel={setSignupFormModel}
+    setLoginFormModel={setLoginFormModel}
+    setForgotPasswordModal={setForgotPasswordModal}
+  />
+)}
+
+{signupFormModel && (
+  <SignupFormModel
+   setSignupFormModel={setSignupFormModel}
+    setLoginFormModel={setLoginFormModel}
+    setForgotPasswordModal={setForgotPasswordModal}
+  />
+)}
       {/* Enquiry Modal */}
       {showEnquiryPopup && (
         <EnquiryForm onClose={() => { setShowEnquiryPopup(false) }}
@@ -308,12 +356,21 @@ const ElectronicsDetails = ({ electronics }) => {
                               }
                             }}
                           >
-                            <FavoriteBorderIcon
-                              sx={{ 
-                                fontSize: 20,
-                                color: isFavorite ? red[500] : 'gray'
-                              }}
-                            />
+                             {isFavorite ? (
+                              <FavoriteIcon
+                                sx={{ 
+                                  fontSize: 20,
+                                  color: red[500]
+                                }}
+                              />
+                            ) : (
+                              <FavoriteBorderIcon
+                                sx={{ 
+                                  fontSize: 20,
+                                  color: 'gray'
+                                }}
+                              />
+                            )}
                           </IconButton>
 
                           <IconButton
@@ -347,7 +404,7 @@ const ElectronicsDetails = ({ electronics }) => {
               <div className="flex items-center mb-4 p-3 bg-gray-50 rounded-lg">
                 <div className="w-12 h-12 rounded-full overflow-hidden">
                   <img
-                    src={electronics.profile_image || IMAGES.profile}
+                    src={electronics.profile_image || IMAGES.placeholderprofile}
                     alt="Seller"
                     className="w-full h-full object-cover"
                   />
@@ -359,7 +416,7 @@ const ElectronicsDetails = ({ electronics }) => {
                   <p className="text-sm text-gray-500">Owner</p>
                 </div>
                 <div className="ml-auto">
-                  <Link to="/seller-profile" className="text-blue-600 text-sm font-medium cursor-pointer">
+                  <Link to={`/seller-profile/${electronics.vendor_id}`} className="text-blue-600 text-sm font-medium cursor-pointer">
                     See Profile
                   </Link>
                 </div>
@@ -373,8 +430,8 @@ const ElectronicsDetails = ({ electronics }) => {
                     sx={{ color: "red" }}
                   />
                   <div className="ml-2">
-                    <p className="text-sm text-gray-500">{electronics.city}</p>
-                    <p className="font-semibold text-xl">{electronics.district}</p>
+                    <p className="text-sm text-gray-500">{electronics.district}</p>
+                    <p className="font-semibold text-xl">{electronics.city}</p>
                   </div>
                   <div className="ml-auto">
                     <div 
@@ -505,7 +562,7 @@ const ElectronicsDetails = ({ electronics }) => {
 
       {/* Zoom Modal */}
       {showZoom && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-75 z-999 flex items-center justify-center p-4">
           <div className="relative w-full max-w-4xl h-[80vh] bg-white rounded-lg overflow-hidden">
             <button
               onClick={handleZoomOut}

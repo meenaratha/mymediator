@@ -11,6 +11,7 @@ import { useMediaQuery } from "react-responsive"; // For detecting mobile device
 import IMAGES from "@/utils/images.js";
 import LoadMoreButton from "../../components/common/LoadMoreButton";
 import { api } from "@/api/axios";
+import { Category } from "@mui/icons-material";
 
 const PropertyFilterPage = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -38,6 +39,7 @@ const PropertyFilterPage = () => {
     construction_status_id: "",
     building_direction_id: "",
     subcategory_id: "",
+    Category_id:"",
     latitude: "",
     longitude: "",
   });

@@ -43,6 +43,11 @@ const BikeCard = ({
     setShowStatusDropdown(!showStatusDropdown);
   };
 
+  // Add navigation handler for card click
+  const handleCardClick = () => {
+    navigate(`/bike/${slug}`);
+  };
+
   const toggleAds = (e) => {
     e.stopPropagation();
     setAdsEnabled(!adsEnabled);
@@ -104,7 +109,7 @@ const BikeCard = ({
   };
 
   return (
-    <div className="cursor-pointer flex items-start p-2 bg-white rounded-lg shadow-sm border border-gray-100 w-full">
+    <div onClick={handleCardClick} className="cursor-pointer flex items-start p-2 bg-white rounded-lg shadow-sm border border-gray-100 w-full">
       {/* Bike Image */}
       <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
         <img
@@ -174,7 +179,10 @@ const BikeCard = ({
             {/* Status Dropdown */}
             <div className="relative">
               <button
-                onClick={toggleDropdown}
+               onClick={(e) => {
+                  e.stopPropagation();
+                  toggleDropdown();
+                }}
                 className="bg-[#0f1c5e] text-white px-4 py-1 rounded-md text-sm flex items-center"
               >
                 Status
@@ -433,7 +441,7 @@ const BikePostDetails = () => {
                 <BikeCard
                   key={bike.id}
                   id={bike.id}
-                    slug={bike.form_type }
+                    slug={bike.action_slug }
                   bikeImage={bike.image_url || bike.images?.[0]?.url}
                   bikeTitle={bike.title}
                   location={`${bike.city || ''}${

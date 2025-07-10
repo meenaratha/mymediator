@@ -24,6 +24,7 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import ReportAdsModal from "../common/ReportAdsModal";
 import axios from "axios";
+import DescriptionSkeleton from "../common/DescriptionSkelton";
 
 // Fix for default markers in React Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -68,17 +69,15 @@ const PropertyDescription = () => {
   
   if (isLoading) {
   return (
-    <div className="flex justify-center items-center h-screen">
-      <div className="loader"></div>
-    </div>
+      <DescriptionSkeleton/>
   );
 }
 
 
-  if (!property) return <div>Property not found.</div>;
+  if (!property) return  <NotFoundMessage/>;
 
   if (error) {
-    return <div>Error: {error.message}</div>;
+    return <ErrorMessage error={error} onRetry={fetchData} />;
   }
 
   // Get map coordinates - use Chennai as default if null

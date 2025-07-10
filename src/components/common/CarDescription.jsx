@@ -19,6 +19,8 @@ import CarDetails from "./CarDetails";
 import L from "leaflet";
 import { api } from "../../api/axios";
 import ReportAdsModal from "./ReportAdsModal";
+import DescriptionSkeleton from "./DescriptionSkelton";
+import NotFoundMessage from "./NotFoundMessage";
 
 // Fix for default markers in React Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -64,17 +66,14 @@ const CarDescription = () => {
   
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-        <span className="ml-2">Loading...</span>
-      </div>
+      <DescriptionSkeleton/>
     );
   }
 
-  if (!car) return <div className="text-center py-8">Car not found.</div>;
+  if (!car) return <NotFoundMessage/>;
 
   if (error) {
-    return <div className="text-center py-8 text-red-500">Error: {error.message}</div>;
+    return <ErrorMessage error={error} onRetry={fetchData} />;
   }
 
   // Get map coordinates - use Chennai as default if null
@@ -134,16 +133,16 @@ const CarDescription = () => {
 
               {/* Middle section with owner, location, and date */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 py-4 border-b border-[#E1E1E1]">
-                <div className="flex items-center space-x-2">
+                {/* <div className="flex items-center space-x-2">
                   <PersonOutlined className="text-gray-500" />
                   <span className="text-sm font-medium text-gray-600">
                     Owner {car.owner_number || car.ownerNumber || '1'}
                   </span>
-                </div>
+                </div> */}
                 <div className="flex items-center space-x-2">
                   <LocationOnOutlined className="text-gray-500" />
                   <span className="text-sm font-medium text-gray-600">
-                    {car.city}, {car.district}
+                    {car.district} ,{car.state},
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -158,7 +157,7 @@ const CarDescription = () => {
               <div className="pt-4">
                 <h3 className="text-lg font-bold mb-2">Description</h3>
                 <p className="text-gray-700 text-sm">
-                  {car.description || `This ${car.manufacturing_year || car.year} ${car.brand} ${car.model} is in excellent condition. Well-maintained and ready for its next owner.`}
+                  {car.description || `This ${ car.year} ${car.brand} ${car.model} is in excellent condition. Well-maintained and ready for its next owner.`}
                 </p>
               </div>
             </div>
@@ -172,7 +171,7 @@ const CarDescription = () => {
                 <div className="flex items-center">
                   <img
                     className="w-10 h-10 rounded-full object-cover"
-                    src={car.profile_image || IMAGES.profile}
+                    src={car.profile_image || IMAGES.placeholderprofile}
                     alt="Profile"
                   />
                   <div className="ml-3">
@@ -196,7 +195,8 @@ const CarDescription = () => {
                     center={[mapCenter.lat, mapCenter.lng]}
                     zoom={13}
                     scrollWheelZoom={false}
-                    className="w-[150px] h-[150px] rounded-[10px]"
+                    className="w-[150px] h-[150px] rounded-[10px] "
+                     onClick={openGoogleMaps}
                   >
                     <TileLayer
                       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

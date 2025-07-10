@@ -8,6 +8,7 @@ import FurnishingSection from "./filter/property/FurnishingSection";
 import ConstructionStatusSection from "./filter/property/ConstructionStatusSection";
 import ListedBySection from "./filter/property/ListedBySection";
 import BuildingDirectionSection from "./filter/property/BuildingDirectionSection";
+import CategoriesSection from "./filter/property/CategoriesSection";
 
 const PropertyFilter = ({ isFilterOpen, isMobile, onApplyFilters, currentFilters }) => {
   const [expandedSections, setExpandedSections] = useState({
@@ -179,51 +180,15 @@ const PropertyFilter = ({ isFilterOpen, isMobile, onApplyFilters, currentFilters
             >
               Apply Filters
             </button>
-            
-            <div
-              className="flex justify-between items-center cursor-pointer py-2 border-b"
-              onClick={() => toggleSection("categories")}
-            >
-              <h2 className="font-medium text-gray-800">Categories</h2>
-              <svg
-                className={`w-5 h-5 transition-transform duration-300 ${
-                  expandedSections.categories ? "rotate-180" : ""
-                }`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </div>
-
-            <div
-              className={`transition-all duration-300 ease-in-out overflow-hidden custom-scrollbar ${
-                expandedSections.categories ? "max-h-40 py-2" : "max-h-0"
-              }`}
-            >
-              <div className="font-medium text-sm text-green-600 py-1">
-                Property sale & Rent in Chennai
-              </div>
-              <div className="flex items-center text-sm py-1">
-                <div className="w-4 h-4 rounded-full bg-black mr-2"></div>
-                <span>For Sale : Houses & Apartment</span>
-              </div>
-              <div className="flex items-center text-sm py-1">
-                <div className="w-4 h-4 rounded-full bg-black mr-2"></div>
-                <span>For Rent : Houses & Apartment</span>
-              </div>
-              <div className="flex items-center text-sm py-1">
-                <div className="w-4 h-4 rounded-full bg-black mr-2"></div>
-                <span>Lands & Plots</span>
-              </div>
-            </div>
+          
           </div>
+
+<CategoriesSection 
+  filters={filters}
+  setFilters={setFilters}
+  expandedSections={expandedSections}
+  toggleSection={toggleSection}
+/>
 
           {/* Location Section */}
           <div className="mb-4">

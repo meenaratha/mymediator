@@ -46,6 +46,8 @@ const UserRoutes = () => {
         <Route path="/car" element={<CarsPage />} />
         <Route path="/bike" element={<BikesPage />} />
         <Route path="/subscription-plan" element={<SubscriptionPlan />} />
+        <Route path="/filter/:category/:subcategory/:subcategoryId" element={<PropertyFilterPage />} />
+
         {/* Authendication Routes */}
       </Route>
 

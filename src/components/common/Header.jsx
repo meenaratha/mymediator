@@ -793,7 +793,7 @@ const Header = () => {
                                           }}
                                         >
                                           <Link
-                                            to={`/${item.slug}`}
+                                            to={`/filter/${data.slug}/${item.slug}/${item.id}`}
                                             className="text-gray-600 hover:text-blue-600 text-sm block py-1"
                                           >
                                             {item.name}

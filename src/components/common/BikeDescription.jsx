@@ -20,6 +20,9 @@ import BikeDetails from "./BikeDetails";
 import L from "leaflet";
 import { api } from "../../api/axios";
 import ReportAdsModal from "./ReportAdsModal";
+import DescriptionSkeleton from "./DescriptionSkelton";
+import NotFoundMessage from "./NotFoundMessage";
+import ErrorMessage from "./ErrorMessage";
 
 // Fix for default markers in React Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -65,13 +68,13 @@ const BikeDescription = () => {
   }, [slug]);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <DescriptionSkeleton/>;
   }
 
-  if (!bike) return <div>Property not found.</div>;
+  if (!bike) return <NotFoundMessage/>;
 
   if (error) {
-    return <div>Error: {error.message}</div>;
+    return <ErrorMessage error={error} onRetry={fetchData} />;
   }
 
   // Get map coordinates - use Chennai as default if null
@@ -205,7 +208,7 @@ const BikeDescription = () => {
               <div className="my-4">
                 <div
                   className="flex flex-col justify-center items-center max-w-sm mx-auto gap-[10px]"
-                  onClick={openGoogleMaps}
+                
                 >
                   <MapContainer
                     // center={[
@@ -216,6 +219,7 @@ const BikeDescription = () => {
                     zoom={13}
                     scrollWheelZoom={false}
                     className="w-[150px] h-[150px] rounded-[10px]"
+                      onClick={openGoogleMaps}
                   >
                     <TileLayer
                       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

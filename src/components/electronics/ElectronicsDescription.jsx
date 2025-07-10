@@ -20,6 +20,8 @@ import {
 import { api } from "@/api/axios";
 import ElectronicsDetails from "./ElectronicsDetails";
 import ReportAdsModal from "../common/ReportAdsModal";
+import DescriptionSkeleton from "../common/DescriptionSkelton";
+import { ErrorMessage } from "formik";
 
 // Fix for default markers in React Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -64,13 +66,13 @@ const ElectronicsDescription = () => {
   }, [slug]);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <DescriptionSkeleton/>;
   }
 
-  if (!electronics) return <div>Electronics item not found.</div>;
+  if (!electronics) return  <NotFoundMessage/>;
 
   if (error) {
-    return <div>Error: {error.message}</div>;
+    return <ErrorMessage error={error} onRetry={fetchData} />;
   }
 
   // Get map coordinates - use Chennai as default if null
@@ -191,7 +193,7 @@ const ElectronicsDescription = () => {
                   <LocationOnOutlined className="text-gray-500" />
                   <div className="text-sm">
                     <span className="font-medium text-gray-600">Location:</span>
-                    <div className="text-gray-700">{electronics.city}, {electronics.district}</div>
+                    <div className="text-gray-700"> {electronics.district},{electronics.state}</div>
                   </div>
                 </div>
               </div>
@@ -206,7 +208,7 @@ const ElectronicsDescription = () => {
                 <div className="flex items-center">
                   <img
                     className="w-10 h-10 rounded-full object-cover"
-                    src={IMAGES.profile}
+                    src={electronics.profile_image || IMAGES.placeholderprofile}
                     alt="Profile"
                   />
                   <div className="ml-3">
@@ -337,26 +339,7 @@ const ElectronicsDescription = () => {
             </div>
           )}
 
-          {electronics.city && (
-            <div className="grid grid-cols-2">
-              <div className="flex gap-[15px] justify-between">
-                <span>City </span>
-                <span>:</span>
-              </div>
-              <span className="px-[10px]">{electronics.city}</span>
-            </div>
-          )}
-
-          {electronics.mobile_number && (
-            <div className="grid grid-cols-2">
-              <div className="flex gap-[15px] justify-between">
-                <span>Contact </span>
-                <span>:</span>
-              </div>
-              <span className="px-[10px]">{electronics.mobile_number}</span>
-            </div>
-          )}
-
+    
           {electronics.view_count && (
             <div className="grid grid-cols-2">
               <div className="flex gap-[15px] justify-between">

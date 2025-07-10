@@ -9,7 +9,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { api, apiForFiles } from "../../api/axios.js";
 import IMAGES from "../../utils/images.js";
 import { useMediaQuery } from "react-responsive";
-
+import { useNavigate } from "react-router-dom";
 const SellerBikeTabContent = ({ 
   enquiryData = [], 
   loading = false, 
@@ -17,7 +17,7 @@ const SellerBikeTabContent = ({
   onRefresh = () => {} 
 }) => {
   const isMobile = useMediaQuery({ maxWidth: 767 });
-
+ const navigate = useNavigate();
   // State for bike cards with expanded state
   const [bikes, setBikes] = useState([]);
 
@@ -86,6 +86,7 @@ const SellerBikeTabContent = ({
           bikeCode: bikeData.unique_code,
           status: bikeData.status,
           description: bikeData.description,
+          slug:bikeData.action_slug || bikeData.slug,
           customerDetails: {
             name: item.name || "Customer Name",
             mobileNumber: item.mobile_number || "Not provided",
@@ -101,6 +102,19 @@ const SellerBikeTabContent = ({
       setBikes([]);
     }
   }, [enquiryData]);
+
+  // Handle card click navigation
+  const handleCardClick = (slug, e) => {
+    // Check if the click target is not a button or interactive element
+    if (
+      !e.target.closest('button') && 
+      !e.target.closest('a') && 
+      !e.target.closest('.delete-button') &&
+      slug
+    ) {
+      navigate(`/bike/${slug}`);
+    }
+  };
 
   // Toggle expanded state for a bike
   const toggleExpand = (id) => {
@@ -183,7 +197,8 @@ const SellerBikeTabContent = ({
                   boxShadow: "0px 0.96px 3.83px 0px #A9A9A940",
                   border: "1px solid #D7D7D7",
                 }}
-                onClick={() => toggleExpand(bike.id)}
+                // onClick={() => toggleExpand(bike.id)}
+                 onClick={(e) => handleCardClick(bike.slug, e)}
               >
                 <div className="flex">
                   <div className="w-20 h-20 flex-shrink-0">
@@ -223,7 +238,7 @@ const SellerBikeTabContent = ({
                         </span>
                       </div>
                     </div>
-                    <div className="text-sm mt-1 flex items-center flex-wrap gap-2">
+                    <div className="text-sm mt-1 flex items-center gap-4 flex-wrap gap-2">
                       
                      {bike.kilometers !== null ?(
 <span className="flex items-center">
@@ -244,15 +259,15 @@ const SellerBikeTabContent = ({
                       )}
                       </span>)} 
                       
-                     
+                      <span className="flex items-center">
+                        <span className="mr-1">📅</span>
+                        {bike.year}
+                      </span>
                     </div>
                   
                   
                     <div className="flex items-center justify-between mt-3 pb-[10px]">
-                       <span className="flex items-center">
-                        <span className="mr-1">📅</span>
-                        {bike.year}
-                      </span>
+                      
                       <div className="font-bold">
                         ₹ {bike.price ? bike.price.toLocaleString() : "Not specified"}
                       </div>
@@ -311,14 +326,14 @@ const SellerBikeTabContent = ({
 
                     <div className="text-sm pb-[15px]">
                       <strong>Mobile number :</strong> &nbsp;
-                      <a href={`tel:${bike.customerDetails?.mobileNumber}`} className="text-blue-600 hover:underline">
+                      <a href={`tel:${bike.customerDetails?.mobileNumber}`} className="text-gray hover:underline">
                         {bike.customerDetails?.mobileNumber || "Not provided"}
                       </a>
                     </div>
 
                     <div className="text-sm pb-[15px]">
                       <strong>E-mail Id :</strong> &nbsp;
-                      <a href={`mailto:${bike.customerDetails?.email}`} className="text-blue-600 hover:underline">
+                      <a href={`mailto:${bike.customerDetails?.email}`} className="text-gray hover:underline">
                         {bike.customerDetails?.email || "Not provided"}
                       </a>
                     </div>
@@ -329,7 +344,7 @@ const SellerBikeTabContent = ({
                         href={`https://wa.me/${bike.customerDetails?.whatsappNumber?.replace(/[^0-9]/g, '')}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-green-600 hover:underline"
+                        className="text-gray hover:underline"
                       >
                         {bike.customerDetails?.whatsappNumber || "Not provided"}
                       </a>
