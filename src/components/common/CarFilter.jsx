@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import styles from "@/styles/Home.module.css";
 import IMAGES from "@/utils/images.js";
 import CarCategoryFilter from "./filter/car/CarCategoryFilter";
+import CarBrandModelSection from "./filter/car/CarBrandModelSection";
 
 const CarFilter = ({
   isFilterOpen,
@@ -236,173 +237,14 @@ const CarFilter = ({
         <div className="py-1 text-sm font-medium">Filter</div>
 
         {/* Brand & Model Section */}
-        <div className="mb-4">
-          <div
-            className="flex justify-between items-center cursor-pointer py-2 border-b"
-            onClick={() => toggleSection("brand")}
-          >
-            <h2 className="font-medium text-gray-800">Brand & Model</h2>
-            <svg
-              className={`w-5 h-5 transition-transform duration-300 ${
-                expandedSections.brand ? "rotate-180" : ""
-              }`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </div>
 
-          <div
-            className={`transition-all duration-300 ease-in-out ${
-              expandedSections.brand ? "py-2" : "max-h-0 overflow-hidden"
-            }`}
-          >
-            {/* Search bar */}
-            <div className="relative mb-4">
-              <input
-                type="text"
-                placeholder="Search your Brand & Model"
-                className="w-full p-2 pl-8 border rounded-md text-sm"
-              />
-              <svg
-                className="absolute left-2 top-2.5 w-4 h-4 text-gray-500"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-            </div>
-
-            {/* Brand logos */}
-            <div className="grid grid-cols-3 gap-2 mb-4">
-              <div className="border rounded-md p-2 flex items-center justify-center">
-                <img
-                  src={IMAGES.toyotoLogo}
-                  alt="Toyota"
-                  className="h-15 w-15 object-contain"
-                />
-              </div>
-              <div className="border rounded-md p-2 flex items-center justify-center">
-                <img
-                  src={IMAGES.maruthiLogo}
-                  alt="Maruti Suzuki"
-                  className="h-15 w-15 object-contain"
-                />
-              </div>
-              <div className="border rounded-md p-2 flex items-center justify-center">
-                <img
-                  src={IMAGES.hondaLogo}
-                  alt="Hyundai"
-                  className="h-15 w-15 object-contain"
-                />
-              </div>
-              <div className="border rounded-md p-2 flex items-center justify-center">
-                <img
-                  src={IMAGES.mahendraLogo}
-                  alt="Mahindra"
-                  className="h-15 w-15 object-contain"
-                />
-              </div>
-              <div className="border rounded-md p-2 flex items-center justify-center">
-                <img
-                  src={IMAGES.tataLogo}
-                  alt="Tata"
-                  className="h-15 w-15 object-contain"
-                />
-              </div>
-              <div className="border rounded-md p-2 flex items-center justify-center">
-                <img
-                  src={IMAGES.hondaLogo}
-                  alt="Honda"
-                  className="h-15 w-15 object-contain"
-                />
-              </div>
-            </div>
-
-            {/* Select Brand Section */}
-            <div className="mb-4">
-              <h3 className="text-sm font-medium mb-2">Select Brand</h3>
-              <div className="h-40 overflow-y-auto  rounded-md p-2">
-                <div className="flex items-center py-1">
-                  <input type="checkbox" id="maruti" className="mr-2 h-4 w-4" />
-                  <label htmlFor="maruti" className="text-sm">
-                    Maruti Suzuki (3,561)
-                  </label>
-                </div>
-                <div className="flex items-center py-1">
-                  <input
-                    type="checkbox"
-                    id="hyundai"
-                    className="mr-2 h-4 w-4"
-                  />
-                  <label htmlFor="hyundai" className="text-sm">
-                    Hyundai (3,002)
-                  </label>
-                </div>
-                <div className="flex items-center py-1">
-                  <input type="checkbox" id="honda" className="mr-2 h-4 w-4" />
-                  <label htmlFor="honda" className="text-sm">
-                    Honda (1,152)
-                  </label>
-                </div>
-                <div className="flex items-center py-1">
-                  <input
-                    type="checkbox"
-                    id="mahindra"
-                    className="mr-2 h-4 w-4"
-                  />
-                  <label htmlFor="mahindra" className="text-sm">
-                    Mahindra (1,139)
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            {/* Select Model Section */}
-            <div className="mb-4">
-              <h3 className="text-sm font-medium mb-2">Select Model</h3>
-              <div className="h-40 overflow-y-auto  rounded-md p-2">
-                <div className="flex items-center py-1">
-                  <input type="checkbox" id="model1" className="mr-2 h-4 w-4" />
-                  <label htmlFor="model1" className="text-sm">
-                    Maruti Suzuki (3,561)
-                  </label>
-                </div>
-                <div className="flex items-center py-1">
-                  <input type="checkbox" id="model2" className="mr-2 h-4 w-4" />
-                  <label htmlFor="model2" className="text-sm">
-                    Hyundai (3,002)
-                  </label>
-                </div>
-                <div className="flex items-center py-1">
-                  <input type="checkbox" id="model3" className="mr-2 h-4 w-4" />
-                  <label htmlFor="model3" className="text-sm">
-                    Honda (1,152)
-                  </label>
-                </div>
-                <div className="flex items-center py-1">
-                  <input type="checkbox" id="model4" className="mr-2 h-4 w-4" />
-                  <label htmlFor="model4" className="text-sm">
-                    Mahindra (1,139)
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <CarBrandModelSection
+          filters={filters}
+          setFilters={setFilters}
+          expandedSections={expandedSections}
+          toggleSection={toggleSection}
+        />
+      
 
         {/* Price Section */}
         <div className="mb-4">

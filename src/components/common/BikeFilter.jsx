@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import styles from "@/styles/Home.module.css";
 import BikeCategoryFilter from "./filter/bike/BikeCategoryFilter";
+import BikeBrandModelFilter from "./filter/bike/BikeBrandModelFilter";
+import BikePrizeRangeFilter from "./filter/bike/BikePrizeRangeFilter";
 
 const BikeFilter = ({
   isFilterOpen,
@@ -240,66 +242,19 @@ const BikeFilter = ({
         <div className="py-1 text-sm font-medium">Filter</div>
 
         {/* Select Brand Section */}
-        <div className="mb-4">
-          <h3 className="text-sm font-medium mb-2">Select Brand</h3>
-          <div className="h-40 overflow-y-auto">
-            <div className="flex items-center py-1">
-              <input type="checkbox" id="maruti" className="mr-2 h-4 w-4" />
-              <label htmlFor="maruti" className="text-sm">
-                Maruti Suzuki (3,561)
-              </label>
-            </div>
-            <div className="flex items-center py-1">
-              <input type="checkbox" id="hyundai" className="mr-2 h-4 w-4" />
-              <label htmlFor="hyundai" className="text-sm">
-                Hyundai (3,002)
-              </label>
-            </div>
-            <div className="flex items-center py-1">
-              <input type="checkbox" id="honda" className="mr-2 h-4 w-4" />
-              <label htmlFor="honda" className="text-sm">
-                Honda (1,152)
-              </label>
-            </div>
-            <div className="flex items-center py-1">
-              <input type="checkbox" id="mahindra" className="mr-2 h-4 w-4" />
-              <label htmlFor="mahindra" className="text-sm">
-                Mahindra (1,139)
-              </label>
-            </div>
-          </div>
-        </div>
+        <BikeBrandModelFilter
+          filters={filters}
+          setFilters={setFilters}
+          expandedSections={expandedSections}
+          toggleSection={toggleSection}
+        />
 
-        {/* Select Model Section */}
-        <div className="mb-4">
-          <h3 className="text-sm font-medium mb-2">Select Model</h3>
-          <div className="h-40 overflow-y-auto">
-            <div className="flex items-center py-1">
-              <input type="checkbox" id="model1" className="mr-2 h-4 w-4" />
-              <label htmlFor="model1" className="text-sm">
-                Maruti Suzuki (3,561)
-              </label>
-            </div>
-            <div className="flex items-center py-1">
-              <input type="checkbox" id="model2" className="mr-2 h-4 w-4" />
-              <label htmlFor="model2" className="text-sm">
-                Hyundai (3,002)
-              </label>
-            </div>
-            <div className="flex items-center py-1">
-              <input type="checkbox" id="model3" className="mr-2 h-4 w-4" />
-              <label htmlFor="model3" className="text-sm">
-                Honda (1,152)
-              </label>
-            </div>
-            <div className="flex items-center py-1">
-              <input type="checkbox" id="model4" className="mr-2 h-4 w-4" />
-              <label htmlFor="model4" className="text-sm">
-                Mahindra (1,139)
-              </label>
-            </div>
-          </div>
-        </div>
+        <BikePrizeRangeFilter
+          filters={filters}
+          setFilters={setFilters}
+          expandedSections={expandedSections}
+          toggleSection={toggleSection}
+        />
 
         {/* KM Driven Section */}
         <div className="mb-4">
@@ -400,60 +355,6 @@ const BikeFilter = ({
               <div className="bg-gray-100 rounded p-4 flex justify-between text-sm">
                 <div className="font-medium">More then 3 Years</div>
                 <div className="text-gray-500 text-xs">(500 + Bikes)</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Price Section */}
-        <div className="mb-4">
-          <div
-            className="flex justify-between items-center cursor-pointer py-2 border-b"
-            onClick={() => toggleSection("price")}
-          >
-            <h2 className="font-medium text-gray-800">Price</h2>
-            <svg
-              className={`w-5 h-5 transition-transform duration-300 ${
-                expandedSections.price ? "rotate-180" : ""
-              }`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </div>
-
-          <div
-            className={`transition-all duration-300 ease-in-out ${
-              expandedSections.price ? "py-2" : "max-h-0 overflow-hidden"
-            }`}
-          >
-            <div className="grid grid-cols-1 gap-2">
-              <div className="bg-gray-100 rounded text-sm p-4 flex justify-between">
-                <div className="font-medium">Below 1 Lac</div>
-                <div className="text-gray-500 text-xs">310+ items</div>
-              </div>
-              <div className="bg-gray-100 rounded p-4 flex justify-between text-sm">
-                <div className="font-medium">1 Lac - 2 Lac</div>
-                <div className="text-gray-500 text-xs">1000+ items</div>
-              </div>
-              <div className="bg-gray-100 rounded p-4 flex justify-between text-sm">
-                <div className="font-medium">2 Lac - 3 Lac</div>
-                <div className="text-gray-500 text-xs">1400+ items</div>
-              </div>
-              <div className="bg-gray-100 rounded p-4 flex justify-between text-sm">
-                <div className="font-medium">3 Lac - 5 Lac</div>
-                <div className="text-gray-500 text-xs">3100+ items</div>
-              </div>
-              <div className="bg-gray-100 rounded p-4 flex justify-between text-sm">
-                <div className="font-medium">5 Lac and Above</div>
-                <div className="text-gray-500 text-xs">8700+ items</div>
               </div>
             </div>
           </div>

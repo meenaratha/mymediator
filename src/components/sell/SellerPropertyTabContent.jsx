@@ -164,7 +164,7 @@ const SellerPropertyTabContent = ({
                 <div className="flex">
                   <div className="w-20 h-20 flex-shrink-0">
                     <img
-                      src={property.image || IMAGES.placeholderimg}
+                      src={property.image_url || IMAGES.placeholderimg}
                       alt={property.title}
                       className="w-full h-full object-cover rounded-md"
                     />
