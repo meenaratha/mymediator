@@ -47,7 +47,7 @@ L.Icon.Default.mergeOptions({
 
 const BikeDetails = ({ bike }) => {
   const isMobile = useMediaQuery({ maxWidth: 767 });
-  const [isFavorite, setIsFavorite] = useState(bike?.is_wishlisted || false);
+  const [isFavorite, setIsFavorite] = useState(bike?.wishlist || false);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
@@ -208,6 +208,15 @@ const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
     }
   };
 
+  const handleEnquiryClick = () => {
+    console.log("🔄 Enquiry button clicked");
+    console.log("Current showEnquiryPopup state:", showEnquiryPopup);
+
+    setShowEnquiryPopup(true);
+
+    console.log("✅ setShowEnquiryPopup(true) called");
+  };
+
   if (!bike) {
     return <div className="text-center py-8">Bike not found</div>;
   }
@@ -216,28 +225,28 @@ const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
     <>
       {/* Enquiry Modal */}
       {showEnquiryPopup && (
-        <EnquiryForm onClose={() => setShowEnquiryPopup(false)}
-        propertyData={bike}
-    enquirableType={bike.form_type}
+        <EnquiryForm
+          onClose={() => setShowEnquiryPopup(false)}
+          propertyData={bike}
+          enquirableType={bike.form_type}
         />
       )}
 
       {loginFormModel && (
-  <LoginFormModel
-    setSignupFormModel={setSignupFormModel}
-    setLoginFormModel={setLoginFormModel}
-    setForgotPasswordModal={setForgotPasswordModal}
-  />
-)}
+        <LoginFormModel
+          setSignupFormModel={setSignupFormModel}
+          setLoginFormModel={setLoginFormModel}
+          setForgotPasswordModal={setForgotPasswordModal}
+        />
+      )}
 
-{signupFormModel && (
-  <SignupFormModel
-   setSignupFormModel={setSignupFormModel}
-    setLoginFormModel={setLoginFormModel}
-    setForgotPasswordModal={setForgotPasswordModal}
-  />
-)}
-
+      {signupFormModel && (
+        <SignupFormModel
+          setSignupFormModel={setSignupFormModel}
+          setLoginFormModel={setLoginFormModel}
+          setForgotPasswordModal={setForgotPasswordModal}
+        />
+      )}
 
       <div className="">
         <div className="flex flex-col md:flex-row py-10">
@@ -260,7 +269,9 @@ const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
                       <SwiperSlide
                         key={index}
                         className={`w-24 h-16 rounded overflow-hidden cursor-pointer border-2 ${
-                          activeIndex === index ? "border-blue-500" : "border-gray-200"
+                          activeIndex === index
+                            ? "border-blue-500"
+                            : "border-gray-200"
                         }`}
                         onClick={() => {
                           if (mainSwiper) {
@@ -288,7 +299,10 @@ const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
                     spaceBetween={20}
                     loop={true}
                     thumbs={{
-                      swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null,
+                      swiper:
+                        thumbsSwiper && !thumbsSwiper.destroyed
+                          ? thumbsSwiper
+                          : null,
                     }}
                     autoplay={{
                       delay: 3000,
@@ -315,16 +329,16 @@ const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
                               size="small"
                               onClick={handleShareClick}
                               className="bg-white bg-opacity-80 hover:bg-opacity-100"
-                              sx={{ 
-                                width: 36, 
+                              sx={{
+                                width: 36,
                                 height: 36,
-                                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                                '&:hover': {
-                                  backgroundColor: 'rgba(255, 255, 255, 1)',
-                                }
+                                backgroundColor: "rgba(255, 255, 255, 0.9)",
+                                "&:hover": {
+                                  backgroundColor: "rgba(255, 255, 255, 1)",
+                                },
                               }}
                             >
-                              <ShareIcon sx={{ fontSize: 20, color: 'gray' }} />
+                              <ShareIcon sx={{ fontSize: 20, color: "gray" }} />
                             </IconButton>
 
                             <IconButton
@@ -332,46 +346,48 @@ const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
                               onClick={handleWishlistClick}
                               disabled={isWishlistLoading}
                               className="bg-white bg-opacity-80 hover:bg-opacity-100"
-                              sx={{ 
-                                width: 36, 
+                              sx={{
+                                width: 36,
                                 height: 36,
-                                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                                '&:hover': {
-                                  backgroundColor: 'rgba(255, 255, 255, 1)',
-                                }
+                                backgroundColor: "rgba(255, 255, 255, 0.9)",
+                                "&:hover": {
+                                  backgroundColor: "rgba(255, 255, 255, 1)",
+                                },
                               }}
                             >
                               {isFavorite ? (
-                              <FavoriteIcon
-                                sx={{ 
-                                  fontSize: 20,
-                                  color: red[500]
-                                }}
-                              />
-                            ) : (
-                              <FavoriteBorderIcon
-                                sx={{ 
-                                  fontSize: 20,
-                                  color: 'gray'
-                                }}
-                              />
-                            )}
+                                <FavoriteIcon
+                                  sx={{
+                                    fontSize: 20,
+                                    color: red[500],
+                                  }}
+                                />
+                              ) : (
+                                <FavoriteBorderIcon
+                                  sx={{
+                                    fontSize: 20,
+                                    color: "gray",
+                                  }}
+                                />
+                              )}
                             </IconButton>
 
                             <IconButton
                               size="small"
                               onClick={() => handleZoomIn(image, index)}
                               className="bg-white bg-opacity-80 hover:bg-opacity-100"
-                              sx={{ 
-                                width: 36, 
+                              sx={{
+                                width: 36,
                                 height: 36,
-                                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                                '&:hover': {
-                                  backgroundColor: 'rgba(255, 255, 255, 1)',
-                                }
+                                backgroundColor: "rgba(255, 255, 255, 0.9)",
+                                "&:hover": {
+                                  backgroundColor: "rgba(255, 255, 255, 1)",
+                                },
                               }}
                             >
-                              <ZoomInIcon sx={{ fontSize: 20, color: 'gray' }} />
+                              <ZoomInIcon
+                                sx={{ fontSize: 20, color: "gray" }}
+                              />
                             </IconButton>
                           </div>
                         </div>
@@ -395,7 +411,7 @@ const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
                 <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-300">
                   {bike.profile_image ? (
                     <img
-                      src={bike.profile_image  || IMAGES.placeholderprofile}
+                      src={bike.profile_image || IMAGES.placeholderprofile}
                       alt="Seller"
                       className="w-full h-full object-cover"
                     />
@@ -412,8 +428,10 @@ const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
                   <p className="text-sm text-gray-500">Owner</p>
                 </div>
                 <div className="ml-auto">
-                  <Link  to= {`/seller-profile/${bike.vendor_id}`} 
-                  className="text-blue-600 text-sm font-medium cursor-pointer">
+                  <Link
+                    to={`/seller-profile/${bike.vendor_id}`}
+                    className="text-blue-600 text-sm font-medium cursor-pointer"
+                  >
                     See Profile
                   </Link>
                 </div>
@@ -431,7 +449,7 @@ const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
                     <p className="font-semibold text-xl">{bike.state}</p>
                   </div>
                   <div className="ml-auto">
-                    <div 
+                    <div
                       className="w-[150px] h-[150px] rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity duration-200 relative group"
                       onClick={openGoogleMaps}
                       title="Click to open in Google Maps"
@@ -449,7 +467,8 @@ const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
                         />
                         <Marker position={[mapCenter.lat, mapCenter.lng]}>
                           <Popup>
-                            {bike.brand} {bike.model} <br /> {bike.subcategory || 'bike'}
+                            {bike.brand} {bike.model} <br />{" "}
+                            {bike.subcategory || "bike"}
                           </Popup>
                         </Marker>
                       </MapContainer>
@@ -457,8 +476,12 @@ const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
                       {/* Overlay with Google Maps icon */}
                       <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                         <div className="text-white text-center">
-                          <svg className="w-8 h-8 mx-auto mb-1" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                          <svg
+                            className="w-8 h-8 mx-auto mb-1"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
                           </svg>
                           <span className="text-xs">Open in Google Maps</span>
                         </div>
@@ -466,8 +489,6 @@ const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
                     </div>
                   </div>
                 </div>
-
-              
               </div>
             </div>
           </div>
@@ -489,7 +510,7 @@ const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
 
               <div className="flex items-center mt-2 mb-2">
                 <p className="mr-4">
-                  {bike.year} - {bike.kilometers || 'N/A'} km
+                  {bike.year} - {bike.kilometers || "N/A"} km
                 </p>
                 <div className="flex items-center">
                   <StarIcon className="text-orange-500" />
@@ -504,18 +525,18 @@ const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
                 </p>
               </div>
             </div>
-            
+
             <div className="w-full md:w-1/2 flex flex-col md:items-center md:mt-[10px]">
               <div className="mt-1 md:mt-0">
                 <h3 className="md:text-2xl text-[20px] font-bold md:text-center text-black">
-                  ₹ {bike.price ? parseFloat(bike.price).toLocaleString() : "N/A"}
+                  ₹{" "}
+                  {bike.price ? parseFloat(bike.price).toLocaleString() : "N/A"}
                 </h3>
                 <div className="flex mt-4 space-x-4 justify-center">
                   <button
-                    onClick={() => setShowEnquiryPopup(true)}
-                    className="bg-[#02487C]
-                     text-white px-6 py-3 rounded-[25px]
-                      cursor-pointer flex items-center justify-center flex-1"
+                    onClick={handleEnquiryClick}
+                    className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] cursor-pointer flex items-center justify-center flex-1"
+                    type="button" // Add explicit type
                   >
                     <QuestionAnswerIcon fontSize="small" className="mr-2" />
                     Enquiry
@@ -535,8 +556,6 @@ const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
             </div>
           </div>
         </div>
-
-       
       </div>
 
       {/* Reusable Share Modal */}
@@ -544,10 +563,21 @@ const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
         isOpen={showShareModal}
         onClose={handleShareClose}
         url={getCurrentUrl()}
-        title={`Check out this ${bike.brand} ${bike.model} - ₹${bike.price ? parseFloat(bike.price).toLocaleString() : "N/A"}`}
-        description={bike.description || `${bike.subcategory} in excellent condition`}
+        title={`Check out this ${bike.brand} ${bike.model} - ₹${
+          bike.price ? parseFloat(bike.price).toLocaleString() : "N/A"
+        }`}
+        description={
+          bike.description || `${bike.subcategory} in excellent condition`
+        }
         modalTitle="Share this bike"
-        showPlatforms={['whatsapp', 'facebook', 'twitter', 'instagram', 'telegram', 'linkedin']}
+        showPlatforms={[
+          "whatsapp",
+          "facebook",
+          "twitter",
+          "instagram",
+          "telegram",
+          "linkedin",
+        ]}
       />
 
       {/* Snackbar for notifications */}
@@ -555,12 +585,12 @@ const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
         open={snackbar.open}
         autoHideDuration={3000}
         onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
         <Alert
           onClose={handleSnackbarClose}
           severity={snackbar.severity}
-          sx={{ width: '100%' }}
+          sx={{ width: "100%" }}
         >
           {snackbar.message}
         </Alert>

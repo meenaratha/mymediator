@@ -71,9 +71,11 @@ const SellerBikeTabContent = ({
         return {
           id: item.id,
           title: bikeData.title || bikeData.bike_name || "Bike",
-          location: bikeData.address || bikeData.location || "Location not specified",
+          location:
+            bikeData.address || bikeData.location || "Location not specified",
           year: bikeData.year || bikeData.model_year || "Not specified",
-          kilometers: bikeData.kilometers || bikeData.mileage || "Not specified",
+          kilometers:
+            bikeData.kilometers || bikeData.mileage || "Not specified",
           fuelType: formatFuelType(bikeData.fuel_type_id),
           bikeType: formatBikeType(bikeData.subcategory_id),
           engineCC: formatEngineCC(bikeData.engine_capacity),
@@ -82,18 +84,19 @@ const SellerBikeTabContent = ({
           model: bikeData.model_name || bikeData.model || "Unknown",
           price: parseFloat(bikeData.price) || parseFloat(bikeData.amount) || 0,
           expanded: index === 0, // First item expanded by default
-          image: bikeData.image,
+          image: bikeData.image_url,
           bikeCode: bikeData.unique_code,
           status: bikeData.status,
           description: bikeData.description,
-          slug:bikeData.action_slug || bikeData.slug,
+          slug: bikeData.action_slug || bikeData.slug,
           customerDetails: {
             name: item.name || "Customer Name",
             mobileNumber: item.mobile_number || "Not provided",
             email: item.email || "Not provided",
-            whatsappNumber: item.whatsapp_number || item.mobile_number || "Not provided",
+            whatsappNumber:
+              item.whatsapp_number || item.mobile_number || "Not provided",
             message: item.message || "No message provided",
-          }
+          },
         };
       });
       setBikes(formattedBikes);

@@ -3,6 +3,10 @@ import styles from "@/styles/Home.module.css";
 import BikeCategoryFilter from "./filter/bike/BikeCategoryFilter";
 import BikeBrandModelFilter from "./filter/bike/BikeBrandModelFilter";
 import BikePrizeRangeFilter from "./filter/bike/BikePrizeRangeFilter";
+import BikeKilometersFilter from "./filter/bike/BikeKilometersFilter";
+import BikeYearFilter from "./filter/bike/BikeYearFilter";
+import ListedBySection from "./filter/property/ListedBySection";
+import BikeOwnerFilter from "./filter/bike/BikeOwnerFilter";
 
 const BikeFilter = ({
   isFilterOpen,
@@ -257,108 +261,36 @@ const BikeFilter = ({
         />
 
         {/* KM Driven Section */}
-        <div className="mb-4">
-          <div
-            className="flex justify-between items-center cursor-pointer py-2 border-b"
-            onClick={() => toggleSection("kmDriven")}
-          >
-            <h2 className="font-medium text-gray-800">KM Driven</h2>
-            <svg
-              className={`w-5 h-5 transition-transform duration-300 ${
-                expandedSections.kmDriven ? "rotate-180" : ""
-              }`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </div>
 
-          <div
-            className={`transition-all duration-300 ease-in-out ${
-              expandedSections.kmDriven ? "py-2" : "max-h-0 overflow-hidden"
-            }`}
-          >
-            <div className="grid grid-cols-1 gap-2">
-              <div className="bg-gray-100 rounded text-sm p-4 flex justify-between">
-                <div className="font-medium">Below 25,000 Km</div>
-                <div className="text-gray-500 text-xs">310+ items</div>
-              </div>
-              <div className="bg-gray-100 rounded p-4 flex justify-between text-sm">
-                <div className="font-medium">25,000 Km - 50,000 Km</div>
-                <div className="text-gray-500 text-xs">110+ items</div>
-              </div>
-              <div className="bg-gray-100 rounded p-4 flex justify-between text-sm">
-                <div className="font-medium">50,000 Km - 75,000 Km</div>
-                <div className="text-gray-500 text-xs">110+ items</div>
-              </div>
-              <div className="bg-gray-100 rounded p-4 flex justify-between text-sm">
-                <div className="font-medium">75,000 Km - 85,000 Km</div>
-                <div className="text-gray-500 text-xs">110+ items</div>
-              </div>
-              <div className="bg-gray-100 rounded p-4 flex justify-between text-sm">
-                <div className="font-medium">90,000 Km - 100,000 Km</div>
-                <div className="text-gray-500 text-xs">110+ items</div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <BikeKilometersFilter
+          filters={filters}
+          setFilters={setFilters}
+          expandedSections={expandedSections}
+          toggleSection={toggleSection}
+        />
 
         {/* Year Section */}
-        <div className="mb-4">
-          <div
-            className="flex justify-between items-center cursor-pointer py-2 border-b"
-            onClick={() => toggleSection("year")}
-          >
-            <h2 className="font-medium text-gray-800">Year</h2>
-            <svg
-              className={`w-5 h-5 transition-transform duration-300 ${
-                expandedSections.year ? "rotate-180" : ""
-              }`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </div>
 
-          <div
-            className={`transition-all duration-300 ease-in-out ${
-              expandedSections.year ? "py-2" : "max-h-0 overflow-hidden"
-            }`}
-          >
-            <div className="grid grid-cols-1 gap-2">
-              <div className="bg-gray-100 rounded text-sm p-4 flex justify-between">
-                <div className="font-medium">Under 3 Years</div>
-                <div className="text-gray-500 text-xs">(1,000 + Bikes)</div>
-              </div>
-              <div className="bg-gray-100 rounded p-4 flex justify-between text-sm">
-                <div className="font-medium">Under 5 Years</div>
-                <div className="text-gray-500 text-xs">(1,524 + Bikes)</div>
-              </div>
-              <div className="bg-gray-100 rounded p-4 flex justify-between text-sm">
-                <div className="font-medium">Under 7 Years</div>
-                <div className="text-gray-500 text-xs">(2,453 + Bikes)</div>
-              </div>
-              <div className="bg-gray-100 rounded p-4 flex justify-between text-sm">
-                <div className="font-medium">More then 3 Years</div>
-                <div className="text-gray-500 text-xs">(500 + Bikes)</div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <BikeYearFilter
+          filters={filters}
+          setFilters={setFilters}
+          expandedSections={expandedSections}
+          toggleSection={toggleSection}
+        />
+
+        <ListedBySection
+          filters={filters}
+          setFilters={setFilters}
+          expandedSections={expandedSections}
+          toggleSection={toggleSection}
+        />
+
+        <BikeOwnerFilter
+          filters={filters}
+          setFilters={setFilters}
+          expandedSections={expandedSections}
+          toggleSection={toggleSection}
+        />
       </div>
     </div>
   );

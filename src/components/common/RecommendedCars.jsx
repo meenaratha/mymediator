@@ -74,7 +74,9 @@ const RecommendedCars = () => {
   }, []);
 
   const handleCardClick = (car) => {
-    navigate(`/car/${car.action_slug}`);
+    // navigate(`/car/${car.action_slug}`);
+    window.location.href = `/car/${car.action_slug}`;
+
   };
 
   if (loading) {

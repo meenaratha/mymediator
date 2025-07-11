@@ -6,7 +6,7 @@ class PropertyFormService {
   fieldMapping = {
     // Reverse mapping for error handling
     media_to_delete: "",
-            form_type: "property",
+    form_type: "property",
     property_name: "propertyName",
     mobile_number: "mobileNumber",
     listed_by: "listedBy",
@@ -32,8 +32,7 @@ class PropertyFormService {
     bike_parking: "bikeParking",
     car_parking: "carParking",
     bachelor: "bachelor",
-    wash_room: "washRoom",
-    washroom: "washRoom", // Handle both variations
+    wash_room: "wash_room",
     description: "description",
     images: "images",
     videos: "videos",
@@ -84,7 +83,7 @@ class PropertyFormService {
   transformFormData(formData, slug, subcategoryId, urlId) {
     // Base payload structure
     const basePayload = {
-              form_type: "property",
+      form_type: "property",
 
       subcategory_id: subcategoryId,
       url_id: urlId, // ID from URL params
@@ -116,7 +115,6 @@ class PropertyFormService {
           length: parseInt(formData.length) || formData.length,
           breadth: parseInt(formData.breadth) || formData.breadth,
         };
-
 
       case "for-sale-houses-apartments":
       case "for-rent-houses-apartments":
@@ -156,14 +154,14 @@ class PropertyFormService {
           total_floors: parseInt(formData.totalFloor) || formData.totalFloor,
           maintenance_id:
             parseInt(formData.maintenance) || formData.maintenance,
-          washroom: parseInt(formData.washRoom) || formData.washRoom,
+          wash_room: parseInt(formData.wash_room) || formData.wash_room,
           bike_parking: parseInt(formData.bikeParking) || formData.bikeParking,
           car_parking: parseInt(formData.carParking) || formData.carParking,
         };
 
       default:
         return {
-           ...basePayload,
+          ...basePayload,
           plot_area: parseInt(formData.plotArea) || formData.plotArea,
           length: parseInt(formData.length) || formData.length,
           breadth: parseInt(formData.breadth) || formData.breadth,

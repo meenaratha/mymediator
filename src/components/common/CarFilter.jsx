@@ -3,6 +3,11 @@ import styles from "@/styles/Home.module.css";
 import IMAGES from "@/utils/images.js";
 import CarCategoryFilter from "./filter/car/CarCategoryFilter";
 import CarBrandModelSection from "./filter/car/CarBrandModelSection";
+import CarPrizeFilter from "./filter/car/CarPrizeFilter";
+import CarKilometersFilter from "./filter/car/CarKilometersFilter";
+import CarYearFilter from "./filter/car/CarYearFilter";
+import ListedBySection from "./filter/property/ListedBySection";
+import CarTransmissionFilter from "./filter/car/CarTransmissionFilter";
 
 const CarFilter = ({
   isFilterOpen,
@@ -244,165 +249,47 @@ const CarFilter = ({
           expandedSections={expandedSections}
           toggleSection={toggleSection}
         />
-      
 
         {/* Price Section */}
-        <div className="mb-4">
-          <div
-            className="flex justify-between items-center cursor-pointer py-2 border-b"
-            onClick={() => toggleSection("price")}
-          >
-            <h2 className="font-medium text-gray-800">Price</h2>
-            <svg
-              className={`w-5 h-5 transition-transform duration-300 ${
-                expandedSections.price ? "rotate-180" : ""
-              }`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </div>
 
-          <div
-            className={`transition-all duration-300 ease-in-out ${
-              expandedSections.price ? "py-2" : "max-h-0 overflow-hidden"
-            }`}
-          >
-            <div className="grid grid-cols-1 gap-2">
-              <div className="bg-gray-100 rounded text-sm p-4 flex justify-between">
-                <div className="font-medium">Below 1 Lac</div>
-                <div className="text-gray-500 text-xs">310+ items</div>
-              </div>
-              <div className="bg-gray-100 rounded p-4 flex justify-between text-sm">
-                <div className="font-medium">1 Lac - 2 Lac</div>
-                <div className="text-gray-500 text-xs">1000+ items</div>
-              </div>
-              <div className="bg-gray-100 rounded p-4 flex justify-between text-sm">
-                <div className="font-medium">2 Lac - 3 Lac</div>
-                <div className="text-gray-500 text-xs">1400+ items</div>
-              </div>
-              <div className="bg-gray-100 rounded p-4 flex justify-between text-sm">
-                <div className="font-medium">3 Lac - 5 Lac</div>
-                <div className="text-gray-500 text-xs">3100+ items</div>
-              </div>
-              <div className="bg-gray-100 rounded p-4 flex justify-between text-sm">
-                <div className="font-medium">5 Lac and Above</div>
-                <div className="text-gray-500 text-xs">8700+ items</div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <CarPrizeFilter
+          filters={filters}
+          setFilters={setFilters}
+          expandedSections={expandedSections}
+          toggleSection={toggleSection}
+        />
 
         {/* KM Driven Section */}
-        <div className="mb-4">
-          <div
-            className="flex justify-between items-center cursor-pointer py-2 border-b"
-            onClick={() => toggleSection("kmDriven")}
-          >
-            <h2 className="font-medium text-gray-800">KM Driven</h2>
-            <svg
-              className={`w-5 h-5 transition-transform duration-300 ${
-                expandedSections.kmDriven ? "rotate-180" : ""
-              }`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </div>
 
-          <div
-            className={`transition-all duration-300 ease-in-out ${
-              expandedSections.kmDriven ? "py-2" : "max-h-0 overflow-hidden"
-            }`}
-          >
-            <div className="grid grid-cols-1 gap-2">
-              <div className="bg-gray-100 rounded text-sm p-4 flex justify-between">
-                <div className="font-medium">Below 25,000 Km</div>
-                <div className="text-gray-500 text-xs">310+ items</div>
-              </div>
-              <div className="bg-gray-100 rounded p-4 flex justify-between text-sm">
-                <div className="font-medium">25,000 Km - 50,000 Km</div>
-                <div className="text-gray-500 text-xs">110+ items</div>
-              </div>
-              <div className="bg-gray-100 rounded p-4 flex justify-between text-sm">
-                <div className="font-medium">50,000 Km - 75,000 Km</div>
-                <div className="text-gray-500 text-xs">110+ items</div>
-              </div>
-              <div className="bg-gray-100 rounded p-4 flex justify-between text-sm">
-                <div className="font-medium">75,000 Km - 85,000 Km</div>
-                <div className="text-gray-500 text-xs">110+ items</div>
-              </div>
-              <div className="bg-gray-100 rounded p-4 flex justify-between text-sm">
-                <div className="font-medium">90,000 Km - 100,000 Km</div>
-                <div className="text-gray-500 text-xs">110+ items</div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <CarKilometersFilter
+          filters={filters}
+          setFilters={setFilters}
+          expandedSections={expandedSections}
+          toggleSection={toggleSection}
+        />
 
         {/* Year Section */}
-        <div className="mb-4">
-          <div
-            className="flex justify-between items-center cursor-pointer py-2 border-b"
-            onClick={() => toggleSection("year")}
-          >
-            <h2 className="font-medium text-gray-800">Year</h2>
-            <svg
-              className={`w-5 h-5 transition-transform duration-300 ${
-                expandedSections.year ? "rotate-180" : ""
-              }`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </div>
 
-          <div
-            className={`transition-all duration-300 ease-in-out ${
-              expandedSections.year ? "py-2" : "max-h-0 overflow-hidden"
-            }`}
-          >
-            <div className="grid grid-cols-1 gap-2">
-              <div className="bg-gray-100 rounded text-sm p-4 flex justify-between">
-                <div className="font-medium">Under 3 Years</div>
-                <div className="text-gray-500 text-xs">(1,000 + Cars)</div>
-              </div>
-              <div className="bg-gray-100 rounded p-4 flex justify-between text-sm">
-                <div className="font-medium">Under 5 Years</div>
-                <div className="text-gray-500 text-xs">(1,524 + Cars)</div>
-              </div>
-              <div className="bg-gray-100 rounded p-4 flex justify-between text-sm">
-                <div className="font-medium">Under 7 Years</div>
-                <div className="text-gray-500 text-xs">(2,453 + Cars)</div>
-              </div>
-              <div className="bg-gray-100 rounded p-4 flex justify-between text-sm">
-                <div className="font-medium">More than 3 Years</div>
-                <div className="text-gray-500 text-xs">(500 + Cars)</div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <CarYearFilter
+          filters={filters}
+          setFilters={setFilters}
+          expandedSections={expandedSections}
+          toggleSection={toggleSection}
+        />
+
+        <ListedBySection
+          filters={filters}
+          setFilters={setFilters}
+          expandedSections={expandedSections}
+          toggleSection={toggleSection}
+        />
+
+        <CarTransmissionFilter
+          filters={filters}
+          setFilters={setFilters}
+          expandedSections={expandedSections}
+          toggleSection={toggleSection}
+        />
 
         {/* No of owner Section */}
         <div className="mb-4">

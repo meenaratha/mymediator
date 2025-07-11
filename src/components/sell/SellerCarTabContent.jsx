@@ -70,7 +70,7 @@ const SellerCarTabContent = ({
           owners: formatOwners(carData.number_of_owner_id),
           price: parseFloat(carData.price) || 0,
           expanded: index === 0, // First item expanded by default
-          image: carData.image,
+          image: carData.image_url,
           carCode: carData.unique_code,
           status: carData.status,
           description: carData.description,
@@ -81,9 +81,10 @@ const SellerCarTabContent = ({
             name: item.name || "Customer Name",
             mobileNumber: item.mobile_number || "Not provided",
             email: item.email || "Not provided",
-            whatsappNumber: item.whatsapp_number || item.mobile_number || "Not provided",
+            whatsappNumber:
+              item.whatsapp_number || item.mobile_number || "Not provided",
             message: item.message || "No message provided",
-          }
+          },
         };
       });
       setCars(formattedCars);

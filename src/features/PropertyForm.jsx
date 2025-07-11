@@ -8,7 +8,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { DynamicInputs } from "@/components";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -46,23 +46,35 @@ const GOOGLE_MAP_LIBRARIES = ["places"];
 
 const PropertyForm = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { slug, id } = useParams(); // Get both slug and id from URL params
   const location = useLocation();
   const isEditMode = location.pathname.includes("edit");
-  
+  const subName = location.state?.subName;
+  const editFormTitle = location.state?.slugName;
   const [autocomplete, setAutocomplete] = useState(null);
 
   useEffect(() => {
     if (!isEditMode) {
-      dispatch(clearAutoPopulateData()); // Clear form data when not in edit mode
+      console.log("🧹 Exiting edit mode - clearing form data");
+
+      // Reset everything to initial state
+      dispatch(resetForm());
+
+      // Clear local states
+      setDeletedMediaIds({ images: [], videos: [] });
+
+      // Clear auto-populate data
+      dispatch(clearAutoPopulateData());
+
+      console.log("✅ Form cleared successfully");
     }
-  }, [isEditMode]);
+  }, [isEditMode, dispatch]);
 
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
     libraries: GOOGLE_MAP_LIBRARIES,
   });
-
 
   const onLoad = (autocomplete) => {
     setAutocomplete(autocomplete);
@@ -103,11 +115,8 @@ const PropertyForm = () => {
     }
   };
 
-
-
   const { formData, errors, touched, isLoading, apiError, autoPopulateData } =
     useSelector((state) => state.propertyform);
-  
 
   const focusedField = useSelector((state) => state.propertyform.focusedField);
   const [isDragging, setIsDragging] = useState(false);
@@ -145,7 +154,7 @@ const PropertyForm = () => {
       type: "house-apartment",
       showFields: {
         bachelor: false,
-        washroom: false,
+        wash_room: false,
         bhk: true,
         bedroom: true,
         bathroom: true,
@@ -169,7 +178,7 @@ const PropertyForm = () => {
       type: "house-apartment",
       showFields: {
         bachelor: true,
-        washroom: false,
+        wash_room: false,
         bhk: true,
         bedroom: true,
         bathroom: true,
@@ -193,7 +202,7 @@ const PropertyForm = () => {
       type: "land-plot",
       showFields: {
         bachelor: false,
-        washroom: false,
+        wash_room: false,
         bhk: false,
         bedroom: false,
         bathroom: false,
@@ -217,7 +226,7 @@ const PropertyForm = () => {
       type: "commercial",
       showFields: {
         bachelor: false,
-        washroom: true,
+        wash_room: true,
         bhk: false,
         bedroom: false,
         bathroom: false,
@@ -241,7 +250,7 @@ const PropertyForm = () => {
       type: "commercial",
       showFields: {
         bachelor: false,
-        washroom: true,
+        wash_room: true,
         bhk: false,
         bedroom: false,
         bathroom: false,
@@ -461,91 +470,6 @@ const PropertyForm = () => {
     [dispatch, isAutoPopulating, formData.city]
   );
 
-  // Load districts when state changes
-  useEffect(() => {
-    if (!formData.state) {
-      // Clear districts and cities if no state selected
-      if (!isAutoPopulating) {
-        setDropdownData((prev) => ({
-          ...prev,
-          districts: [],
-          cities: [],
-        }));
-        // Clear dependent fields
-        if (formData.district) {
-          dispatch(updateFormField({ field: "district", value: "" }));
-        }
-        if (formData.city) {
-          dispatch(updateFormField({ field: "city", value: "" }));
-        }
-      }
-      return;
-    }
-
-    // Load districts for the selected state
-    loadDistricts(formData.state);
-  }, [
-    formData.state,
-    loadDistricts,
-    dispatch,
-    isAutoPopulating,
-    formData.district,
-    formData.city,
-  ]);
-
-  // Load cities when district changes
-  useEffect(() => {
-    if (!formData.district) {
-      // Clear cities if no district selected
-      if (!isAutoPopulating) {
-        setDropdownData((prev) => ({
-          ...prev,
-          cities: [],
-        }));
-        // Clear city field
-        if (formData.city) {
-          dispatch(updateFormField({ field: "city", value: "" }));
-        }
-      }
-      return;
-    }
-
-    // Load cities for the selected district
-    loadCities(formData.district);
-  }, [
-    formData.district,
-    loadCities,
-    dispatch,
-    isAutoPopulating,
-    formData.city,
-  ]);
-
-  // Special handling for auto-population - ensure dependent dropdowns are loaded
-  useEffect(() => {
-    if (isAutoPopulating && formData.state && formData.district) {
-      // When auto-populating, we need to ensure districts are loaded first
-      const ensureDistrictsLoaded = async () => {
-        if (dropdownData.districts.length === 0) {
-          await loadDistricts(formData.state);
-        }
-        // Then load cities if we have a district
-        if (formData.district && dropdownData.cities.length === 0) {
-          await loadCities(formData.district);
-        }
-      };
-
-      ensureDistrictsLoaded();
-    }
-  }, [
-    isAutoPopulating,
-    formData.state,
-    formData.district,
-    dropdownData.districts.length,
-    dropdownData.cities.length,
-    loadDistricts,
-    loadCities,
-  ]);
-
   // 4. Update the initial dropdown loading to handle all responses properly
   useEffect(() => {
     const loadDropdownData = async () => {
@@ -700,40 +624,120 @@ const PropertyForm = () => {
       dispatch(setLoading(true));
       try {
         const response = await apiForFiles.get(`/property/${id}/edit`);
-        const result = response.data; // ✅ FIXED: use response.data
+        const result = response.data;
 
         console.log("API response:", result);
         if (result.status && result.data) {
           console.log("autopapulayte", result.data);
+
           // Store the action_id from API response in formData
           dispatch(
             populateFormFromApi({
               ...result.data,
-              action_id: result.data.action_id, // Make sure this matches your API response
+              action_id: result.data.action_id,
             })
           );
-          // After populating, wait for state to update
-          setTimeout(() => {
-            // Now load dependent dropdowns if needed
-            if (result.data.state) {
-              loadDistricts(result.data.state).then(() => {
-                if (result.data.district) {
-                  loadCities(result.data.district);
-                }
-              });
+
+          // FIXED: Load dependent dropdowns after form data is populated
+          // Use setTimeout to ensure Redux state has been updated
+          setTimeout(async () => {
+            if (result.data.state_id || result.data.state) {
+              const stateId = result.data.state_id || result.data.state;
+              console.log(
+                "Loading districts for auto-populated state:",
+                stateId
+              );
+              await loadDistricts(stateId);
+
+              // Then load cities if district exists
+              if (result.data.district_id || result.data.district) {
+                const districtId =
+                  result.data.district_id || result.data.district;
+                console.log(
+                  "Loading cities for auto-populated district:",
+                  districtId
+                );
+                await loadCities(districtId);
+              }
             }
-          }, 0);
+          }, 100); // Small delay to ensure Redux state update
         } else {
           dispatch(setApiError("Failed to load property data"));
         }
       } catch (error) {
         console.error("Auto-populate error:", error);
         dispatch(setApiError("Failed to auto-populate form."));
+      } finally {
+        dispatch(setLoading(false));
       }
     };
 
     handleApiAutoPopulate();
-  }, [isEditMode, id]);
+  }, [isEditMode, id, loadDistricts, loadCities, dispatch]);
+
+  // FIXED: Update the loadDistricts useEffect to handle auto-population better
+  useEffect(() => {
+    if (!formData.state) {
+      // Clear districts and cities if no state selected
+      if (!isAutoPopulating) {
+        setDropdownData((prev) => ({
+          ...prev,
+          districts: [],
+          cities: [],
+        }));
+        // Clear dependent fields
+        if (formData.district) {
+          dispatch(updateFormField({ field: "district", value: "" }));
+        }
+        if (formData.city) {
+          dispatch(updateFormField({ field: "city", value: "" }));
+        }
+      }
+      return;
+    }
+
+    // FIXED: Only auto-load districts if not currently auto-populating
+    // During auto-population, districts are loaded manually in handleApiAutoPopulate
+    if (!isAutoPopulating) {
+      loadDistricts(formData.state);
+    }
+  }, [
+    formData.state,
+    loadDistricts,
+    dispatch,
+    isAutoPopulating, // Added this dependency
+    formData.district,
+    formData.city,
+  ]);
+
+  // FIXED: Update the loadCities useEffect similarly
+  useEffect(() => {
+    if (!formData.district) {
+      // Clear cities if no district selected
+      if (!isAutoPopulating) {
+        setDropdownData((prev) => ({
+          ...prev,
+          cities: [],
+        }));
+        // Clear city field
+        if (formData.city) {
+          dispatch(updateFormField({ field: "city", value: "" }));
+        }
+      }
+      return;
+    }
+
+    // FIXED: Only auto-load cities if not currently auto-populating
+    if (!isAutoPopulating) {
+      loadCities(formData.district);
+    }
+  }, [
+    formData.district,
+    loadCities,
+    dispatch,
+    isAutoPopulating, // Added this dependency
+    formData.city,
+  ]);
 
   const handleResetForm = () => {
     if (
@@ -859,16 +863,18 @@ const PropertyForm = () => {
       if (result.success) {
         alert(
           isEditMode
-            ? "Property updated successfully!"
-            : "Form submitted successfully!"
+            ? ` ${formData.propertyName} updated successfully`
+            : `${formData.propertyName}  submitted successfully`
         );
         if (!isEditMode) {
           dispatch(resetForm());
+        } else {
+          // ✅ If edit mode → navigate
+          navigate("/seller-post-details");
         }
         // Clear deleted media IDs after successful submission
         setDeletedMediaIds({ images: [], videos: [] });
-      }
-      else {
+      } else {
         // Handle backend errors
         if (result.error || result.details) {
           dispatch(
@@ -898,9 +904,7 @@ const PropertyForm = () => {
           }
         }
       }
-    }
-    
-    catch (err) {
+    } catch (err) {
       // Handle validation errors
       if (err.name === "ValidationError" && err.inner) {
         console.log("❌ Validation failed:", err.inner);
@@ -1184,8 +1188,6 @@ const PropertyForm = () => {
     }
   };
 
-  
-
   // Show loading state while dropdowns are loading
   if (loadingDropdowns) {
     return (
@@ -1197,7 +1199,7 @@ const PropertyForm = () => {
       </div>
     );
   }
-  
+
   if (loadError) {
     return (
       <div className="bg-gray-50 p-6 rounded-3xl w-full max-w-6xl shadow-[0_0_10px_rgba(176,_176,_176,_0.25)] mx-auto border border-[#b9b9b9] bg-[#f6f6f6]">
@@ -1207,7 +1209,7 @@ const PropertyForm = () => {
         </div>
       </div>
     );
-  } 
+  }
   if (!isLoaded) {
     return (
       <div className="bg-gray-50 p-6 rounded-3xl w-full max-w-6xl shadow-[0_0_10px_rgba(176,_176,_176,_0.25)] mx-auto border border-[#b9b9b9] bg-[#f6f6f6]">
@@ -1219,12 +1221,12 @@ const PropertyForm = () => {
     );
   }
 
-
   return (
     <div className="bg-gray-50 p-6 rounded-3xl w-full max-w-6xl shadow-[0_0_10px_rgba(176,_176,_176,_0.25)] mx-auto border border-[#b9b9b9] bg-[#f6f6f6]">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-center text-xl font-medium text-[#02487C] flex-1">
-          {getCurrentConfig().title} Form
+          {/* {getCurrentConfig().title} */}
+          {!isEditMode ? `${subName} Form` : `${editFormTitle} Form`}
         </h1>
 
         {/* Auto-populate controls */}
@@ -1445,7 +1447,9 @@ const PropertyForm = () => {
               touched={touched.district}
               focusedField={focusedField}
               options={renderDropdownOptions(dropdownData.districts)}
-              disabled={!formData.state || loadingDistricts || isAutoPopulating}
+              disabled={
+                (!formData.state && !isAutoPopulating) || loadingDistricts
+              }
               loading={loadingDistricts || isAutoPopulating}
             />
           </div>
@@ -1552,7 +1556,7 @@ const PropertyForm = () => {
         {(shouldShowField("bhk") ||
           shouldShowField("bedroom") ||
           shouldShowField("bathroom") ||
-          shouldShowField("washroom")) && (
+          shouldShowField("wash_room")) && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             {shouldShowField("bhk") && (
               <div>
@@ -1878,23 +1882,23 @@ const PropertyForm = () => {
             </div>
           )}
 
-          {shouldShowField("washroom") && (
+          {shouldShowField("wash_room") && (
             <div>
               <label className="block text-gray-800 font-medium mb-2 px-4">
                 Wash Rooms
               </label>
               <DynamicInputs
                 type="text"
-                name="washRoom"
-                id="washRoom"
+                name="wash_room"
+                id="wash_room"
                 onChange={handleChange}
-                value={formData.washRoom || ""}
+                value={formData.wash_room || ""}
                 className="w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] 
                bg-white focus:outline-none "
                 placeholder="Enter wash rooms"
                 onBlur={handleBlur}
-                error={errors.washRoom}
-                touched={touched.washRoom}
+                error={errors.wash_room}
+                touched={touched.wash_room}
                 focusedField={focusedField}
               />
             </div>

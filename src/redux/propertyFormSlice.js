@@ -17,7 +17,7 @@ const initialState = {
     // Room Details
     bathroom: "",
     bedroom: "",
-    washRoom: "",
+    wash_room: "",
     bhk: "",
 
     // Property Features
@@ -303,8 +303,7 @@ const propertyFormSlice = createSlice({
         bathroom: "bathroom",
         bedrooms: "bedroom",
         bedroom: "bedroom", // Handle both variations
-        wash_room: "washRoom",
-        washroom: "washRoom", // Handle variation
+        wash_room: "wash_room",
         bhk_id: "bhk",
 
         // Property Features
@@ -406,7 +405,7 @@ const propertyFormSlice = createSlice({
         city: ["city_id", "city", "cityId"],
         bathroom: ["bathroom", "bathrooms"],
         bedroom: ["bedroom", "bedrooms"],
-        washRoom: ["wash_room", "washRoom", "washrooms"],
+        wash_room: ["wash_room", "washRoom", "washrooms"],
         bhk: ["bhk_id", "bhk"],
         furnished: ["furnished_id", "furnished"],
         listedBy: ["listed_by", "listedBy"],

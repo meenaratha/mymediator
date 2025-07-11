@@ -7,7 +7,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { DynamicInputs } from "@/components";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -43,20 +43,33 @@ import { Autocomplete } from "@react-google-maps/api";
 const GOOGLE_MAP_LIBRARIES = ["places"];
 
 const UploadElectronicsForm = () => {
+    const navigate = useNavigate();
+  
   const dispatch = useDispatch();
   const { slug, id } = useParams();
   const location = useLocation();
   const { subName } = location.state || {};
-  const formTittle = subName || humanized;
+  const formTittle = subName;
   const isEditMode = location.pathname.includes("edit");
 
   const [autocomplete, setAutocomplete] = useState(null);
   
-  useEffect(() => {
-    if (!isEditMode) {
-      dispatch(clearAutoPopulateData());
-    }
-  }, [isEditMode]);
+ useEffect(() => {
+     if (!isEditMode) {
+       console.log("🧹 Exiting edit mode - clearing form data");
+ 
+       // Reset everything to initial state
+       dispatch(resetForm());
+ 
+       // Clear local states
+       setDeletedMediaIds({ images: [], videos: [] });
+ 
+       // Clear auto-populate data
+       dispatch(clearAutoPopulateData());
+ 
+       console.log("✅ Form cleared successfully");
+     }
+   }, [isEditMode, dispatch]);
 
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
@@ -746,7 +759,7 @@ const UploadElectronicsForm = () => {
         form_type: "electronics",
         media_to_delete: allDeletedMedia,
         action_id: isEditMode ? formData.action_id : undefined,
-        subcategory_id: id,
+        subcategory_id:  isEditMode ? formData.subcategory_id : id,
         slug: slug,
         urlId: id,
       };
@@ -756,11 +769,14 @@ const UploadElectronicsForm = () => {
       if (result.success) {
         alert(
           isEditMode
-            ? "Electronics item updated successfully!"
-            : "Electronics item submitted successfully!"
+            ? `${formData.title} updated successfully!`
+            : `${formData.title} submitted successfully!`
         );
         if (!isEditMode) {
           dispatch(resetForm());
+        } else {
+          // ✅ If edit mode → navigate
+          navigate("/seller-post-details");
         }
         setDeletedMediaIds({ images: [], videos: [] });
       } else {
@@ -915,7 +931,7 @@ const UploadElectronicsForm = () => {
           const electronicsData = result.data || result;
           
           const formFields = {
-            action_id: electronicsData.id || electronicsData.action_id,
+            action_id:  electronicsData.action_id,
             form_type: "electronics",
             title: electronicsData.title || "",
             subcategory_id: electronicsData.subcategory_id || "",
@@ -1111,7 +1127,6 @@ const UploadElectronicsForm = () => {
       </div>
 
       <form onSubmit={handleSubmit}>
-        <input type="hidden" name="subcategory_id" value={id} />
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div>

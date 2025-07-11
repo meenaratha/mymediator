@@ -7,7 +7,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { DynamicInputs } from "@/components";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -43,20 +43,33 @@ import { Autocomplete } from "@react-google-maps/api";
 const GOOGLE_MAP_LIBRARIES = ["places"];
 
 const UploadBikeForm = () => {
+    const navigate = useNavigate();
+  
   const dispatch = useDispatch();
   const { slug, id } = useParams(); // Get both slug and id from URL params
   const location = useLocation();
   const { subName } = location.state || {};
-  const formTittle = subName || humanized;
+  const formTittle = subName ;
   const isEditMode = location.pathname.includes("edit");
 
   const [autocomplete, setAutocomplete] = useState(null);
   
-  useEffect(() => {
-    if (!isEditMode) {
-      dispatch(clearAutoPopulateData()); // Clear form data when not in edit mode
-    }
-  }, [isEditMode]);
+   useEffect(() => {
+        if (!isEditMode) {
+          console.log("🧹 Exiting edit mode - clearing form data");
+    
+          // Reset everything to initial state
+          dispatch(resetForm());
+    
+          // Clear local states
+          setDeletedMediaIds({ images: [], videos: [] });
+    
+          // Clear auto-populate data
+          dispatch(clearAutoPopulateData());
+    
+          console.log("✅ Form cleared successfully");
+        }
+      }, [isEditMode, dispatch]);
 
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
@@ -875,12 +888,17 @@ const handleSubmit = async (e) => {
     if (result.success) {
       alert(
         isEditMode
-          ? `${isBicycle ? 'Bicycle' : 'Bike'} updated successfully!`
-          : `${isBicycle ? 'Bicycle' : 'Bike'} submitted successfully!`
+          ? `${formData.title} updated successfully!`
+          : `${formData.title} submitted successfully!`
       );
       if (!isEditMode) {
         dispatch(resetForm());
+      } else {
+        // ✅ If edit mode → navigate
+        navigate("/seller-post-details");
       }
+
+
       setDeletedMediaIds({ images: [], videos: [] });
     } else {
       if (result.error || result.details) {

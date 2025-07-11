@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useMediaQuery } from "react-responsive";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, Link, NavLink } from "react-router-dom";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import SquareFootIcon from "@mui/icons-material/SquareFoot";
 import HomeIcon from "@mui/icons-material/Home";
@@ -25,6 +25,7 @@ const PropertyCard = ({
   id,
   slug,
   editformslug,
+  editformslugName,
   status,
   isPublished,
   buildingDirection,
@@ -51,7 +52,9 @@ const PropertyCard = ({
 
   const handleEdit = (e) => {
     e.stopPropagation();
-    navigate(`/property/${editformslug}/${id}/edit`);
+    navigate(`/property/${editformslug}/${id}/edit`, {
+      state: { slugName: editformslugName }, // 👈 set the state value here
+    });
   };
 
   const handleDelete = async (e) => {
@@ -444,8 +447,9 @@ const PropertyPostDetails = () => {
                 <PropertyCard
                   key={property.id}
                   id={property.id}
-                slug={property.action_slug || "property"}
-                editformslug={property.slug}
+                  slug={property.action_slug || "property"}
+                  editformslug={property.slug}
+                  editformslugName={property.subcategory}
                   propertyImage={
                     property.image_url || property.images?.[0]?.url
                   }

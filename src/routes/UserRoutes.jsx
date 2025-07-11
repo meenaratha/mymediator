@@ -46,7 +46,25 @@ const UserRoutes = () => {
         <Route path="/car" element={<CarsPage />} />
         <Route path="/bike" element={<BikesPage />} />
         <Route path="/subscription-plan" element={<SubscriptionPlan />} />
-        <Route path="/filter/:category/:subcategory/:subcategoryId" element={<PropertyFilterPage />} />
+        <Route
+          path="/filter/property/:subcategory/:subcategoryId"
+          element={<PropertyFilterPage />}
+        />
+
+        <Route
+          path="/filter/electronics/:subcategory/:subcategoryId"
+          element={<ElectronicsPage />}
+        />
+
+        <Route
+          path="/filter/car/:subcategory/:subcategoryId"
+          element={<CarsPage />}
+        />
+
+        <Route
+          path="/filter/bike/:subcategory/:subcategoryId"
+          element={<BikesPage />}
+        />
 
         {/* Authendication Routes */}
       </Route>

@@ -119,7 +119,7 @@ const SellerEnquiryList = () => {
     switch (activeTab) {
       case "property":
         return <SellerPropertyTabContent {...props} />;
-      case "electronics":
+      case "electronic":
         return <SellerElectronicsTabContent {...props} />;
       case "car":
         return <SellerCarTabContent {...props} />;

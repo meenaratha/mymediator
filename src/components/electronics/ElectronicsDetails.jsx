@@ -222,27 +222,30 @@ const ElectronicsDetails = ({ electronics }) => {
 
   return (
     <>
+      {loginFormModel && (
+        <LoginFormModel
+          setSignupFormModel={setSignupFormModel}
+          setLoginFormModel={setLoginFormModel}
+          setForgotPasswordModal={setForgotPasswordModal}
+        />
+      )}
 
-    {loginFormModel && (
-  <LoginFormModel
-    setSignupFormModel={setSignupFormModel}
-    setLoginFormModel={setLoginFormModel}
-    setForgotPasswordModal={setForgotPasswordModal}
-  />
-)}
-
-{signupFormModel && (
-  <SignupFormModel
-   setSignupFormModel={setSignupFormModel}
-    setLoginFormModel={setLoginFormModel}
-    setForgotPasswordModal={setForgotPasswordModal}
-  />
-)}
+      {signupFormModel && (
+        <SignupFormModel
+          setSignupFormModel={setSignupFormModel}
+          setLoginFormModel={setLoginFormModel}
+          setForgotPasswordModal={setForgotPasswordModal}
+        />
+      )}
       {/* Enquiry Modal */}
       {showEnquiryPopup && (
-        <EnquiryForm onClose={() => { setShowEnquiryPopup(false) }}
+        <EnquiryForm
+          onClose={() => {
+            setShowEnquiryPopup(false);
+          }}
           propertyData={electronics}
-    enquirableType={electronics.form_type}/>
+          enquirableType={electronics.form_type}
+        />
       )}
 
       <div className="">
@@ -330,16 +333,16 @@ const ElectronicsDetails = ({ electronics }) => {
                             size="small"
                             onClick={handleShareClick}
                             className="bg-white bg-opacity-80 hover:bg-opacity-100"
-                            sx={{ 
-                              width: 36, 
+                            sx={{
+                              width: 36,
                               height: 36,
-                              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                              '&:hover': {
-                                backgroundColor: 'rgba(255, 255, 255, 1)',
-                              }
+                              backgroundColor: "rgba(255, 255, 255, 0.9)",
+                              "&:hover": {
+                                backgroundColor: "rgba(255, 255, 255, 1)",
+                              },
                             }}
                           >
-                            <ShareIcon sx={{ fontSize: 20, color: 'gray' }} />
+                            <ShareIcon sx={{ fontSize: 20, color: "gray" }} />
                           </IconButton>
 
                           <IconButton
@@ -347,27 +350,27 @@ const ElectronicsDetails = ({ electronics }) => {
                             onClick={handleWishlistClick}
                             disabled={isWishlistLoading}
                             className="bg-white bg-opacity-80 hover:bg-opacity-100"
-                            sx={{ 
-                              width: 36, 
+                            sx={{
+                              width: 36,
                               height: 36,
-                              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                              '&:hover': {
-                                backgroundColor: 'rgba(255, 255, 255, 1)',
-                              }
+                              backgroundColor: "rgba(255, 255, 255, 0.9)",
+                              "&:hover": {
+                                backgroundColor: "rgba(255, 255, 255, 1)",
+                              },
                             }}
                           >
-                             {isFavorite ? (
+                            {isFavorite ? (
                               <FavoriteIcon
-                                sx={{ 
+                                sx={{
                                   fontSize: 20,
-                                  color: red[500]
+                                  color: red[500],
                                 }}
                               />
                             ) : (
                               <FavoriteBorderIcon
-                                sx={{ 
+                                sx={{
                                   fontSize: 20,
-                                  color: 'gray'
+                                  color: "gray",
                                 }}
                               />
                             )}
@@ -377,16 +380,16 @@ const ElectronicsDetails = ({ electronics }) => {
                             size="small"
                             onClick={() => handleZoomIn(image, index)}
                             className="bg-white bg-opacity-80 hover:bg-opacity-100"
-                            sx={{ 
-                              width: 36, 
+                            sx={{
+                              width: 36,
                               height: 36,
-                              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                              '&:hover': {
-                                backgroundColor: 'rgba(255, 255, 255, 1)',
-                              }
+                              backgroundColor: "rgba(255, 255, 255, 0.9)",
+                              "&:hover": {
+                                backgroundColor: "rgba(255, 255, 255, 1)",
+                              },
                             }}
                           >
-                            <ZoomInIcon sx={{ fontSize: 20, color: 'gray' }} />
+                            <ZoomInIcon sx={{ fontSize: 20, color: "gray" }} />
                           </IconButton>
                         </div>
                       </div>
@@ -416,7 +419,10 @@ const ElectronicsDetails = ({ electronics }) => {
                   <p className="text-sm text-gray-500">Owner</p>
                 </div>
                 <div className="ml-auto">
-                  <Link to={`/seller-profile/${electronics.vendor_id}`} className="text-blue-600 text-sm font-medium cursor-pointer">
+                  <Link
+                    to={`/seller-profile/${electronics.vendor_id}`}
+                    className="text-blue-600 text-sm font-medium cursor-pointer"
+                  >
                     See Profile
                   </Link>
                 </div>
@@ -430,11 +436,13 @@ const ElectronicsDetails = ({ electronics }) => {
                     sx={{ color: "red" }}
                   />
                   <div className="ml-2">
-                    <p className="text-sm text-gray-500">{electronics.district}</p>
-                    <p className="font-semibold text-xl">{electronics.city}</p>
+                    <p className="text-sm text-gray-500">
+                      {electronics.district}
+                    </p>
+                    <p className="font-semibold text-xl">{electronics.state}</p>
                   </div>
                   <div className="ml-auto">
-                    <div 
+                    <div
                       className="w-[150px] h-[150px] rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity duration-200 relative group"
                       onClick={openGoogleMaps}
                       title="Click to open in Google Maps"
@@ -452,7 +460,8 @@ const ElectronicsDetails = ({ electronics }) => {
                         />
                         <Marker position={[mapCenter.lat, mapCenter.lng]}>
                           <Popup>
-                            {electronics.brand} {electronics.model} <br /> {electronics.subcategory}
+                            {electronics.brand} {electronics.model} <br />{" "}
+                            {electronics.subcategory}
                           </Popup>
                         </Marker>
                       </MapContainer>
@@ -460,8 +469,12 @@ const ElectronicsDetails = ({ electronics }) => {
                       {/* Overlay with Google Maps icon - appears on hover */}
                       <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                         <div className="text-white text-center">
-                          <svg className="w-8 h-8 mx-auto mb-1" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                          <svg
+                            className="w-8 h-8 mx-auto mb-1"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
                           </svg>
                           <span className="text-xs">Open in Google Maps</span>
                         </div>
@@ -480,7 +493,8 @@ const ElectronicsDetails = ({ electronics }) => {
             <div className="w-full md:w-1/2">
               <div className="flex items-center py-2">
                 <h2 className="md:text-2xl text-[20px] font-bold">
-                  {electronics.title || `${electronics.brand} ${electronics.model}`}
+                  {electronics.title ||
+                    `${electronics.brand} ${electronics.model}`}
                 </h2>
                 <div className="w-[fit-content] ml-4 bg-blue-100 text-blue-800 px-2 py-1 rounded-md flex items-center text-xs">
                   <VerifiedIcon fontSize="small" className="mr-1" />
@@ -492,21 +506,26 @@ const ElectronicsDetails = ({ electronics }) => {
                 <p className="mr-4">{electronics.subcategory}</p>
                 <div className="flex items-center">
                   <StarIcon className="text-orange-500" />
-                  <span className="ml-1">{electronics.average_rating || "4.5"}</span>
+                  <span className="ml-1">
+                    {electronics.average_rating || "4.5"}
+                  </span>
                 </div>
               </div>
 
               <div className="flex items-center text-red-500 mt-4 gap-[10px]">
                 <LocationOnIcon fontSize="small" />
                 <p className="text-sm text-black">
-                  {electronics.city}, {electronics.district}
+                  {electronics.district} , {electronics.state},
                 </p>
               </div>
             </div>
             <div className="w-full md:w-1/2 flex flex-col md:items-center md:mt-[10px]">
               <div className="mt-1 md:mt-0">
                 <h3 className="md:text-2xl text-[20px] font-bold md:text-center">
-                  ₹ {electronics.price ? parseFloat(electronics.price).toLocaleString() : "N/A"}
+                  ₹{" "}
+                  {electronics.price
+                    ? parseFloat(electronics.price).toLocaleString()
+                    : "N/A"}
                 </h3>
                 <div className="flex mt-4 space-x-4 justify-center">
                   <button
@@ -538,10 +557,24 @@ const ElectronicsDetails = ({ electronics }) => {
         isOpen={showShareModal}
         onClose={handleShareClose}
         url={getCurrentUrl()}
-        title={`Check out this ${electronics.brand} ${electronics.model} - ₹${electronics.price ? parseFloat(electronics.price).toLocaleString() : "N/A"}`}
-        description={electronics.description || `${electronics.subcategory} in excellent condition`}
+        title={`Check out this ${electronics.brand} ${electronics.model} - ₹${
+          electronics.price
+            ? parseFloat(electronics.price).toLocaleString()
+            : "N/A"
+        }`}
+        description={
+          electronics.description ||
+          `${electronics.subcategory} in excellent condition`
+        }
         modalTitle="Share this electronics item"
-        showPlatforms={['pinterest', 'twitter', 'instagram', 'facebook', 'telegram', 'linkedin']}
+        showPlatforms={[
+          "pinterest",
+          "twitter",
+          "instagram",
+          "facebook",
+          "telegram",
+          "linkedin",
+        ]}
       />
 
       {/* Snackbar for notifications */}
@@ -549,12 +582,12 @@ const ElectronicsDetails = ({ electronics }) => {
         open={snackbar.open}
         autoHideDuration={3000}
         onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
         <Alert
           onClose={handleSnackbarClose}
           severity={snackbar.severity}
-          sx={{ width: '100%' }}
+          sx={{ width: "100%" }}
         >
           {snackbar.message}
         </Alert>

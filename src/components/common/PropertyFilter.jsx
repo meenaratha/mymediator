@@ -281,12 +281,12 @@ const PropertyFilter = ({ isFilterOpen, isMobile, onApplyFilters, currentFilters
           />
 
           {/* Listed By Section */}
-          {/* <ListedBySection 
+          <ListedBySection 
             filters={filters}
             setFilters={setFilters}
             expandedSections={expandedSections}
             toggleSection={toggleSection}
-          /> */}
+          />
 
           {/* Building Direction Section */}
           <BuildingDirectionSection

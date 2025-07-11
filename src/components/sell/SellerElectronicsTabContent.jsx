@@ -26,53 +26,32 @@ const SellerElectronicsTabContent = ({
     if (enquiryData && enquiryData.length > 0) {
       const formattedElectronics = enquiryData.map((item, index) => {
         const electronicsData = item.enquirable || {};
-        
-        // Format condition
-        const formatCondition = (condition) => {
-          if (condition === 'new') return 'New';
-          if (condition === 'used') return 'Used';
-          if (condition === 'refurbished') return 'Refurbished';
-          return condition || 'Not specified';
-        };
-
-        // Format brand and model
-        const formatBrandModel = (brand, model) => {
-          if (brand && model) return `${brand} ${model}`;
-          if (brand) return brand;
-          if (model) return model;
-          return 'Not specified';
-        };
-
-        // Format warranty
-        const formatWarranty = (warranty) => {
-          if (warranty) return `${warranty} warranty`;
-          return 'No warranty info';
-        };
-
-        return {
-          id: item.id,
-          title: electronicsData.title || electronicsData.product_name || "Electronics Item",
-          location: electronicsData.address || electronicsData.location || "Location not specified",
-          brand: electronicsData.brand_name || electronicsData.brand || "Unknown brand",
-          model: electronicsData.model_name || electronicsData.model || "Unknown model",
-          condition: formatCondition(electronicsData.condition),
-          warranty: formatWarranty(electronicsData.warranty_period),
-          specifications: electronicsData.specifications || electronicsData.specs,
-          price: parseFloat(electronicsData.price) || parseFloat(electronicsData.amount) || 0,
-          expanded: index === 0, // First item expanded by default
-          image: electronicsData.image,
-          productCode: electronicsData.unique_code,
-          status: electronicsData.status,
-          description: electronicsData.description,
-          category: electronicsData.category || electronicsData.subcategory_name,
-          customerDetails: {
-            name: item.name || "Customer Name",
-            mobileNumber: item.mobile_number || "Not provided",
-            email: item.email || "Not provided",
-            whatsappNumber: item.whatsapp_number || item.mobile_number || "Not provided",
-            message: item.message || "No message provided",
-          }
-        };
+     
+           
+      return {
+        id: item.id,
+        title: electronicsData.title || "Electronics Item", // ✅ Correct
+        location: electronicsData.address || "Location not specified", // ✅ Fixed
+        price: parseFloat(electronicsData.price) || 0, // ✅ Correct
+        year: electronicsData.year, // ✅ Keep as null if not available
+        image: electronicsData.image_url || electronicsData.images?.[0], // ✅ Fixed
+        brand: electronicsData.brand_name || null, // ✅ Handle null
+        model: electronicsData.model_name || null, // ✅ Handle null
+        specifications: electronicsData.specifications || "No specifications",
+        features: electronicsData.features || "No features listed",
+        expanded: index === 0,
+        productCode: electronicsData.unique_code,
+        status: electronicsData.status,
+        description: electronicsData.description,
+        customerDetails: {
+          name: item.name || "Customer Name",
+          mobileNumber: item.mobile_number || "Not provided",
+          email: item.email || "Not provided",
+          whatsappNumber:
+            item.whatsapp_number || item.mobile_number || "Not provided",
+          message: item.message || "No message provided",
+        },
+      };
       });
       setElectronics(formattedElectronics);
     } else {
@@ -98,7 +77,7 @@ const SellerElectronicsTabContent = ({
       try {
         let endpoint;
         
-        if (activeEnquiryType === "property") {
+        if (activeEnquiryType === "electronic") {
           // Property enquiry - delete from user API
           endpoint = `/enquiries/${id}`;
         } else {
@@ -202,18 +181,7 @@ const SellerElectronicsTabContent = ({
                         </span>
                       </div>
                     </div>
-                    {/* <div className="text-sm mt-1 flex items-center flex-wrap gap-2">
-                      <span className="flex items-center">
-                        <DevicesIcon style={{ fontSize: 14 }} className="mr-1" />
-                        {item.brand}
-                      </span>
-                      {item.model !== "Unknown model" && (
-                        <span className="text-xs text-gray-600">
-                          {item.model}
-                        </span>
-                      )}
-                     
-                    </div> */}
+                   
                    
                     <div className="flex items-center justify-between mt-3 pb-[10px]">
                       <div className="font-bold">
@@ -300,21 +268,6 @@ const SellerElectronicsTabContent = ({
                         {item.customerDetails?.whatsappNumber || "Not provided"}
                       </a>
                     </div>
-
-                    {item.specifications && (
-                      <div className="pb-[15px] text-sm">
-                        <strong>Specifications :</strong> &nbsp;
-                        {item.specifications}
-                      </div>
-                    )}
-
-                    {/* {item.warranty && item.warranty !== "No warranty info" && (
-                      <div className="pb-[15px] text-sm">
-                        <strong>Warranty :</strong> &nbsp;
-                        {item.warranty}
-                      </div>
-                    )} */}
-
                     <div className="text-sm align-top overflow-hidden line-clamp-4">
                       <strong>Message :</strong> &nbsp;{" "}
                       {item.customerDetails?.message || "No message provided"}

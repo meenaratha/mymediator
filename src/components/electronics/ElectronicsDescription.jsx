@@ -106,16 +106,14 @@ const ElectronicsDescription = () => {
 
   return (
     <>
-{/* Report Ads Modal */}
+      {/* Report Ads Modal */}
       <ReportAdsModal
         isOpen={showReportModal}
         onClose={handleCloseModal}
         adId={electronics.id}
-        adType={ electronics.form_type }
+        adType={electronics.form_type}
         adTitle={electronics.title}
       />
-
-
 
       <ElectronicsDetails electronics={electronics} />
 
@@ -153,7 +151,9 @@ const ElectronicsDescription = () => {
                   <StorageOutlined className="text-gray-500" />
                   <div className="text-sm">
                     <span className="font-medium text-gray-600">Category:</span>
-                    <div className="text-gray-700">{electronics.subcategory}</div>
+                    <div className="text-gray-700">
+                      {electronics.subcategory}
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -168,15 +168,23 @@ const ElectronicsDescription = () => {
               {/* Features and Specifications */}
               {electronics.features && (
                 <div className="py-4 border-b border-[#E1E1E1]">
-                  <h4 className="font-semibold text-gray-600 mb-2">Features:</h4>
-                  <p className="text-gray-700 text-sm">{electronics.features}</p>
+                  <h4 className="font-semibold text-gray-600 mb-2">
+                    Features:
+                  </h4>
+                  <p className="text-gray-700 text-sm">
+                    {electronics.features}
+                  </p>
                 </div>
               )}
 
               {electronics.specifications && (
                 <div className="pt-4">
-                  <h4 className="font-semibold text-gray-600 mb-2">Specifications:</h4>
-                  <p className="text-gray-700 text-sm">{electronics.specifications}</p>
+                  <h4 className="font-semibold text-gray-600 mb-2">
+                    Specifications:
+                  </h4>
+                  <p className="text-gray-700 text-sm">
+                    {electronics.specifications}
+                  </p>
                 </div>
               )}
 
@@ -186,14 +194,19 @@ const ElectronicsDescription = () => {
                   <PersonOutlined className="text-gray-500" />
                   <div className="text-sm">
                     <span className="font-medium text-gray-600">Status:</span>
-                    <div className="text-gray-700 capitalize">{electronics.status}</div>
+                    <div className="text-gray-700 capitalize">
+                      {electronics.status}
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
                   <LocationOnOutlined className="text-gray-500" />
                   <div className="text-sm">
                     <span className="font-medium text-gray-600">Location:</span>
-                    <div className="text-gray-700"> {electronics.district},{electronics.state}</div>
+                    <div className="text-gray-700">
+                      {" "}
+                      {electronics.district},{electronics.state}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -217,8 +230,9 @@ const ElectronicsDescription = () => {
                   </div>
                 </div>
                 <Link
-                to= {`/seller-profile/${electronics.vendor_id}`}
-                  className="text-blue-600 font-semibold text-sm">
+                  to={`/seller-profile/${electronics.vendor_id}`}
+                  className="text-blue-600 font-semibold text-sm"
+                >
                   See Profile
                 </Link>
               </div>
@@ -226,7 +240,7 @@ const ElectronicsDescription = () => {
               {/* Location Section with Clickable Map */}
               <div className="my-4">
                 <div className="flex flex-col justify-center items-center max-w-sm mx-auto gap-[10px]">
-                  <div 
+                  <div
                     className="w-[150px] h-[150px] rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity duration-200 relative group"
                     onClick={openGoogleMaps}
                     title="Click to open in Google Maps"
@@ -238,13 +252,14 @@ const ElectronicsDescription = () => {
                       className="w-[150px] h-[150px] rounded-[10px]"
                       style={{ height: "150px", width: "150px" }}
                     >
-                      <TileLayer 
+                      <TileLayer
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                       />
                       <Marker position={[mapCenter.lat, mapCenter.lng]}>
                         <Popup>
-                          {electronics.brand} {electronics.model} <br /> {electronics.subcategory}
+                          {electronics.brand} {electronics.model} <br />{" "}
+                          {electronics.subcategory}
                         </Popup>
                       </Marker>
                     </MapContainer>
@@ -252,8 +267,12 @@ const ElectronicsDescription = () => {
                     {/* Overlay with Google Maps icon - appears on hover */}
                     <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                       <div className="text-white text-center">
-                        <svg className="w-8 h-8 mx-auto mb-1" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                        <svg
+                          className="w-8 h-8 mx-auto mb-1"
+                          fill="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
                         </svg>
                         <span className="text-xs">Open in Google Maps</span>
                       </div>
@@ -263,7 +282,7 @@ const ElectronicsDescription = () => {
                   <div className="flex items-center space-x-2">
                     <LocationOnOutlined className="text-gray-500" />
                     <span className="text-sm font-medium text-gray-600">
-                      {electronics.city}, {electronics.district}
+                      {electronics.district}, {electronics.state}
                     </span>
                   </div>
                 </div>
@@ -272,11 +291,14 @@ const ElectronicsDescription = () => {
               {/* Ad ID and Report Section */}
               <div className="flex justify-between items-center text-gray-600 pt-4 border-t">
                 <div className="text-sm">
-                  <span className="font-semibold">ADS ID :</span> {electronics.unique_code}
+                  <span className="font-semibold">ADS ID :</span>{" "}
+                  {electronics.unique_code}
                 </div>
-                <div 
+                <div
                   onClick={handleReportClick}
-                className="flex items-center text-blue-600 cursor-pointer" aria-label="report">
+                  className="flex items-center text-blue-600 cursor-pointer"
+                  aria-label="report"
+                >
                   <ReportProblemOutlined fontSize="small" />
                   <span className="ml-1 text-sm">Report Ad</span>
                 </div>
@@ -339,7 +361,6 @@ const ElectronicsDescription = () => {
             </div>
           )}
 
-    
           {electronics.view_count && (
             <div className="grid grid-cols-2">
               <div className="flex gap-[15px] justify-between">

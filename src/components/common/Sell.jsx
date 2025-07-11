@@ -338,7 +338,7 @@ const Sell = () => {
               <Card
                 key={subcategory.id}
                 component={Link}
-                to={`/${activeCategory?.slug || "property"}/${
+                to={`/${activeCategory?.slug}/${
                   subcategory.slug
                 }/${subcategory.id}`}
                 state={{ subName: subcategory.name }}
