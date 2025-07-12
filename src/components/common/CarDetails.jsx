@@ -404,7 +404,7 @@ const CarDetails = ({ car }) => {
                   <h3 className="font-semibold text-lg">
                     {car.vendor_name || "Seller"}
                   </h3>
-                  <p className="text-sm text-gray-500">Owner</p>
+                  <p className="text-sm text-gray-500">{car.listed_by}</p>
                 </div>
                 <div className="ml-auto">
                   <Link 
@@ -487,10 +487,16 @@ const CarDetails = ({ car }) => {
                 <p className="mr-4">
                   { car.year} - {car.kilometers || 'N/A'} km
                 </p>
-                <div className="flex items-center">
-                  <StarIcon className="text-orange-500" />
-                  <span className="ml-1">{car.average_rating || "4.5"}</span>
-                </div>
+                
+
+                 {car.total_ratings !== null ? (
+                  <div className="flex items-center">
+                    <StarIcon className="text-orange-500" />
+                    <span className="ml-1">{car.total_ratings}</span>
+                  </div>
+                ) : (
+                  ""
+                )}
               </div>
 
               <div className="flex items-center text-red-500 mt-4 gap-[10px]">

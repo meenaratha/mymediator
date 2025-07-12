@@ -48,8 +48,9 @@ const UploadBikeForm = () => {
   const dispatch = useDispatch();
   const { slug, id } = useParams(); // Get both slug and id from URL params
   const location = useLocation();
-  const { subName } = location.state || {};
-  const formTittle = subName ;
+const subName = location.state?.subName;
+  const editFormTitle = location.state?.slugName;
+    const formTittle = subName ;
   const isEditMode = location.pathname.includes("edit");
 
   const [autocomplete, setAutocomplete] = useState(null);
@@ -893,6 +894,8 @@ const handleSubmit = async (e) => {
       );
       if (!isEditMode) {
         dispatch(resetForm());
+                  navigate("/sell");
+
       } else {
         // ✅ If edit mode → navigate
         navigate("/seller-post-details");
@@ -1415,7 +1418,7 @@ const isBicycle = slug?.toLowerCase().includes('bicycles');
       <div className="bg-gray-50 p-6 rounded-3xl w-full max-w-6xl shadow-[0_0_10px_rgba(176,_176,_176,_0.25)] mx-auto border border-[#b9b9b9] bg-[#f6f6f6]">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-center text-xl font-medium text-[#02487C] flex-1">
-            {formTittle} Form
+              {!isEditMode ? `${subName} Form` : `${editFormTitle} Form`}
           </h1>
         </div>
         

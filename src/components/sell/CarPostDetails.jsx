@@ -28,6 +28,7 @@ const CarCard = ({
   id,
   slug,
   editformslug,
+  editformslugName,
   status,
   isPublished,
   onStatusChange,
@@ -56,7 +57,9 @@ const CarCard = ({
 
   const handleEdit = (e) => {
     e.stopPropagation();
-    navigate(`/car/${editformslug}/${id}/edit`);
+    navigate(`/car/${editformslug}/${id}/edit`, {
+      state: { slugName: editformslugName }, // 👈 set the state value here
+    });
   };
 
   const handleDelete = async (e) => {
@@ -116,7 +119,7 @@ const CarCard = ({
       {/* Car Image */}
       <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
         <img
-          src={carImage || IMAGES.propertybanner1}
+          src={carImage || IMAGES.placeholderimg}
           alt={carTitle}
           className="w-full h-full object-cover"
         />
@@ -142,13 +145,13 @@ const CarCard = ({
         <div className="flex items-center mt-1 text-gray-600 flex-wrap md:flex-nowrap gap-[8px] mb-2">
           {kilometers && (
             <>
-              <SpeedIcon style={{ fontSize: 14 }} />
+              <SpeedIcon style={{ fontSize: 18 }} />
               <span className="text-sm">{kilometers} km</span>
             </>
           )}
           {fuelType && (
             <>
-              <LocalGasStationIcon style={{ fontSize: 14 }} />
+              <LocalGasStationIcon style={{ fontSize: 18 }} />
               <span className="text-sm">{fuelType}</span>
             </>
           )}
@@ -167,7 +170,7 @@ const CarCard = ({
             {/* Edit Icon */}
             <button
               onClick={handleEdit}
-              className="text-gray-600 hover:text-blue-600"
+              className="text-gray-600 hover:text-blue-600 cursor-pointer"
               title="Edit car"
             >
               <EditIcon fontSize="small" />
@@ -440,10 +443,11 @@ const CarPostDetails = () => {
                   id={car.id}
                   slug={car.action_slug}
                   editformslug={car.slug}
+                  editformslugName={car.subcategory}
                   carImage={car.image_url || car.images?.[0]?.url}
                   carTitle={car.title}
-                  location={`${car.city || ""}${
-                    car.district ? `, ${car.district}` : ""
+                  location={`${car.district || ""}${
+                    car.state ? `, ${car.state}` : ""
                   }`}
                   brand={car.brand_name || car.brand}
                   model={car.model_name || car.model}

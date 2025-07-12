@@ -197,6 +197,7 @@ const ElectronicsFilterPage = () => {
   // auto apply filter
 
   // Memoized fetch function to prevent unnecessary re-renders
+ 
   const fetchElectronics = useCallback(
     async (page = 1, loadMore = false, filters = null) => {
       if (loadMore) setLoadingMore(true);

@@ -756,13 +756,7 @@ const Header = () => {
                   Sell
                 </motion.button>
 
-                {/* <Avatar
-                  sx={{ bgcolor: deepPurple[500] }}
-                  alt="Remy Sharp"
-                  src={Profile}
-                  onClick={handleProfileClick}
-                  style={{ cursor: "pointer" }}
-                /> */}
+               
               </div>
             </div>
           </div>

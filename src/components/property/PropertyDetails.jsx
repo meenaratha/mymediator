@@ -31,10 +31,14 @@ import ForgotPassword from "../common/ForgotPassword.jsx";
 
 const PropertyDetails = ({ property }) => {
   const isMobile = useMediaQuery({ maxWidth: 767 });
-  const [isFavorite, setIsFavorite] = useState(property.wishlist  || false);
+  const [isFavorite, setIsFavorite] = useState(property.wishlist || false);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
   const [mainSwiper, setMainSwiper] = useState(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -45,9 +49,9 @@ const PropertyDetails = ({ property }) => {
   const mainImageRef = useRef(null);
   const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
   const [showEnquiryPopup, setShowEnquiryPopup] = useState(false);
-const [loginFormModel, setLoginFormModel] = useState(false);
-const [signupFormModel, setSignupFormModel] = useState(false);
-const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
+  const [loginFormModel, setLoginFormModel] = useState(false);
+  const [signupFormModel, setSignupFormModel] = useState(false);
+  const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
   // Default Chennai coordinates
   const defaultLocation = { lat: 13.0827, lng: 80.2707 };
 
@@ -62,8 +66,10 @@ const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
     IMAGES.placeholderimg,
   ];
 
-  const images = property.image_url 
-    ? (Array.isArray(property.image_url) ? property.image_url : [property.image_url])
+  const images = property.image_url
+    ? Array.isArray(property.image_url)
+      ? property.image_url
+      : [property.image_url]
     : dummyImages;
 
   // Map coordinates
@@ -105,266 +111,285 @@ const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
   //   }
   // };
 
-// Wishlist functionality with authentication check
-const handleWishlistClick = async (e) => {
-  e.stopPropagation();
-  setIsWishlistLoading(true);
+  // Wishlist functionality with authentication check
+  const handleWishlistClick = async (e) => {
+    e.stopPropagation();
+    setIsWishlistLoading(true);
 
-  try {
-    if (isFavorite) {
-      // Remove from wishlist
-      await api.delete('/wishlist', {
-        data: {
+    try {
+      if (isFavorite) {
+        // Remove from wishlist
+        await api.delete("/wishlist", {
+          data: {
+            wishable_type: "property",
+            wishable_id: property.id.toString(),
+          },
+        });
+        setIsFavorite(false);
+        setSnackbar({
+          open: true,
+          message: "Removed from wishlist",
+          severity: "info",
+        });
+      } else {
+        // Add to wishlist
+        await api.post("/wishlist", {
           wishable_type: "property",
-          wishable_id: property.id.toString()
-        }
-      });
-      setIsFavorite(false);
-      setSnackbar({ open: true, message: 'Removed from wishlist', severity: 'info' });
-    } else {
-      // Add to wishlist
-      await api.post('/wishlist', {
-        wishable_type: "property",
-        wishable_id: property.id
-      });
-      setIsFavorite(true);
-      setSnackbar({ open: true, message: 'Added to wishlist', severity: 'success' });
-    }
-  } catch (error) {
-    console.error('Wishlist error:', error);
-    
-    // Check if it's an authentication error (401 Unauthorized)
-    if (error.response && error.response.status === 401) {
-      // User is not authenticated, show login modal
-      setSnackbar({ 
-        open: true, 
-        message: 'Please login to add items to wishlist', 
-        severity: 'warning' 
-      });
-      
-      // Show login modal
-      setLoginFormModel(true);
-      
-      // Optional: You can also close any other modals that might be open
-      // setSignupFormModel(false);
-      // setForgotPasswordModal(false);
-    } else {
-      // Other errors (network, server error, etc.)
-      const errorMessage = error.response?.data?.message || 'Failed to update wishlist';
-      setSnackbar({ 
-        open: true, 
-        message: errorMessage, 
-        severity: 'error' 
-      });
-    }
-
-    
-  } finally {
-    setIsWishlistLoading(false);
-  }
-};
-
-// Alternative approach with more detailed error handling
-const handleWishlistClickDetailed = async (e) => {
-  e.stopPropagation();
-  setIsWishlistLoading(true);
-
-  try {
-    if (isFavorite) {
-      // Remove from wishlist
-      const response = await api.delete('/wishlist', {
-        data: {
-          wishable_type: "property",
-          wishable_id: property.id.toString()
-        }
-      });
-      
-      setIsFavorite(false);
-      setSnackbar({ 
-        open: true, 
-        message: response.data?.message || 'Removed from wishlist', 
-        severity: 'info' 
-      });
-    } else {
-      // Add to wishlist
-      const response = await api.post('/wishlist', {
-        wishable_type: "property",
-        wishable_id: property.id
-      });
-      
-      setIsFavorite(true);
-      setSnackbar({ 
-        open: true, 
-        message: response.data?.message || 'Added to wishlist', 
-        severity: 'success' 
-      });
-    }
-  } catch (error) {
-    console.error('Wishlist error:', error);
-    
-    // Handle different types of errors
-    if (error.response) {
-      const { status, data } = error.response;
-      
-      switch (status) {
-        case 401:
-          // Unauthorized - user needs to login
-          setSnackbar({ 
-            open: true, 
-            message: data?.message || 'Please login to manage your wishlist', 
-            severity: 'warning' 
-          });
-          setLoginFormModel(true);
-          break;
-          
-        case 403:
-          // Forbidden - user doesn't have permission
-          setSnackbar({ 
-            open: true, 
-            message: data?.message || 'You don\'t have permission to perform this action', 
-            severity: 'error' 
-          });
-          break;
-          
-        case 404:
-          // Not found - property might not exist
-          setSnackbar({ 
-            open: true, 
-            message: data?.message || 'Property not found', 
-            severity: 'error' 
-          });
-          break;
-          
-        case 422:
-          // Validation error
-          setSnackbar({ 
-            open: true, 
-            message: data?.message || 'Invalid data provided', 
-            severity: 'error' 
-          });
-          break;
-          
-        case 429:
-          // Rate limit exceeded
-          setSnackbar({ 
-            open: true, 
-            message: data?.message || 'Too many requests. Please try again later.', 
-            severity: 'warning' 
-          });
-          break;
-          
-        case 500:
-          // Server error
-          setSnackbar({ 
-            open: true, 
-            message: 'Server error. Please try again later.', 
-            severity: 'error' 
-          });
-          break;
-          
-        default:
-          // Other HTTP errors
-          setSnackbar({ 
-            open: true, 
-            message: data?.message || 'Failed to update wishlist', 
-            severity: 'error' 
-          });
+          wishable_id: property.id,
+        });
+        setIsFavorite(true);
+        setSnackbar({
+          open: true,
+          message: "Added to wishlist",
+          severity: "success",
+        });
       }
-    } else if (error.request) {
-      // Network error - no response received
-      setSnackbar({ 
-        open: true, 
-        message: 'Network error. Please check your connection and try again.', 
-        severity: 'error' 
-      });
-    } else {
-      // Other errors
-      setSnackbar({ 
-        open: true, 
-        message: 'An unexpected error occurred. Please try again.', 
-        severity: 'error' 
-      });
+    } catch (error) {
+      console.error("Wishlist error:", error);
+
+      // Check if it's an authentication error (401 Unauthorized)
+      if (error.response && error.response.status === 401) {
+        // User is not authenticated, show login modal
+        setSnackbar({
+          open: true,
+          message: "Please login to add items to wishlist",
+          severity: "warning",
+        });
+
+        // Show login modal
+        setLoginFormModel(true);
+
+        // Optional: You can also close any other modals that might be open
+        // setSignupFormModel(false);
+        // setForgotPasswordModal(false);
+      } else {
+        // Other errors (network, server error, etc.)
+        const errorMessage =
+          error.response?.data?.message || "Failed to update wishlist";
+        setSnackbar({
+          open: true,
+          message: errorMessage,
+          severity: "error",
+        });
+      }
+    } finally {
+      setIsWishlistLoading(false);
     }
-  } finally {
-    setIsWishlistLoading(false);
-  }
-};
+  };
 
-// Helper function to check authentication status
-const checkAuthBeforeWishlist = () => {
-  // Check if user is authenticated (adjust based on your auth system)
-  const token = localStorage.getItem('authToken');
-  const isLoggedIn = !!token; // or use your auth context: const { isAuthenticated } = useAuth();
-  
-  if (!isLoggedIn) {
-    setSnackbar({ 
-      open: true, 
-      message: 'Please login to manage your wishlist', 
-      severity: 'warning' 
-    });
-    setLoginFormModel(true);
-    return false;
-  }
-  return true;
-};
+  // Alternative approach with more detailed error handling
+  const handleWishlistClickDetailed = async (e) => {
+    e.stopPropagation();
+    setIsWishlistLoading(true);
 
-// Wishlist handler with pre-authentication check
-const handleWishlistClickWithPreCheck = async (e) => {
-  e.stopPropagation();
-  
-  // Check authentication before making API call
-  if (!checkAuthBeforeWishlist()) {
-    return;
-  }
-  
-  setIsWishlistLoading(true);
+    try {
+      if (isFavorite) {
+        // Remove from wishlist
+        const response = await api.delete("/wishlist", {
+          data: {
+            wishable_type: "property",
+            wishable_id: property.id.toString(),
+          },
+        });
 
-  try {
-    if (isFavorite) {
-      // Remove from wishlist
-      await api.delete('/wishlist', {
-        data: {
+        setIsFavorite(false);
+        setSnackbar({
+          open: true,
+          message: response.data?.message || "Removed from wishlist",
+          severity: "info",
+        });
+      } else {
+        // Add to wishlist
+        const response = await api.post("/wishlist", {
           wishable_type: "property",
-          wishable_id: property.id.toString()
+          wishable_id: property.id,
+        });
+
+        setIsFavorite(true);
+        setSnackbar({
+          open: true,
+          message: response.data?.message || "Added to wishlist",
+          severity: "success",
+        });
+      }
+    } catch (error) {
+      console.error("Wishlist error:", error);
+
+      // Handle different types of errors
+      if (error.response) {
+        const { status, data } = error.response;
+
+        switch (status) {
+          case 401:
+            // Unauthorized - user needs to login
+            setSnackbar({
+              open: true,
+              message: data?.message || "Please login to manage your wishlist",
+              severity: "warning",
+            });
+            setLoginFormModel(true);
+            break;
+
+          case 403:
+            // Forbidden - user doesn't have permission
+            setSnackbar({
+              open: true,
+              message:
+                data?.message ||
+                "You don't have permission to perform this action",
+              severity: "error",
+            });
+            break;
+
+          case 404:
+            // Not found - property might not exist
+            setSnackbar({
+              open: true,
+              message: data?.message || "Property not found",
+              severity: "error",
+            });
+            break;
+
+          case 422:
+            // Validation error
+            setSnackbar({
+              open: true,
+              message: data?.message || "Invalid data provided",
+              severity: "error",
+            });
+            break;
+
+          case 429:
+            // Rate limit exceeded
+            setSnackbar({
+              open: true,
+              message:
+                data?.message || "Too many requests. Please try again later.",
+              severity: "warning",
+            });
+            break;
+
+          case 500:
+            // Server error
+            setSnackbar({
+              open: true,
+              message: "Server error. Please try again later.",
+              severity: "error",
+            });
+            break;
+
+          default:
+            // Other HTTP errors
+            setSnackbar({
+              open: true,
+              message: data?.message || "Failed to update wishlist",
+              severity: "error",
+            });
         }
-      });
-      setIsFavorite(false);
-      setSnackbar({ open: true, message: 'Removed from wishlist', severity: 'info' });
-    } else {
-      // Add to wishlist
-      await api.post('/wishlist', {
-        wishable_type: "property",
-        wishable_id: property.id
-      });
-      setIsFavorite(true);
-      setSnackbar({ open: true, message: 'Added to wishlist', severity: 'success' });
+      } else if (error.request) {
+        // Network error - no response received
+        setSnackbar({
+          open: true,
+          message: "Network error. Please check your connection and try again.",
+          severity: "error",
+        });
+      } else {
+        // Other errors
+        setSnackbar({
+          open: true,
+          message: "An unexpected error occurred. Please try again.",
+          severity: "error",
+        });
+      }
+    } finally {
+      setIsWishlistLoading(false);
     }
-  } catch (error) {
-    console.error('Wishlist error:', error);
-    
-    if (error.response && error.response.status === 401) {
-      // Even with pre-check, token might have expired
-      setSnackbar({ 
-        open: true, 
-        message: 'Session expired. Please login again.', 
-        severity: 'warning' 
+  };
+
+  // Helper function to check authentication status
+  const checkAuthBeforeWishlist = () => {
+    // Check if user is authenticated (adjust based on your auth system)
+    const token = localStorage.getItem("authToken");
+    const isLoggedIn = !!token; // or use your auth context: const { isAuthenticated } = useAuth();
+
+    if (!isLoggedIn) {
+      setSnackbar({
+        open: true,
+        message: "Please login to manage your wishlist",
+        severity: "warning",
       });
       setLoginFormModel(true);
-      
-      // Optional: Clear expired token
-      localStorage.removeItem('authToken');
-    } else {
-      const errorMessage = error.response?.data?.message || 'Failed to update wishlist';
-      setSnackbar({ 
-        open: true, 
-        message: errorMessage, 
-        severity: 'error' 
-      });
+      return false;
     }
-  } finally {
-    setIsWishlistLoading(false);
-  }
-};
+    return true;
+  };
+
+  // Wishlist handler with pre-authentication check
+  const handleWishlistClickWithPreCheck = async (e) => {
+    e.stopPropagation();
+
+    // Check authentication before making API call
+    if (!checkAuthBeforeWishlist()) {
+      return;
+    }
+
+    setIsWishlistLoading(true);
+
+    try {
+      if (isFavorite) {
+        // Remove from wishlist
+        await api.delete("/wishlist", {
+          data: {
+            wishable_type: "property",
+            wishable_id: property.id.toString(),
+          },
+        });
+        setIsFavorite(false);
+        setSnackbar({
+          open: true,
+          message: "Removed from wishlist",
+          severity: "info",
+        });
+      } else {
+        // Add to wishlist
+        await api.post("/wishlist", {
+          wishable_type: "property",
+          wishable_id: property.id,
+        });
+        setIsFavorite(true);
+        setSnackbar({
+          open: true,
+          message: "Added to wishlist",
+          severity: "success",
+        });
+      }
+    } catch (error) {
+      console.error("Wishlist error:", error);
+
+      if (error.response && error.response.status === 401) {
+        // Even with pre-check, token might have expired
+        setSnackbar({
+          open: true,
+          message: "Session expired. Please login again.",
+          severity: "warning",
+        });
+        setLoginFormModel(true);
+
+        // Optional: Clear expired token
+        localStorage.removeItem("authToken");
+      } else {
+        const errorMessage =
+          error.response?.data?.message || "Failed to update wishlist";
+        setSnackbar({
+          open: true,
+          message: errorMessage,
+          severity: "error",
+        });
+      }
+    } finally {
+      setIsWishlistLoading(false);
+    }
+  };
 
   // Share functionality
   const handleShareClick = (e) => {
@@ -389,24 +414,24 @@ const handleWishlistClickWithPreCheck = async (e) => {
     const touch = e.touches[0];
     setTouchStart({ x: touch.clientX, y: touch.clientY });
   };
-  
+
   const handleTouchMove = (e) => {
     if (!showZoom) return;
-    
+
     const touch = e.touches[0];
     const container = e.currentTarget;
     const rect = container.getBoundingClientRect();
-    
+
     const x = ((touch.clientX - rect.left) / rect.width) * 100;
     const y = ((touch.clientY - rect.top) / rect.height) * 100;
-    
+
     setZoomPosition({ x, y });
   };
-  
+
   const handleZoomIn = (imageSrc, index) => {
     setZoomedImageSrc(imageSrc);
     setShowZoom(true);
-    
+
     if (mainSwiper && !mainSwiper.destroyed) {
       mainSwiper.slideToLoop(index);
     }
@@ -418,13 +443,13 @@ const handleWishlistClickWithPreCheck = async (e) => {
 
   const handleZoomMouseMove = (e) => {
     if (!showZoom) return;
-    
+
     const container = e.currentTarget;
     const rect = container.getBoundingClientRect();
-    
+
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
-    
+
     setZoomPosition({ x, y });
   };
 
@@ -441,32 +466,30 @@ const handleWishlistClickWithPreCheck = async (e) => {
     }
   };
 
-   // Function to open Google Maps in new tab
+  // Function to open Google Maps in new tab
   const openGoogleMaps = () => {
     const { lat, lng } = mapCenter;
     const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lng}&z=15`;
-    window.open(googleMapsUrl, '_blank');
+    window.open(googleMapsUrl, "_blank");
   };
 
   return (
     <>
+      {loginFormModel && (
+        <LoginFormModel
+          setSignupFormModel={setSignupFormModel}
+          setLoginFormModel={setLoginFormModel}
+          setForgotPasswordModal={setForgotPasswordModal}
+        />
+      )}
 
-
-{loginFormModel && (
-  <LoginFormModel
-    setSignupFormModel={setSignupFormModel}
-    setLoginFormModel={setLoginFormModel}
-    setForgotPasswordModal={setForgotPasswordModal}
-  />
-)}
-
-{signupFormModel && (
-  <SignupFormModel
-   setSignupFormModel={setSignupFormModel}
-    setLoginFormModel={setLoginFormModel}
-    setForgotPasswordModal={setForgotPasswordModal}
-  />
-)}
+      {signupFormModel && (
+        <SignupFormModel
+          setSignupFormModel={setSignupFormModel}
+          setLoginFormModel={setLoginFormModel}
+          setForgotPasswordModal={setForgotPasswordModal}
+        />
+      )}
       {/* Enquiry Modal */}
       {showEnquiryPopup && (
         <EnquiryForm
@@ -474,7 +497,7 @@ const handleWishlistClickWithPreCheck = async (e) => {
             setShowEnquiryPopup(false);
           }}
           propertyData={property}
-    enquirableType="property"
+          enquirableType="property"
         />
       )}
 
@@ -563,16 +586,16 @@ const handleWishlistClickWithPreCheck = async (e) => {
                             size="small"
                             onClick={handleShareClick}
                             className="bg-white bg-opacity-80 hover:bg-opacity-100"
-                            sx={{ 
-                              width: 36, 
+                            sx={{
+                              width: 36,
                               height: 36,
-                              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                              '&:hover': {
-                                backgroundColor: 'rgba(255, 255, 255, 1)',
-                              }
+                              backgroundColor: "rgba(255, 255, 255, 0.9)",
+                              "&:hover": {
+                                backgroundColor: "rgba(255, 255, 255, 1)",
+                              },
                             }}
                           >
-                            <ShareIcon sx={{ fontSize: 20, color: 'gray' }} />
+                            <ShareIcon sx={{ fontSize: 20, color: "gray" }} />
                           </IconButton>
 
                           <IconButton
@@ -580,27 +603,27 @@ const handleWishlistClickWithPreCheck = async (e) => {
                             onClick={handleWishlistClick}
                             disabled={isWishlistLoading}
                             className="bg-white bg-opacity-80 hover:bg-opacity-100"
-                            sx={{ 
-                              width: 36, 
+                            sx={{
+                              width: 36,
                               height: 36,
-                              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                              '&:hover': {
-                                backgroundColor: 'rgba(255, 255, 255, 1)',
-                              }
+                              backgroundColor: "rgba(255, 255, 255, 0.9)",
+                              "&:hover": {
+                                backgroundColor: "rgba(255, 255, 255, 1)",
+                              },
                             }}
                           >
-                           {isFavorite ? (
+                            {isFavorite ? (
                               <FavoriteIcon
-                                sx={{ 
+                                sx={{
                                   fontSize: 20,
-                                  color: red[500]
+                                  color: red[500],
                                 }}
                               />
                             ) : (
                               <FavoriteBorderIcon
-                                sx={{ 
+                                sx={{
                                   fontSize: 20,
-                                  color: 'gray'
+                                  color: "gray",
                                 }}
                               />
                             )}
@@ -610,16 +633,16 @@ const handleWishlistClickWithPreCheck = async (e) => {
                             size="small"
                             onClick={() => handleZoomIn(image, index)}
                             className="bg-white bg-opacity-80 hover:bg-opacity-100"
-                            sx={{ 
-                              width: 36, 
+                            sx={{
+                              width: 36,
                               height: 36,
-                              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                              '&:hover': {
-                                backgroundColor: 'rgba(255, 255, 255, 1)',
-                              }
+                              backgroundColor: "rgba(255, 255, 255, 0.9)",
+                              "&:hover": {
+                                backgroundColor: "rgba(255, 255, 255, 1)",
+                              },
                             }}
                           >
-                            <ZoomInIcon sx={{ fontSize: 20, color: 'gray' }} />
+                            <ZoomInIcon sx={{ fontSize: 20, color: "gray" }} />
                           </IconButton>
                         </div>
                       </div>
@@ -646,11 +669,11 @@ const handleWishlistClickWithPreCheck = async (e) => {
                   <h3 className="font-semibold text-lg">
                     {property.vendor_name}
                   </h3>
-                  <p className="text-sm text-gray-500">Owner</p>
+                  <p className="text-sm text-gray-500">{property.listed_by}</p>
                 </div>
                 <div className="ml-auto">
                   <Link
-                    to= {`/seller-profile/${property.vendor_id}`}
+                    to={`/seller-profile/${property.vendor_id}`}
                     className="text-blue-600 text-sm font-medium cursor-pointer"
                   >
                     See Profile
@@ -668,11 +691,11 @@ const handleWishlistClickWithPreCheck = async (e) => {
                   <div className="ml-2">
                     <p className="text-gray-500 text-sm">{property.district}</p>
                     <p className="font-semibold text-xl ">{property.state}</p>
-
                   </div>
                   <div className="ml-auto">
-                    <div className="w-[150px] h-[150px] rounded-lg overflow-hidden cursor-pointer"
-                     onClick={openGoogleMaps}
+                    <div
+                      className="w-[150px] h-[150px] rounded-lg overflow-hidden cursor-pointer"
+                      onClick={openGoogleMaps}
                     >
                       <MapContainer
                         center={[mapCenter.lat, mapCenter.lng]}
@@ -709,18 +732,18 @@ const handleWishlistClickWithPreCheck = async (e) => {
                 </div>
               </div>
 
-             
-                <div className="flex items-center mt-2 mb-2">
-                   {property.bhk && (<p className="mr-4">({property.bhk})</p> )}
-                  <p className="mr-4">{property.post_year}</p>
+              <div className="flex items-center mt-2 mb-2">
+                {property.bhk && <p className="mr-4">({property.bhk})</p>}
+                <p className="mr-4">{property.post_year}</p>
+                {property.total_ratings !== null ? (
                   <div className="flex items-center">
                     <StarIcon className="text-orange-500" />
-                    <span className="ml-1">
-                      {property.total_ratings || "4.5"}
-                    </span>
+                    <span className="ml-1">{property.total_ratings}</span>
                   </div>
-                </div>
-             
+                ) : (
+                  ""
+                )}
+              </div>
 
               <div className="flex items-center text-red-500 mt-4 gap-[10px]">
                 <LocationOnIcon fontSize="small" />
@@ -765,9 +788,20 @@ const handleWishlistClickWithPreCheck = async (e) => {
         onClose={handleShareClose}
         url={getCurrentUrl()}
         title={`Check out this ${property.property_name} in ${property.city} - ₹${property.amount}`}
-        description={property.description || `Beautiful ${property.bhk} property in ${property.city}`}
+        description={
+          property.description ||
+          `Beautiful ${property.bhk} property in ${property.city}`
+        }
         modalTitle="Share this property"
-        showPlatforms={['whatsapp','pinterest', 'twitter', 'instagram', 'facebook', 'telegram', 'linkedin',]}
+        showPlatforms={[
+          "whatsapp",
+          "pinterest",
+          "twitter",
+          "instagram",
+          "facebook",
+          "telegram",
+          "linkedin",
+        ]}
       />
 
       {/* Snackbar for notifications */}
@@ -775,12 +809,12 @@ const handleWishlistClickWithPreCheck = async (e) => {
         open={snackbar.open}
         autoHideDuration={3000}
         onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <Alert
           onClose={handleSnackbarClose}
           severity={snackbar.severity}
-          sx={{ width: '100%' }}
+          sx={{ width: "100%" }}
         >
           {snackbar.message}
         </Alert>

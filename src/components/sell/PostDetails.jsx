@@ -141,20 +141,20 @@ const PropertyCard = ({
         <div className="flex justify-between items-center mt-1 text-gray-600 flex-wrap md:flex-nowrap gap-[8px] my-5">
           {plotArea && (
             <div className="flex gap-2 items-center">
-              <SquareFootIcon style={{ fontSize: 14 }} />
-              <span className="text-sm">Plot: {plotArea}</span>
+              <SquareFootIcon style={{ fontSize: 18 }} />
+              <span className="text-sm"> {plotArea}</span>
             </div>
           )}
           {bhkType && (
             <div className="flex gap-2 items-center">
-              <HomeIcon style={{ fontSize: 14 }} />
+              <HomeIcon style={{ fontSize: 18 }} />
               <span className="text-sm">{bhkType}</span>
             </div>
           )}
 
           {area && (
             <div className="flex gap-2 items-center">
-              <SquareFootIcon style={{ fontSize: 14 }} />
+              <SquareFootIcon style={{ fontSize: 18 }} />
               <span className="text-sm">{area}</span>
             </div>
           )}
@@ -172,10 +172,10 @@ const PropertyCard = ({
             {/* Edit Icon */}
             <button
               onClick={handleEdit}
-              className="text-blue-600 hover:text-blue-600"
+              className="text-blue-600 hover:text-blue-600 cursor-pointer"
               title="Edit property"
             >
-              <EditIcon fontSize="small" />
+              <EditIcon fontSize="small " />
             </button>
 
             {/* Status Dropdown */}
@@ -457,8 +457,8 @@ const PropertyPostDetails = () => {
                   plotArea={
                     property.plot_area ? `${property.plot_area} Sq.ft` : null
                   }
-                  location={`${property.city || ""}${
-                    property.district ? `, ${property.district}` : ""
+                  location={`${
+                    property.district ? ` ${property.district}` : ""
                   }${property.state ? `, ${property.state}` : ""}`}
                   propertyType={property.property_type || property.subcategory}
                   buildingDirection={property.building_direction}

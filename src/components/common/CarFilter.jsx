@@ -10,13 +10,26 @@ import ListedBySection from "./filter/property/ListedBySection";
 import CarTransmissionFilter from "./filter/car/CarTransmissionFilter";
 import CarOwnerFilter from "./filter/car/CarOwnerFilter";
 import CarFuelTypeFilter from "./filter/car/CarFuelTypeFilter";
-
+import { useLocation } from "react-router-dom";
 const CarFilter = ({
   isFilterOpen,
   isMobile,
   onApplyFilters,
   currentFilters,
+   autoApply = true,
 }) => {
+const location = useLocation();
+  const prevPathRef = React.useRef(location.pathname);
+
+  // Clear filters when URL changes
+  useEffect(() => {
+    if (prevPathRef.current !== location.pathname) {
+      prevPathRef.current = location.pathname;
+      handleClearAllFilters();
+      console.log("URL changed, filters cleared.");
+    }
+  }, [location.pathname]);
+
   const [expandedSections, setExpandedSections] = useState({
     categories: true,
     location: true,
@@ -36,9 +49,7 @@ const CarFilter = ({
     });
   };
 
-  const [priceRange, setPriceRange] = useState([0, 100]);
-  const [selectedBrands, setSelectedBrands] = useState([]);
-  const [selectedFuelType, setSelectedFuelType] = useState(null);
+ 
 
   // Initialize filters state with current filters or default values
       const [filters, setFilters] = useState({
@@ -58,105 +69,157 @@ const CarFilter = ({
   
   
   
-   // Function to handle filter application
-    const handleApplyFilters = () => {
-      console.log("=== HANDLE APPLY FILTERS ===");
-      console.log("Current filters state:", filters);
-      
-      // Clean up filters - remove empty values
-      const cleanedFilters = Object.entries(filters).reduce((acc, [key, value]) => {
-        if (value && value !== "" && value !== null && value !== undefined) {
-          // Handle arrays
-          if (Array.isArray(value)) {
-            if (value.length > 0) {
-              acc[key] = value;
-            }
-          } else {
+  // Function to handle filter application
+  const handleApplyFilters = () => {
+    console.log("=== HANDLE APPLY FILTERS ===");
+    console.log("Current filters state:", filters);
+    
+    // Clean up filters - remove empty values
+    const cleanedFilters = Object.entries(filters).reduce((acc, [key, value]) => {
+      if (value && value !== "" && value !== null && value !== undefined) {
+        // Handle arrays
+        if (Array.isArray(value)) {
+          if (value.length > 0) {
             acc[key] = value;
           }
+        } else {
+          acc[key] = value;
         }
-        return acc;
-      }, {});
-      
-      console.log("Cleaned filters to send:", cleanedFilters);
-      
-      // Call the parent's apply filters function
-      if (onApplyFilters) {
-        onApplyFilters(cleanedFilters);
-      } else {
-        console.error("onApplyFilters function not provided!");
       }
+      return acc;
+    }, {});
+    
+    console.log("Cleaned filters to send:", cleanedFilters);
+    
+    // Call the parent's apply filters function
+    if (onApplyFilters) {
+      onApplyFilters(cleanedFilters);
+    } else {
+      console.error("onApplyFilters function not provided!");
+    }
   };
-  
-   // Update local filters when currentFilters prop changes
-      useEffect(() => {
+
+  // Clear all filters function
+  const handleClearAllFilters = () => {
+    const clearedFilters = {
+      type: "car",
+      price_range: "",
+      brand_id: "",
+      model_id: "",
+      year_filter: "",
+      fuel_type: "",
+      transmission: "",
+      no_of_owner: "",
+      subcategory_id: "",
+      latitude: filters.latitude, // Keep location
+      longitude: filters.longitude, // Keep location
+      km_driven: "",
+      body_type: "",
+      mileage_range: "",
+    };
+
+    setFilters(clearedFilters);
+
+    // Apply the cleared filters immediately if auto-apply is disabled
+    if (!autoApply && onApplyFilters) {
+      onApplyFilters(clearedFilters);
+    }
+  };
+
+  // Update local filters when currentFilters prop changes
+  useEffect(() => {
+    setFilters(prev => ({
+      ...prev,
+      ...currentFilters
+    }));
+  }, [currentFilters]);
+
+  // Auto-apply filters when filters change (with debounce) - only if autoApply is enabled
+  useEffect(() => {
+    if (!autoApply) return; // Skip auto-apply if disabled
+
+    const timeoutId = setTimeout(() => {
+      handleApplyFilters();
+    }, 500); // 500ms debounce to prevent too many API calls
+
+    return () => clearTimeout(timeoutId);
+  }, [
+    filters.price_range,
+    filters.brand_id,
+    filters.model_id,
+    filters.year_filter,
+    filters.fuel_type,
+    filters.transmission,
+    filters.no_of_owner,
+    filters.subcategory_id,
+    filters.km_driven,
+    filters.body_type,
+    filters.mileage_range,
+    autoApply,
+  ]); // Dependencies: all filter values that should trigger auto-apply
+
+  const [locationData, setLocationData] = useState({
+    address: "Chennai, Tamil Nadu", // Default fallback
+    city: "Chennai",
+    state: "Tamil Nadu",
+    latitude: "",
+    longitude: ""
+  });
+
+  // Helper functions for extracting city and state
+  const extractCityFromAddress = (address) => {
+    if (!address) return "";
+    const parts = address.split(",");
+    return parts[0]?.trim() || "";
+  };
+
+  const extractStateFromAddress = (address) => {
+    if (!address) return "";
+    const parts = address.split(",");
+    return parts[1]?.trim() || "";
+  };
+
+  // Function to get location from localStorage
+  const loadLocationFromStorage = () => {
+    try {
+      const selectedLocationStr = localStorage.getItem('selectedLocation');
+      
+      if (!selectedLocationStr) {
+        console.log("No location found in localStorage, using default");
+        return;
+      }
+      
+      const selectedLocation = JSON.parse(selectedLocationStr);
+      console.log("Loaded location from localStorage:", selectedLocation);
+      
+      if (selectedLocation.latitude && selectedLocation.longitude) {
+        const newLocationData = {
+          address: selectedLocation.address || selectedLocation.formatted_address || "Location Selected",
+          city: selectedLocation.city || extractCityFromAddress(selectedLocation.address) || "Unknown City",
+          state: selectedLocation.state || extractStateFromAddress(selectedLocation.address) || "Unknown State", 
+          latitude: parseFloat(selectedLocation.latitude),
+          longitude: parseFloat(selectedLocation.longitude)
+        };
+        
+        setLocationData(newLocationData);
+        
+        // Update filters with latitude and longitude (hidden values)
         setFilters(prev => ({
           ...prev,
-          ...currentFilters
+          latitude: newLocationData.latitude,
+          longitude: newLocationData.longitude
         }));
-      }, [currentFilters]);
-  
-    const [locationData, setLocationData] = useState({
-      address: "Chennai, Tamil Nadu", // Default fallback
-      city: "Chennai",
-      state: "Tamil Nadu",
-      latitude: "",
-      longitude: ""
-    });
-  
-    // Helper functions for extracting city and state
-    const extractCityFromAddress = (address) => {
-      if (!address) return "";
-      const parts = address.split(",");
-      return parts[0]?.trim() || "";
-    };
-  
-    const extractStateFromAddress = (address) => {
-      if (!address) return "";
-      const parts = address.split(",");
-      return parts[1]?.trim() || "";
-    };
-  
-    // Function to get location from localStorage
-    const loadLocationFromStorage = () => {
-      try {
-        const selectedLocationStr = localStorage.getItem('selectedLocation');
-        
-        if (!selectedLocationStr) {
-          console.log("No location found in localStorage, using default");
-          return;
-        }
-        
-        const selectedLocation = JSON.parse(selectedLocationStr);
-        console.log("Loaded location from localStorage:", selectedLocation);
-        
-        if (selectedLocation.latitude && selectedLocation.longitude) {
-          const newLocationData = {
-            address: selectedLocation.address || selectedLocation.formatted_address || "Location Selected",
-            city: selectedLocation.city || extractCityFromAddress(selectedLocation.address) || "Unknown City",
-            state: selectedLocation.state || extractStateFromAddress(selectedLocation.address) || "Unknown State", 
-            latitude: parseFloat(selectedLocation.latitude),
-            longitude: parseFloat(selectedLocation.longitude)
-          };
-          
-          setLocationData(newLocationData);
-          
-          // Update filters with latitude and longitude (hidden values)
-          setFilters(prev => ({
-            ...prev,
-            latitude: newLocationData.latitude,
-            longitude: newLocationData.longitude
-          }));
-        }
-      } catch (error) {
-        console.error("Error reading selectedLocation from localStorage:", error);
       }
-    };
-  
-    // Load location from localStorage on component mount
-    useEffect(() => {
-      loadLocationFromStorage();
-    }, []);
+    } catch (error) {
+      console.error("Error reading selectedLocation from localStorage:", error);
+    }
+  };
+
+  // Load location from localStorage on component mount
+  useEffect(() => {
+    loadLocationFromStorage();
+  }, []);
+
 
   return (
     <div
@@ -165,19 +228,27 @@ const CarFilter = ({
       } bg-white rounded-lg shadow-sm ${
         isMobile
           ? "w-full max-w-sm transform transition-transform duration-300 ease-in-out z-40 p-4 h-full"
-          : "h-full"
+          : "h-[600px] overflow-y-auto sticky top-[150px]"
       } ${
         isFilterOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
       }`}
     >
-      <div className="h-full overflow-y-auto pb-4 px-2">
-        <div className="mb-4">
-          <button
-            onClick={handleApplyFilters}
-            className="w-full bg-blue-900 my-4 cursor-pointer text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors"
-          >
-            Apply Filters
-          </button>
+      <div className="h-[600px] overflow-y-auto pb-4 px-2">
+      <div className="py-6 sticky top-0 bg-[#fff] z-40">
+         <div className="flex gap-2">
+    <button
+      onClick={handleApplyFilters}
+      className="flex-1 bg-blue-900 cursor-pointer text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors"
+    >
+      Apply Filters
+    </button>
+    <button
+      onClick={handleClearAllFilters}
+      className="flex-1 bg-gray-500 cursor-pointer text-white py-2 px-4 rounded hover:bg-gray-600 transition-colors"
+    >
+      Clear Filters
+    </button>
+  </div>
         </div>
 
         {/* Categories Section */}

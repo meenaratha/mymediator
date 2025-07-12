@@ -187,7 +187,7 @@ const WishlistPage = () => {
         case 'bike':
           routePath = `/bike/${slug}`;
           break;
-        case 'electronic':
+        case 'electronics':
           routePath = `/electronic/${slug}`;
           break;
         default:
@@ -363,7 +363,7 @@ const WishlistPage = () => {
         <div className="max-w-7xl mx-auto px-4 py-8">
           {/* Header */}
           <div className="mb-8">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
                   <Heart className="w-8 h-8 text-red-500" />

@@ -51,13 +51,13 @@ const SellerPropertyTabContent = ({
         return {
           id: item.id,
           title: propertyData.property_name || "Property",
-          location: propertyData.address || "Location not specified",
+          location: propertyData.address || propertyData.state|| "Location not specified",
           type: formatPropertyType(propertyData.subcategory_id, propertyData.plot_area),
           bhk: formatBHK(propertyData.bedrooms, propertyData.bhk_id),
           sqft: formatArea(propertyData.super_builtup_area, propertyData.carpet_area, propertyData.plot_area),
           price: propertyData.amount || 0,
           expanded: index === 0, // First item expanded by default
-          image: propertyData.image,
+          image: propertyData.image_url || propertyData.image ,
           propertyCode: propertyData.unique_code,
           status: propertyData.status,
           customerDetails: {
@@ -164,7 +164,7 @@ const SellerPropertyTabContent = ({
                 <div className="flex">
                   <div className="w-20 h-20 flex-shrink-0">
                     <img
-                      src={property.image_url || IMAGES.placeholderimg}
+                      src={property.image || IMAGES.placeholderimg}
                       alt={property.title}
                       className="w-full h-full object-cover rounded-md"
                     />

@@ -10,13 +10,29 @@ import ListedBySection from "./filter/property/ListedBySection";
 import BuildingDirectionSection from "./filter/property/BuildingDirectionSection";
 import CategoriesSection from "./filter/property/CategoriesSection";
 import SuperBuildupAreaSection from "./filter/property/SuperBuildupAreaSection";
+import { useLocation } from "react-router-dom";
 
 const PropertyFilter = ({
   isFilterOpen,
   isMobile,
   onApplyFilters,
   currentFilters,
+   autoApply = true,
 }) => {
+
+  const location = useLocation();
+  const prevPathRef = React.useRef(location.pathname);
+  
+  useEffect(() => {
+    if (prevPathRef.current !== location.pathname) {
+      prevPathRef.current = location.pathname;
+  
+      // Call your clear filters function
+      handleClearAllFilters();
+      console.log("URL changed, filters cleared.");
+    }
+  }, [location.pathname]);
+  
   const [expandedSections, setExpandedSections] = useState({
     categories: true,
     location: true,
@@ -54,7 +70,6 @@ const PropertyFilter = ({
     maintenance_id: "",
     construction_status_id: "",
     building_direction_id: "",
-    super_builtup_area:"",
     subcategory_id: "",
     latitude: "",
     longitude: "",
@@ -69,132 +84,187 @@ const PropertyFilter = ({
     }));
   }, [currentFilters]);
 
-  // Function to handle filter application
-  const handleApplyFilters = () => {
-    console.log("=== HANDLE APPLY FILTERS ===");
-    console.log("Current filters state:", filters);
-
-    // Clean up filters - remove empty values
-    const cleanedFilters = Object.entries(filters).reduce(
-      (acc, [key, value]) => {
-        if (value && value !== "" && value !== null && value !== undefined) {
-          // Handle arrays
-          if (Array.isArray(value)) {
-            if (value.length > 0) {
+  // Auto-apply filters when filters change (with debounce)
+    useEffect(() => {
+      if (!autoApply) return; // Skip auto-apply if disabled
+  
+      const timeoutId = setTimeout(() => {
+        handleApplyFilters();
+      }, 500); // 500ms debounce to prevent too many API calls
+  
+      return () => clearTimeout(timeoutId);
+    }, [
+      filters.price_range,
+      filters.bathroom_min,
+      filters.bedroom_min,
+      filters.furnished_id,
+      filters.super_builtup_area,
+      filters.bhk_id,
+      filters.construction_status_id,
+      filters.building_direction_id,
+      filters.subcategory_id,
+      autoApply,
+    ]); // Dependencies: all filter values that should trigger auto-apply
+  
+  
+  
+    // Function to handle filter application
+    const handleApplyFilters = () => {
+      console.log("=== HANDLE APPLY FILTERS ===");
+      console.log("Current filters state:", filters);
+  
+      // Clean up filters - remove empty values
+      const cleanedFilters = Object.entries(filters).reduce(
+        (acc, [key, value]) => {
+          if (value && value !== "" && value !== null && value !== undefined) {
+            // Handle arrays
+            if (Array.isArray(value)) {
+              if (value.length > 0) {
+                acc[key] = value;
+              }
+            } else {
               acc[key] = value;
             }
-          } else {
-            acc[key] = value;
           }
+          return acc;
+        },
+        {}
+      );
+  
+      console.log("Cleaned filters to send:", cleanedFilters);
+  
+      // Call the parent's apply filters function
+      if (onApplyFilters) {
+        onApplyFilters(cleanedFilters);
+      } else {
+        console.error("onApplyFilters function not provided!");
+      }
+    };
+  
+    // Clear all filters function
+    const handleClearAllFilters = () => {
+      const clearedFilters = {
+        type: "electronics",
+        price_range: "",
+        brand: "",
+        model: "",
+        year_filter: "",
+        subcategory_id: "",
+        latitude: filters.latitude, // Keep location
+        longitude: filters.longitude, // Keep location
+      };
+  
+      setFilters(clearedFilters);
+  
+      // If auto-apply is disabled, manually apply the cleared filters
+      if (!autoApply) {
+        if (onApplyFilters) {
+          onApplyFilters(clearedFilters);
         }
-        return acc;
-      },
-      {}
-    );
-
-    console.log("Cleaned filters to send:", cleanedFilters);
-
-    // Call the parent's apply filters function
-    if (onApplyFilters) {
-      onApplyFilters(cleanedFilters);
-    } else {
-      console.error("onApplyFilters function not provided!");
-    }
-  };
-
-  const [locationData, setLocationData] = useState({
-    address: "Chennai, Tamil Nadu", // Default fallback
-    city: "Chennai",
-    state: "Tamil Nadu",
-    latitude: "",
-    longitude: "",
-  });
-
-  // Helper functions for extracting city and state
-  const extractCityFromAddress = (address) => {
-    if (!address) return "";
-    const parts = address.split(",");
-    return parts[0]?.trim() || "";
-  };
-
-  const extractStateFromAddress = (address) => {
-    if (!address) return "";
-    const parts = address.split(",");
-    return parts[1]?.trim() || "";
-  };
-
-  // Function to get location from localStorage
-  const loadLocationFromStorage = () => {
-    try {
-      const selectedLocationStr = localStorage.getItem("selectedLocation");
-
-      if (!selectedLocationStr) {
-        console.log("No location found in localStorage, using default");
-        return;
       }
-
-      const selectedLocation = JSON.parse(selectedLocationStr);
-      console.log("Loaded location from localStorage:", selectedLocation);
-
-      if (selectedLocation.latitude && selectedLocation.longitude) {
-        const newLocationData = {
-          address:
-            selectedLocation.address ||
-            selectedLocation.formatted_address ||
-            "Location Selected",
-          city:
-            selectedLocation.city ||
-            extractCityFromAddress(selectedLocation.address) ||
-            "Unknown City",
-          state:
-            selectedLocation.state ||
-            extractStateFromAddress(selectedLocation.address) ||
-            "Unknown State",
-          latitude: parseFloat(selectedLocation.latitude),
-          longitude: parseFloat(selectedLocation.longitude),
-        };
-
-        setLocationData(newLocationData);
-
-        // Update filters with latitude and longitude (hidden values)
-        setFilters((prev) => ({
-          ...prev,
-          latitude: newLocationData.latitude,
-          longitude: newLocationData.longitude,
-        }));
+    };
+  
+    const [locationData, setLocationData] = useState({
+      address: "Chennai, Tamil Nadu", // Default fallback
+      city: "Chennai",
+      state: "Tamil Nadu",
+      latitude: "",
+      longitude: "",
+    });
+  
+    // Helper functions for extracting city and state
+    const extractCityFromAddress = (address) => {
+      if (!address) return "";
+      const parts = address.split(",");
+      return parts[0]?.trim() || "";
+    };
+  
+    const extractStateFromAddress = (address) => {
+      if (!address) return "";
+      const parts = address.split(",");
+      return parts[1]?.trim() || "";
+    };
+  
+    // Function to get location from localStorage
+    const loadLocationFromStorage = () => {
+      try {
+        const selectedLocationStr = localStorage.getItem("selectedLocation");
+  
+        if (!selectedLocationStr) {
+          console.log("No location found in localStorage, using default");
+          return;
+        }
+  
+        const selectedLocation = JSON.parse(selectedLocationStr);
+        console.log("Loaded location from localStorage:", selectedLocation);
+  
+        if (selectedLocation.latitude && selectedLocation.longitude) {
+          const newLocationData = {
+            address:
+              selectedLocation.address ||
+              selectedLocation.formatted_address ||
+              "Location Selected",
+            city:
+              selectedLocation.city ||
+              extractCityFromAddress(selectedLocation.address) ||
+              "Unknown City",
+            state:
+              selectedLocation.state ||
+              extractStateFromAddress(selectedLocation.address) ||
+              "Unknown State",
+            latitude: parseFloat(selectedLocation.latitude),
+            longitude: parseFloat(selectedLocation.longitude),
+          };
+  
+          setLocationData(newLocationData);
+  
+          // Update filters with latitude and longitude (hidden values)
+          setFilters((prev) => ({
+            ...prev,
+            latitude: newLocationData.latitude,
+            longitude: newLocationData.longitude,
+          }));
+        }
+      } catch (error) {
+        console.error("Error reading selectedLocation from localStorage:", error);
       }
-    } catch (error) {
-      console.error("Error reading selectedLocation from localStorage:", error);
-    }
-  };
-
-  // Load location from localStorage on component mount
-  useEffect(() => {
-    loadLocationFromStorage();
-  }, []);
+    };
+  
+    // Load location from localStorage on component mount
+    useEffect(() => {
+      loadLocationFromStorage();
+    }, []);
 
   return (
     <>
       <div
         className={`${
           styles.mymediator__filterContainer
-        }  mx-auto bg-white rounded-lg shadow-sm overflow-y-auto h-[1000px] ${
+        }  bg-white rounded-lg shadow-sm  ${
           isMobile
             ? "w-[330px] transform transition-transform duration-300 ease-in-out z-40 overflow-y-auto p-4 h-[90vh]"
-            : ""
+            : "h-[600px] overflow-y-auto sticky top-[150px]"
         } ${
           isFilterOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         } `}
       >
         <div className="h-full  pb-4 px-2">
-          <div className="mb-4 sticky top-0">
-            <button
-              onClick={handleApplyFilters}
-              className="w-full bg-blue-900 my-4 cursor-pointer text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors"
-            >
-              Apply Filters
-            </button>
-          </div>
+           <div className="py-6 sticky top-0 bg-[#fff] z-40">
+         <div className="flex gap-2">
+    <button
+      onClick={handleApplyFilters}
+      className="flex-1 bg-blue-900 cursor-pointer text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors"
+    >
+      Apply Filters
+    </button>
+    <button
+      onClick={handleClearAllFilters}
+      className="flex-1 bg-gray-500 cursor-pointer text-white py-2 px-4 rounded hover:bg-gray-600 transition-colors"
+    >
+      Clear Filters
+    </button>
+  </div>
+        </div>
           {/* Categories Section */}
           <CategoriesSection
             filters={filters}

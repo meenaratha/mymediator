@@ -23,6 +23,7 @@ const ElectronicsCard = ({
   year,
   features,
   specifications,
+  editformslugName,
   price,
   id,
   slug,
@@ -57,7 +58,9 @@ const ElectronicsCard = ({
 
   const handleEdit = (e) => {
     e.stopPropagation();
-    navigate(`/electronics/${editformslug}/${id}/edit`);
+    navigate(`/electronics/${editformslug}/${id}/edit` , {
+      state: { slugName: editformslugName }, // 👈 set the state value here
+    });
   };
 
   const handleDelete = async (e) => {
@@ -117,7 +120,7 @@ const ElectronicsCard = ({
       {/* Electronics Image */}
       <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
         <img
-          src={electronicsImage || IMAGES.propertybanner1}
+          src={electronicsImage || IMAGES.placeholderimg}
           alt={electronicsTitle}
           className="w-full h-full object-cover"
         />
@@ -141,20 +144,20 @@ const ElectronicsCard = ({
         <div className="flex items-center mt-1 text-gray-600 flex-wrap md:flex-nowrap gap-[8px] mb-2">
           {brand && (
             <>
-              <DevicesIcon style={{ fontSize: 14 }} />
+              <DevicesIcon style={{ fontSize: 18 }} />
               <span className="text-sm truncate max-w-[100px]">{brand}</span>
             </>
           )}
           {model && (
             <>
-              <FeaturedVideoIcon style={{ fontSize: 14 }} />
+              <FeaturedVideoIcon style={{ fontSize: 18 }} />
               <span className="text-sm truncate max-w-[100px]">{model}</span>
             </>
           )}
 
           {year && (
             <>
-              <CalendarTodayIcon style={{ fontSize: 14 }} />
+              <CalendarTodayIcon style={{ fontSize: 18 }} />
               <span className="text-sm">{year}</span>
             </>
           )}
@@ -172,8 +175,8 @@ const ElectronicsCard = ({
             {/* Edit Icon */}
             <button
               onClick={handleEdit}
-              className="text-gray-600 hover:text-blue-600"
-              title="Edit electronics item"
+              className="text-gray-600 hover:text-blue-600 cursor-pointer"
+              title="Edit electronics item "
             >
               <EditIcon fontSize="small text-blue-600 " />
             </button>
@@ -447,9 +450,10 @@ const ElectronicsPostDetails = () => {
                   id={item.id}
                   slug={item.action_slug}
                   editformslug={item.slug}
+                  editformslugName={item.subcategory}
                   electronicsImage={item.image_url || item.images?.[0]?.url}
                   electronicsTitle={item.title}
-                  location={`${item.district ? `, ${item.district}` : ""}${
+                  location={`${item.district ? `${item.district}` : ""}${
                     item.state ? `, ${item.state}` : ""
                   }`}
                   brand={item.brand_name || item.brand}

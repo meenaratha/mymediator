@@ -268,11 +268,44 @@ const PropertyForm = () => {
         breadth: false,
       },
     },
+
+    "defult": {
+      title: "default",
+      subcategoryId: 3,
+      type: "default",
+      showFields: {
+        bachelor: false,
+        wash_room: false,
+        bhk: false,
+        bedroom: false,
+        bathroom: false,
+        furnished: false,
+        constructionStatus: false,
+        maintenance: false,
+        superBuildArea: false,
+        carpetArea: false,
+        floorNumber: false,
+        totalFloor: false,
+        bikeParking: false,
+        carParking: false,
+        plotArea: false, // Hidden by default
+        length: false,   // Hidden by default
+        breadth: false,  // Hidden by default
+      },
+    },
   };
 
   // Get current slug configuration
-  const getCurrentConfig = () =>
-    SLUG_CONFIG[slug] || SLUG_CONFIG["lands-plots"];
+const getCurrentConfig = () => {
+  const config = SLUG_CONFIG[slug];
+  if (!config) {
+    console.warn(`No configuration found for slug: ${slug}, using default config with all fields hidden`);
+    // Return the default configuration with all fields hidden
+    return SLUG_CONFIG["defult"]; // Use the default config from SLUG_CONFIG
+  }
+  return config;
+};
+
 
   // Helper function to check if field should be shown
   const shouldShowField = (fieldName) => {
@@ -868,6 +901,7 @@ const PropertyForm = () => {
         );
         if (!isEditMode) {
           dispatch(resetForm());
+          navigate("/sell");
         } else {
           // ✅ If edit mode → navigate
           navigate("/seller-post-details");
@@ -1229,47 +1263,6 @@ const PropertyForm = () => {
           {!isEditMode ? `${subName} Form` : `${editFormTitle} Form`}
         </h1>
 
-        {/* Auto-populate controls */}
-        {/* <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={handleLoadDummyData}
-            className="bg-green-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-green-700 focus:outline-none flex items-center gap-2"
-            disabled={isLoading}
-          >
-            <AutoFixHighIcon fontSize="small" />
-            Load Sample Data
-          </button>
-
-          <button
-            type="button"
-            onClick={handleApiAutoPopulate}
-            disabled={isLoading}
-            className={`${
-              isLoading
-                ? "bg-blue-400 cursor-not-allowed"
-                : "bg-blue-600 hover:bg-blue-700"
-            } text-white px-4 py-2 rounded-full text-sm font-medium focus:outline-none flex items-center gap-2`}
-          >
-            {isLoading ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                Loading...
-              </>
-            ) : (
-              "Auto-populate from API"
-            )}
-          </button>
-
-          <button
-            type="button"
-            onClick={handleResetForm}
-            className="bg-red-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-red-700 focus:outline-none"
-            disabled={isLoading}
-          >
-            Reset Form
-          </button>
-        </div> */}
       </div>
 
       {/* Show API error if exists */}
@@ -1279,19 +1272,7 @@ const PropertyForm = () => {
         </div>
       )}
 
-      {/* Show success message if data was auto-populated */}
-      {/* {autoPopulateData && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
-          <strong>Success:</strong> Form data has been auto-populated!
-        </div>
-      )} */}
-
-      {/* Show current configuration info */}
-      {/* <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded mb-6">
-        <strong>Form Configuration:</strong> {getCurrentConfig().title} |
-        <strong> Subcategory ID:</strong> {getSubcategoryId()} |
-        <strong> URL ID:</strong> {id || "Not provided"}
-      </div> */}
+      
 
       <form onSubmit={handleSubmit}>
         {/* Row 1 - Common fields for all property types */}
@@ -1724,7 +1705,7 @@ const PropertyForm = () => {
                   value={formData.superBuildArea || ""}
                   className="w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] 
                   bg-white focus:outline-none "
-                  placeholder="Enter super built-up area"
+                  placeholder=" e.g. 1,200 sq ft"
                   onBlur={handleBlur}
                   error={errors.superBuildArea}
                   touched={touched.superBuildArea}
@@ -1859,7 +1840,7 @@ const PropertyForm = () => {
           {shouldShowField("bachelor") && (
             <div>
               <label className="block text-gray-800 font-medium mb-2 px-4">
-                Bachelor Accommodation
+                Bachelor Accomodation
               </label>
               <DynamicInputs
                 type="select"
@@ -1869,7 +1850,7 @@ const PropertyForm = () => {
                 value={formData.bachelor || ""}
                 className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border
                   border-[#bfbfbf] bg-white focus:outline-none "
-                placeholder="Select bachelor accommodation"
+                placeholder="Select bachelor accomodation"
                 onBlur={handleBlur}
                 error={errors.bachelor}
                 touched={touched.bachelor}

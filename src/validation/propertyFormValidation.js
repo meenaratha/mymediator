@@ -4,8 +4,8 @@ import * as Yup from 'yup';
 const commonFields = {
   propertyName: Yup.string().required("Property name is required"),
   mobileNumber: Yup.string()
-    .required("Mobile number is required")
-    .matches(/^[0-9]{10}$/, "Mobile number must be 10 digits"),
+    .required("Mobile number is required"),
+    // .matches(/^[0-9]{10}$/, "Mobile number must be 10 digits"),
   address: Yup.string().required("Address is required"),
   state: Yup.string().required("State is required"),
   district: Yup.string().required("District is required"),
@@ -137,7 +137,7 @@ export const createValidationSchema = (slug) => {
 
     default:
       // Default to land plot validation if slug is not recognized
-      schemaFields = { ...schemaFields, ...landPlotFields };
+      schemaFields = { ...schemaFields,  };
       break;
   }
 
@@ -170,6 +170,9 @@ export const commercialRentFormSchema = Yup.object().shape({
   ...commercialFields
 });
 
+export const defaultFormSchema = Yup.object().shape({
+  ...commonFields,
+});
 // Helper function to get validation schema by slug
 export const getSchemaBySlug = (slug) => {
   switch (slug) {
@@ -184,6 +187,6 @@ export const getSchemaBySlug = (slug) => {
     case 'for-rent-shops-offices':
       return commercialRentFormSchema;
     default:
-      return landPlotFormSchema;
+      return defaultFormSchema;
   }
 };

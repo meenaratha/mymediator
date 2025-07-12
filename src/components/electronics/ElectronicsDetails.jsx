@@ -416,7 +416,7 @@ const ElectronicsDetails = ({ electronics }) => {
                   <h3 className="font-semibold text-lg">
                     {electronics.vendor_name || "Seller"}
                   </h3>
-                  <p className="text-sm text-gray-500">Owner</p>
+                  <p className="text-sm text-gray-500">{electronics.listed_by}</p>
                 </div>
                 <div className="ml-auto">
                   <Link
@@ -504,12 +504,14 @@ const ElectronicsDetails = ({ electronics }) => {
 
               <div className="flex items-center mt-2 mb-2">
                 <p className="mr-4">{electronics.subcategory}</p>
-                <div className="flex items-center">
-                  <StarIcon className="text-orange-500" />
-                  <span className="ml-1">
-                    {electronics.average_rating || "4.5"}
-                  </span>
-                </div>
+                 {electronics.total_ratings !== null ? (
+                  <div className="flex items-center">
+                    <StarIcon className="text-orange-500" />
+                    <span className="ml-1">{electronics.total_ratings}</span>
+                  </div>
+                ) : (
+                  ""
+                )}
               </div>
 
               <div className="flex items-center text-red-500 mt-4 gap-[10px]">

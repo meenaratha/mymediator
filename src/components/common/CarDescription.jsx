@@ -112,19 +112,19 @@ const CarDescription = () => {
               {/* Upper section with icons and details */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 border-b border-[#E1E1E1] pb-4">
                 <div className="flex items-center space-x-2">
-                  <DirectionsCarOutlined className="text-gray-500" />
+                  <DirectionsCarOutlined className="text-black font-bold" />
                   <span className="text-sm font-medium text-gray-600">
                     {car.transmission }
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <SpeedOutlined className="text-gray-500" />
+                  <SpeedOutlined className="text-black font-bold" />
                   <span className="text-sm font-medium text-gray-600">
                     {car.kilometers} km
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <LocalGasStationOutlined className="text-gray-500" />
+                  <LocalGasStationOutlined className="text-black font-bold" />
                   <span className="text-sm font-medium text-gray-600">
                     {car.fuel_type || car.fuelType || 'Petrol'}
                   </span>
@@ -140,13 +140,13 @@ const CarDescription = () => {
                   </span>
                 </div> */}
                 <div className="flex items-center space-x-2">
-                  <LocationOnOutlined className="text-gray-500" />
+                  <LocationOnOutlined className="text-black font-bold" />
                   <span className="text-sm font-medium text-gray-600">
                     {car.district} ,{car.state},
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <CalendarTodayOutlined className="text-gray-500" />
+                  <CalendarTodayOutlined className="text-black font-bold" />
                   <span className="text-sm font-medium text-gray-600">
                     {car.year}
                   </span>
@@ -178,7 +178,7 @@ const CarDescription = () => {
                     <h2 className="text-lg font-semibold">
                       {car.vendor_name || "Car Owner"}
                     </h2>
-                    <p className="text-sm text-gray-500">Seller</p>
+                    <p className="text-sm text-gray-500">{car.listed_by}</p>
                   </div>
                 </div>
                 <Link

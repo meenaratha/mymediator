@@ -57,11 +57,11 @@ const SignupFormModel = ({ setLoginFormModel, setSignupFormModel }) => {
         return null;
       case "mobileNumber":
         if (!value) return "Mobile number is required";
-        if (value.length < 10) return "Please enter a valid mobile number";
+        // if (value.length < 10) return "Please enter a valid mobile number";
         return null;
       case "password":
         if (!value) return "Password is required";
-        if (value.length < 6) return "Password must be at least 6 characters";
+        // if (value.length < 6) return "Password must be at least 6 characters";
         return null;
       default:
         return null;

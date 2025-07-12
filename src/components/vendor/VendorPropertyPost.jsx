@@ -97,7 +97,7 @@ const VendorPropertyPost = () => {
   return (
     <>
       {/* Property Grid - Responsive columns: 1 on mobile, 2 on medium, 3 on large, 6 on xl */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
         {Array.isArray(properties) && properties.length > 0 ? (
           properties.map((property) => {
             const formattedProperty = formatPropertyData(property);
@@ -119,7 +119,7 @@ const VendorPropertyPost = () => {
                   />
                 </div>
                 <div className="p-2">
-                  <div className="flex justify-between items-center mb-1">
+                  <div className="flex justify-between items-center mb-2">
                     <h3 className="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-full" title={property.property_name}>
                       {property.property_name}
                     </h3>
@@ -128,10 +128,9 @@ const VendorPropertyPost = () => {
                   <div className="my-2 text-xs text-gray-500 overflow-hidden text-ellipsis whitespace-nowrap">
                     {property.district}, {property.state}
                   </div>
-                  <div className="flex items-center gap-1 text-xs text-gray-600 mb-1 overflow-hidden">
-                    <div className="flex items-center flex-shrink-0">
+                  <div className="mb-3 flex items-center gap-1 text-xs text-gray-600 mb-1 overflow-hidden">
+                    <div className="flex items-center flex-shrink-0 gap-4">
                       <span className="inline-block mr-1 whitespace-nowrap">{property.bedrooms} bhk</span>
-                      <span className="mx-1 flex-shrink-0">|</span>
                        <div className="flex items-center overflow-hidden text-ellipsis whitespace-nowrap">
                       <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" className="bi bi-rulers flex-shrink-0" viewBox="0 0 16 16">
                         <path d="M1 0a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h5v-1H2v-1h4v-1H4v-1h2v-1H2v-1h4V9H4V8h2V7H2V6h4V2h1v4h1V4h1v2h1V2h1v4h1V4h1v2h1V2h1v4h1V1a1 1 0 0 0-1-1zm15 11v-1h-1v-1h-1v1h-1v1h1v1h1v-1zM6 11v1H5v1h1v1h1v-1h1v-1H7v-1z"/>
@@ -143,10 +142,10 @@ const VendorPropertyPost = () => {
                     </div>
                     
                   </div>
-                  <div className="flex justify-between items-center text-xs">
-                   
+                  <div className="mb-2 flex justify-between items-center text-xs">
+                                          <span className="">{property.post_year}</span>
+
                     <div className="flex justify-between items-center  gap-4 font-semibold ">
-                       <span className="">{property.post_year}</span>
                       <span className="text-sm whitespace-nowrap">
                         ₹ {property.amount ? (property.amount / 100000).toFixed(1) : '0'} L
                       </span>

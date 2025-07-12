@@ -119,7 +119,7 @@ const PropertyDescription = () => {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 border-b border-[#E1E1E1] pb-4">
                 {property.super_builtup_area && (
                   <div className="flex items-center space-x-2">
-                    <HomeOutlinedIcon className="text-gray-500" />
+                    <HomeOutlinedIcon className="text-black font-bold" />
                     <span className="text-sm font-medium text-gray-600">
                       {property.super_builtup_area} Sq. Ft
                     </span>
@@ -128,7 +128,7 @@ const PropertyDescription = () => {
 
                 {property.plot_area && (
                   <div className="flex items-center space-x-2">
-                    <HomeOutlinedIcon className="text-gray-500" />
+                    <HomeOutlinedIcon className="text-black font-bold" />
                     <span className="text-sm font-medium text-gray-600">
                       {property.plot_area} 
                     </span>
@@ -138,7 +138,7 @@ const PropertyDescription = () => {
 
                 {property.building_direction && (
                   <div className="flex items-center space-x-2">
-                    <CompassCalibrationOutlinedIcon className="text-gray-500" />
+                    <CompassCalibrationOutlinedIcon className="ttext-black font-bold" />
                     <span className="text-sm font-medium text-gray-600">
                       {property.building_direction}
                     </span>
@@ -147,7 +147,7 @@ const PropertyDescription = () => {
 
                 {property.bhk && (
                   <div className="flex items-center space-x-2">
-                    <BedOutlinedIcon className="text-gray-500" />
+                    <BedOutlinedIcon className="text-black font-bold" />
                     <span className="text-sm font-medium text-gray-600">
                       {property.bhk}
                     </span>
@@ -158,19 +158,19 @@ const PropertyDescription = () => {
               {/* Middle section with owner, location, and date */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 py-4 border-b border-[#E1E1E1]">
                 <div className="flex items-center space-x-2">
-                  <PersonOutlinedIcon className="text-gray-500" />
+                  <PersonOutlinedIcon className="text-black font-bold" />
                   <span className="text-sm font-medium text-gray-600">
                     Owner | 1ST
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <LocationOnOutlinedIcon className="text-gray-500" />
+                  <LocationOnOutlinedIcon className="text-black font-bold" />
                   <span className="text-sm font-medium text-gray-600">
                     {property.district}, {property.state}
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <CalendarTodayOutlinedIcon className="text-gray-500" />
+                  <CalendarTodayOutlinedIcon className="text-black font-bold" />
                   <span className="text-sm font-medium text-gray-600">
                     {property.post_date}
                   </span>
@@ -198,7 +198,7 @@ const PropertyDescription = () => {
                   />
                   <div className="ml-3">
                     <h2 className="text-lg font-semibold">{property.vendor_name}</h2>
-                    <p className="text-sm text-gray-500">Owner</p>
+                    <p className="text-sm text-gray-500">{property.listed_by}</p>
                   </div>
                 </div>
                 <Link

@@ -9,13 +9,27 @@ import ListedBySection from "./filter/property/ListedBySection";
 import BikeOwnerFilter from "./filter/bike/BikeOwnerFilter";
 import BikeFuelTypeFilter from "./filter/bike/BikeFuelTypeFilter";
 import BikeTransmissionFilter from "./filter/bike/BikeTransmissionFilter";
-
+import { useLocation } from "react-router-dom";
 const BikeFilter = ({
   isFilterOpen,
   isMobile,
   onApplyFilters,
   currentFilters,
+  autoApply = false, 
 }) => {
+  const location = useLocation();
+  const prevPathRef = React.useRef(location.pathname);
+
+  // Clear filters when URL changes
+  useEffect(() => {
+    if (prevPathRef.current !== location.pathname) {
+      prevPathRef.current = location.pathname;
+      handleClearAllFilters();
+      console.log("URL changed, filters cleared.");
+    }
+  }, [location.pathname]);
+
+
   const [expandedSections, setExpandedSections] = useState({
     categories: true,
     location: true,
@@ -32,8 +46,7 @@ const BikeFilter = ({
     });
   };
 
-  const [priceRange, setPriceRange] = useState([0, 100]);
-  const [selectedBrands, setSelectedBrands] = useState([]);
+
 
   // Initialize filters state with current filters or default values
   const [filters, setFilters] = useState({
@@ -58,6 +71,30 @@ const BikeFilter = ({
       ...currentFilters,
     }));
   }, [currentFilters]);
+
+  // Auto-apply filters when filters change (with debounce) - only if autoApply is enabled
+  useEffect(() => {
+    if (!autoApply) return; // Skip auto-apply if disabled
+
+    const timeoutId = setTimeout(() => {
+      handleApplyFilters();
+    }, 500); // 500ms debounce to prevent too many API calls
+
+    return () => clearTimeout(timeoutId);
+  }, [
+    filters.price_range,
+    filters.brand_id,
+    filters.model_id,
+    filters.year_filter,
+    filters.fuel_type,
+    filters.kilometers_range,
+    filters.engine_cc_range,
+    filters.no_of_owner,
+    filters.subcategory_id,
+    filters.km_driven,
+    filters.body_type,
+    autoApply,
+  ]); // Dependencies: all filter values that should trigger auto-apply
 
   // Function to handle filter application
   const handleApplyFilters = () => {
@@ -89,6 +126,33 @@ const BikeFilter = ({
       onApplyFilters(cleanedFilters);
     } else {
       console.error("onApplyFilters function not provided!");
+    }
+  };
+
+  // Clear all filters function
+  const handleClearAllFilters = () => {
+    const clearedFilters = {
+      type: "bike",
+      price_range: "",
+      brand_id: "",
+      model_id: "",
+      year_filter: "",
+      fuel_type: "",
+      kilometers_range: "",
+      engine_cc_range: "",
+      no_of_owner: "",
+      subcategory_id: "",
+      latitude: filters.latitude, // Keep location
+      longitude: filters.longitude, // Keep location
+      km_driven: "",
+      body_type: "",
+    };
+
+    setFilters(clearedFilters);
+
+    // Apply the cleared filters immediately if auto-apply is disabled
+    if (!autoApply && onApplyFilters) {
+      onApplyFilters(clearedFilters);
     }
   };
 
@@ -170,19 +234,27 @@ const BikeFilter = ({
       } bg-white rounded-lg shadow-sm ${
         isMobile
           ? "w-full max-w-sm transform transition-transform duration-300 ease-in-out z-40 p-4 h-full"
-          : "h-full"
+          : "h-[600px] overflow-y-auto sticky top-[150px]"
       } ${
         isFilterOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
       }`}
     >
-      <div className="h-full overflow-y-auto pb-4 px-2">
-        <div className="mb-4 sticky top-0">
-          <button
-            onClick={handleApplyFilters}
-            className="w-full bg-blue-900 my-4 cursor-pointer text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors"
-          >
-            Apply Filters
-          </button>
+      <div className="h-[600px] overflow-y-auto pb-4 px-2">
+        <div className="py-6 sticky top-0 bg-[#fff] z-40">
+         <div className="flex gap-2">
+    <button
+      onClick={handleApplyFilters}
+      className="flex-1 bg-blue-900 cursor-pointer text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors"
+    >
+      Apply Filters
+    </button>
+    <button
+      onClick={handleClearAllFilters}
+      className="flex-1 bg-gray-500 cursor-pointer text-white py-2 px-4 rounded hover:bg-gray-600 transition-colors"
+    >
+      Clear Filters
+    </button>
+  </div>
         </div>
 
         {/* Categories Section */}

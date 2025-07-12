@@ -113,7 +113,7 @@ const BikeDescription = () => {
                 
                 {bike.engine_cc !==null ?(
 <div className="flex items-center space-x-2">
-                  <TwoWheelerOutlined className="text-gray-500" />
+                  <TwoWheelerOutlined className="text-black font-bold" />
                   <span className="text-sm font-medium text-gray-600">
                     {bike.engine_cc}
                   </span>
@@ -123,7 +123,7 @@ const BikeDescription = () => {
 
                   {bike.engine_cc !==null ?(
                 <div className="flex items-center space-x-2">
-                  <SpeedOutlined className="text-gray-500" />
+                  <SpeedOutlined className="text-black font-bold" />
                   <span className="text-sm font-medium text-gray-600">
                     {bike.kilometers} km
                   </span>
@@ -132,14 +132,14 @@ const BikeDescription = () => {
 
                   {bike.brand !==null ?(
 <div className="flex items-center space-x-2">
-                  <LocalGasStationOutlined className="text-gray-500" />
+                  <LocalGasStationOutlined className="text-black font-bold" />
                   <span className="text-sm font-medium text-gray-600">
                     {bike.brand}
                   </span>
                 </div>
                   ):(
                     <div className="flex items-center space-x-2">
-                  <LocalGasStationOutlined className="text-gray-500" />
+                  <LocalGasStationOutlined className="text-black font-bold" />
                   <span className="text-sm font-medium text-gray-600">
                     {bike.brand_name}
                   </span>
@@ -151,19 +151,19 @@ const BikeDescription = () => {
               {/* Middle section with owner, location, and date */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 py-4 border-b border-[#E1E1E1]">
                 <div className="flex items-center space-x-2">
-                  <PersonOutlined className="text-gray-500" />
+                  <PersonOutlined className="text-black font-bold" />
                   <span className="text-sm font-medium text-gray-600">
                     Owner {bike.ownerNumber}
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <LocationOnOutlined className="text-gray-500" />
+                  <LocationOnOutlined className="text-black font-bold" />
                   <span className="text-sm font-medium text-gray-600">
                     {bike.district}
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <CalendarTodayOutlined className="text-gray-500" />
+                  <CalendarTodayOutlined className="text-black font-bold" />
                   <span className="text-sm font-medium text-gray-600">
                     {bike.year}
                   </span>
@@ -193,7 +193,7 @@ const BikeDescription = () => {
                     <h2 className="text-lg font-semibold">
                       {bike.vendor_name}
                     </h2>
-                    <p className="text-sm text-gray-500">Seller</p>
+                    <p className="text-sm text-gray-500">{bike.listed_by}</p>
                   </div>
                 </div>
                 <Link

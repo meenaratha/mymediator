@@ -27,6 +27,7 @@ const BikeCard = ({
   id,
   slug,
   editformslug,
+  editformslugName,
   status,
   isPublished,
   subcategory,
@@ -56,7 +57,9 @@ const BikeCard = ({
 
   const handleEdit = (e) => {
     e.stopPropagation();
-    navigate(`/bike/${editformslug}/${id}/edit`);
+    navigate(`/bike/${editformslug}/${id}/edit`, {
+      state: { slugName: editformslugName }, // 👈 set the state value here
+    });
   };
 
   const handleDelete = async (e) => {
@@ -134,18 +137,13 @@ const BikeCard = ({
           </div>
         </div>
 
-        {/* Bike Specifications */}
-        {/* <div className="flex items-center mt-1 text-gray-600 flex-wrap md:flex-nowrap gap-[8px] mb-2">
-          <span className="text-sm">{brand}</span>
-          <span className="text-sm">({model})</span>
-         
-        </div> */}
+       
 
         {/* Year, Kilometers, and Engine CC */}
         <div className="flex  gap-4 items-center mt-1 text-gray-600 flex-wrap md:flex-nowrap gap-[8px] mb-2">
           {kilometers && (
             <>
-              <SpeedIcon style={{ fontSize: 14 }} />
+              <SpeedIcon style={{ fontSize: 18 }} />
               <span className="text-sm">{kilometers} km</span>
             </>
           )}
@@ -153,7 +151,7 @@ const BikeCard = ({
           
           {year && (
             <>
-              <CalendarTodayIcon style={{ fontSize: 14 }} />
+              <CalendarTodayIcon style={{ fontSize: 18 }} />
               <span className="text-sm">{year}</span>
             </>
           )}
@@ -171,7 +169,7 @@ const BikeCard = ({
             {/* Edit Icon */}
             <button
               onClick={handleEdit}
-              className="text-gray-600 hover:text-blue-600"
+              className="text-gray-600 hover:text-blue-600 cursor-pointer"
               title="Edit bike"
             >
               <EditIcon fontSize="small" />
@@ -444,10 +442,11 @@ const BikePostDetails = () => {
                   id={bike.id}
                 slug={bike.action_slug}
                 editformslug={bike.slug}
+                editformslugName={bike.subcategory}
                   bikeImage={bike.image_url || bike.images?.[0]?.url}
                   bikeTitle={bike.title}
-                  location={`${bike.city || ''}${
-                    bike.district ? `, ${bike.district}` : ""
+                  location={`${bike.district || ''}${
+                    bike.state ? `, ${bike.state}` : ""
                   }`}
                   brand={bike.brand_name || bike.brand}
                   model={bike.model_name || bike.model}

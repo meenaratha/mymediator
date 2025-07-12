@@ -80,7 +80,7 @@ const VendorElectronicPost = () => {
   return (
     <>
       {/* Electronics Grid - Responsive columns: 1 on mobile, 2 on medium, 3 on large, 6 on xl */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
         {Array.isArray(electronics) && electronics.length > 0 ? (
           electronics.map((electronic) => (
             <div 
@@ -99,20 +99,19 @@ const VendorElectronicPost = () => {
                 />
               </div>
               <div className="p-2">
-                <div className="flex justify-between items-center mb-1">
+                <div className="flex justify-between items-center mb-2">
                   <h3 className="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-full" title={electronic.product_name || electronic.item_name}>
                     {electronic.title }
                   </h3>
                 </div>
                 
                 {/* Electronics details row 1 - Brand and Category */}
-                <div className="flex items-center gap-1 text-xs text-gray-600 mb-1 overflow-hidden">
-                  <div className="flex items-center flex-shrink-0">
+                <div className="mb-2 flex items-center gap-1 text-xs text-gray-600 mb-1 overflow-hidden">
+                  <div className="flex items-center flex-shrink-0 gap-4 flex-wrap">
                     <span className="inline-block mr-1 whitespace-nowrap">{electronic.brand || electronic.brand_name}</span>
-                    <span className="mx-1 flex-shrink-0">|</span>
                   </div>
                   <div className="flex items-center overflow-hidden text-ellipsis whitespace-nowrap">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" className="bi bi-tag flex-shrink-0" viewBox="0 0 16 16">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-tag flex-shrink-0" viewBox="0 0 16 16">
                       <path d="M6 4.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm-1 0a.5.5 0 1 0-1 0 .5.5 0 0 0 1 0z"/>
                       <path d="M2 1h4.586a1 1 0 0 1 .707.293l7 7a1 1 0 0 1 0 1.414l-4.586 4.586a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 1 6.586V2a1 1 0 0 1 1-1zm0 5.586 7 7L13.586 9l-7-7H2v4.586z"/>
                     </svg>
@@ -123,9 +122,9 @@ const VendorElectronicPost = () => {
               
                 
                 {/* Price and Warranty */}
-                <div className="flex justify-between items-center text-xs">
+                <div className="mb-2 flex justify-between items-center text-xs">
                   <div className="flex items-center overflow-hidden text-ellipsis whitespace-nowrap">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" className="bi bi-calendar-check flex-shrink-0" viewBox="0 0 16 16">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-calendar-check flex-shrink-0" viewBox="0 0 16 16">
                       <path d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
                       <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
                     </svg>

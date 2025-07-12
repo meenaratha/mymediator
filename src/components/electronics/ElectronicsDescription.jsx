@@ -92,15 +92,15 @@ const ElectronicsDescription = () => {
   const getCategoryIcon = () => {
     switch (electronics.subcategory?.toLowerCase()) {
       case 'tv':
-        return <TvOutlined className="text-gray-500" />;
+        return <TvOutlined className="text-black font-bold" />;
       case 'laptop':
       case 'computer':
-        return <ComputerOutlined className="text-gray-500" />;
+        return <ComputerOutlined className="text-black font-bold" />;
       case 'mobile':
       case 'phone':
-        return <PhoneAndroidOutlined className="text-gray-500" />;
+        return <PhoneAndroidOutlined className="text-black font-bold" />;
       default:
-        return <TvOutlined className="text-gray-500" />;
+        return <TvOutlined className="text-black font-bold" />;
     }
   };
 
@@ -141,14 +141,14 @@ const ElectronicsDescription = () => {
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <MemoryOutlined className="text-gray-500" />
+                  <MemoryOutlined className="text-black font-bold" />
                   <div className="text-sm">
                     <span className="font-medium text-gray-600">Model:</span>
                     <div className="text-gray-700">{electronics.model}</div>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <StorageOutlined className="text-gray-500" />
+                  <StorageOutlined className="text-black font-bold" />
                   <div className="text-sm">
                     <span className="font-medium text-gray-600">Category:</span>
                     <div className="text-gray-700">
@@ -157,7 +157,7 @@ const ElectronicsDescription = () => {
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <ScreenRotationOutlined className="text-gray-500" />
+                  <ScreenRotationOutlined className="text-black font-bold" />
                   <div className="text-sm">
                     <span className="font-medium text-gray-600">Price:</span>
                     <div className="text-gray-700">₹ {electronics.price}</div>
@@ -191,7 +191,7 @@ const ElectronicsDescription = () => {
               {/* Location and Contact Information */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4 border-t border-[#E1E1E1] mt-4">
                 <div className="flex items-center space-x-2">
-                  <PersonOutlined className="text-gray-500" />
+                  <PersonOutlined className="text-black font-bold" />
                   <div className="text-sm">
                     <span className="font-medium text-gray-600">Status:</span>
                     <div className="text-gray-700 capitalize">
@@ -200,7 +200,7 @@ const ElectronicsDescription = () => {
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <LocationOnOutlined className="text-gray-500" />
+                  <LocationOnOutlined className="text-black font-bold" />
                   <div className="text-sm">
                     <span className="font-medium text-gray-600">Location:</span>
                     <div className="text-gray-700">
@@ -225,8 +225,8 @@ const ElectronicsDescription = () => {
                     alt="Profile"
                   />
                   <div className="ml-3">
-                    <h2 className="text-lg font-semibold">Seller</h2>
-                    <p className="text-sm text-gray-500">Owner</p>
+                    <h2 className="text-lg font-semibold">{electronics.vendor_name}</h2>
+                    <p className="text-sm text-gray-500">{electronics.listed_by}</p>
                   </div>
                 </div>
                 <Link

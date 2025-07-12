@@ -162,9 +162,7 @@ class PropertyFormService {
       default:
         return {
           ...basePayload,
-          plot_area: parseInt(formData.plotArea) || formData.plotArea,
-          length: parseInt(formData.length) || formData.length,
-          breadth: parseInt(formData.breadth) || formData.breadth,
+          
         };
     }
   }

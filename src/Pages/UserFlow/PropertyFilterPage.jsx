@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect ,useCallback } from "react";
 import {
   PropertyFilter,
   PropertyListingGrid,
@@ -12,8 +12,11 @@ import IMAGES from "@/utils/images.js";
 import LoadMoreButton from "../../components/common/LoadMoreButton";
 import { api } from "@/api/axios";
 import { Category } from "@mui/icons-material";
+import { useParams } from 'react-router-dom';
 
 const PropertyFilterPage = () => {
+    const { subcategoryId } = useParams();
+
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   // Detect mobile devices
   const isMobile = useMediaQuery({ maxWidth: 767 });
@@ -41,8 +44,225 @@ const PropertyFilterPage = () => {
     Category_id:"",
     latitude: "",
     longitude: "",
-    super_builtup_area:"",
   });
+ // Add state to track if this is the initial load
+  
+
+ 
+
+  // const fetchProperties = async (
+  //   page = 1,
+  //   loadMore = false,
+  //   filters = null
+  // ) => {
+  //   if (loadMore) setLoadingMore(true);
+  //   else setLoading(true);
+
+  //   try {
+  //     // Get location from localStorage
+  //     const location = getLocationFromStorage();
+
+  //     // Use provided filters or current filters
+  //     const filtersToUse = filters || currentFilters;
+
+  //     // Build API parameters
+  //     const params = new URLSearchParams({
+  //       page: page.toString(),
+  //     });
+
+  //     // Add filter parameters - only add if they have values
+  //     Object.entries(filtersToUse).forEach(([key, value]) => {
+  //       if (value && value !== "" && value !== null && value !== undefined) {
+  //         // Handle arrays by converting to comma-separated strings
+  //         if (Array.isArray(value)) {
+  //           if (value.length > 0) {
+  //             params.append(key, value.join(","));
+  //           }
+  //         } else {
+  //           params.append(key, value.toString());
+  //         }
+  //       }
+  //     });
+
+  //     // Debug: Log the final URL and parameters
+  //     console.log("=== API REQUEST INFO ===");
+  //     console.log("Final API URL:", `/filter?${params.toString()}`);
+  //     console.log("Filters being sent:", filtersToUse);
+  //     console.log("URL Parameters:", Object.fromEntries(params.entries()));
+
+  //     // Add location parameters if available
+  //     if (location) {
+  //       params.append("latitude", location.latitude.toString());
+  //       params.append("longitude", location.longitude.toString());
+  //     }
+
+  //     // Use the filter endpoint
+  //     const response = await api.get(`/filter?${params.toString()}`);
+
+  //     // Debug: Log full API response to understand structure
+  //     console.log("=== FULL API RESPONSE ===");
+  //     console.log("Response Status:", response.status);
+  //     console.log("Response Data:", JSON.stringify(response.data, null, 2));
+  //     console.log("Response Data Type:", typeof response.data);
+  //     console.log("Is Array:", Array.isArray(response.data));
+
+  //     // Handle different possible response structures
+  //     let result = {};
+  //     let propertiesData = [];
+
+  //     // Check various possible structures
+  //     if (response.data?.data?.data && Array.isArray(response.data.data.data)) {
+  //       // Structure: { data: { data: [...], current_page: 1, ... } }
+  //       console.log("Using structure: data.data.data");
+  //       result = response.data.data;
+  //       propertiesData = response.data.data.data;
+  //     } else if (response.data?.data && Array.isArray(response.data.data)) {
+  //       // Structure: { data: [...] }
+  //       console.log("Using structure: data.data");
+  //       result = response.data;
+  //       propertiesData = response.data.data;
+  //     } else if (
+  //       response.data?.properties &&
+  //       Array.isArray(response.data.properties)
+  //     ) {
+  //       // Structure: { properties: [...], pagination: {...} }
+  //       console.log("Using structure: data.properties");
+  //       propertiesData = response.data.properties;
+  //       result = response.data.pagination || response.data;
+  //     } else if (Array.isArray(response.data)) {
+  //       // Structure: [property1, property2, ...]
+  //       console.log("Using structure: direct array");
+  //       propertiesData = response.data;
+  //       result = {
+  //         current_page: page,
+  //         last_page: page,
+  //         total: response.data.length,
+  //         next_page_url: null,
+  //       };
+  //     } else if (response.data?.items && Array.isArray(response.data.items)) {
+  //       // Structure: { items: [...] }
+  //       console.log("Using structure: data.items");
+  //       propertiesData = response.data.items;
+  //       result = response.data;
+  //     } else if (
+  //       response.data?.results &&
+  //       Array.isArray(response.data.results)
+  //     ) {
+  //       // Structure: { results: [...] }
+  //       console.log("Using structure: data.results");
+  //       propertiesData = response.data.results;
+  //       result = response.data;
+  //     } else {
+  //       // Try to find any array in the response
+  //       console.log("Searching for arrays in response...");
+  //       const findArrayInObject = (obj, path = "") => {
+  //         for (const [key, value] of Object.entries(obj)) {
+  //           const currentPath = path ? `${path}.${key}` : key;
+  //           if (Array.isArray(value)) {
+  //             console.log(
+  //               `Found array at: ${currentPath}, length: ${value.length}`
+  //             );
+  //             return { data: value, path: currentPath };
+  //           } else if (value && typeof value === "object") {
+  //             const found = findArrayInObject(value, currentPath);
+  //             if (found) return found;
+  //           }
+  //         }
+  //         return null;
+  //       };
+
+  //       const foundArray = findArrayInObject(response.data);
+  //       if (foundArray) {
+  //         console.log(`Using found array at: ${foundArray.path}`);
+  //         propertiesData = foundArray.data;
+  //         result = response.data;
+  //       } else {
+  //         console.log("No array found in response, using empty array");
+  //         propertiesData = [];
+  //         result = response.data || {};
+  //       }
+  //     }
+
+  //     // Debug: Log processed data
+  //     console.log("=== PROCESSED DATA ===");
+  //     console.log("Properties Data:", propertiesData);
+  //     console.log("Properties Length:", propertiesData?.length || 0);
+  //     console.log("First Property:", propertiesData?.[0]);
+  //     console.log("Result Object:", result);
+
+  //     // Validate that we have an array
+  //     if (!Array.isArray(propertiesData)) {
+  //       console.error(
+  //         "Properties data is not an array:",
+  //         typeof propertiesData
+  //       );
+  //       propertiesData = [];
+  //     }
+
+  //     // Update properties based on whether we're loading more or starting fresh
+  //     if (page === 1) {
+  //       console.log(
+  //         "Setting properties (fresh load):",
+  //         propertiesData.length,
+  //         "items"
+  //       );
+  //       setProperties(propertiesData);
+  //     } else {
+  //       console.log(
+  //         "Adding properties (load more):",
+  //         propertiesData.length,
+  //         "items"
+  //       );
+  //       setProperties((prev) => {
+  //         const updated = [...prev, ...propertiesData];
+  //         console.log("Total properties after load more:", updated.length);
+  //         return updated;
+  //       });
+  //     }
+
+  //     // Update pagination state with safe defaults
+  //     setCurrentPage(result?.current_page || page);
+  //     setLastPage(result?.last_page || page);
+  //     setTotal(result?.total || propertiesData?.length || 0);
+
+  //     // Check if there's more data to load
+  //     const hasMore =
+  //       result?.next_page_url !== null &&
+  //       result?.next_page_url !== undefined &&
+  //       (result?.current_page || page) < (result?.last_page || page) &&
+  //       propertiesData &&
+  //       propertiesData.length > 0;
+
+  //     console.log("Has more data:", hasMore);
+  //     setHasMoreData(hasMore);
+  //   } catch (err) {
+  //     console.error("=== API ERROR ===");
+  //     console.error("Error details:", err);
+  //     console.error("Error response:", err.response?.data);
+  //     console.error("Error status:", err.response?.status);
+
+  //     // Reset states on error
+  //     if (page === 1) {
+  //       setProperties([]);
+  //     }
+  //     setHasMoreData(false);
+  //   } finally {
+  //     if (loadMore) setLoadingMore(false);
+  //     else setLoading(false);
+  //   }
+  // };
+
+  // Function to handle filter application
+ 
+
+  // slider
+
+  // State for slider images
+  
+  
+  
+   // Add state to track if this is the initial load
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const toggleFilter = () => {
     setIsFilterOpen(!isFilterOpen);
@@ -59,7 +279,6 @@ const PropertyFilterPage = () => {
 
       const selectedLocation = JSON.parse(selectedLocationStr);
 
-      // Check if the parsed object has required coordinates
       if (!selectedLocation.latitude || !selectedLocation.longitude) {
         return null;
       }
@@ -74,233 +293,159 @@ const PropertyFilterPage = () => {
     }
   };
 
-  const fetchProperties = async (
-    page = 1,
-    loadMore = false,
-    filters = null
-  ) => {
-    if (loadMore) setLoadingMore(true);
-    else setLoading(true);
+  // Fixed fetchProperties function
+  const fetchProperties = useCallback(
+    async (page = 1, loadMore = false, filters = null) => {
+      if (loadMore) setLoadingMore(true);
+      else setLoading(true);
 
-    try {
-      // Get location from localStorage
-      const location = getLocationFromStorage();
+      try {
+        // Get location from localStorage
+        const location = getLocationFromStorage();
 
-      // Use provided filters or current filters
-      const filtersToUse = filters || currentFilters;
+        // Use provided filters or current filters
+        const filtersToUse = filters || currentFilters;
 
-      // Build API parameters
-      const params = new URLSearchParams({
-        page: page.toString(),
-      });
-
-      // Add filter parameters - only add if they have values
-      Object.entries(filtersToUse).forEach(([key, value]) => {
-        if (value && value !== "" && value !== null && value !== undefined) {
-          // Handle arrays by converting to comma-separated strings
-          if (Array.isArray(value)) {
-            if (value.length > 0) {
-              params.append(key, value.join(","));
-            }
-          } else {
-            params.append(key, value.toString());
-          }
-        }
-      });
-
-      // Debug: Log the final URL and parameters
-      console.log("=== API REQUEST INFO ===");
-      console.log("Final API URL:", `/filter?${params.toString()}`);
-      console.log("Filters being sent:", filtersToUse);
-      console.log("URL Parameters:", Object.fromEntries(params.entries()));
-
-      // Add location parameters if available
-      if (location) {
-        params.append("latitude", location.latitude.toString());
-        params.append("longitude", location.longitude.toString());
-      }
-
-      // Use the filter endpoint
-      const response = await api.get(`/filter?${params.toString()}`);
-
-      // Debug: Log full API response to understand structure
-      console.log("=== FULL API RESPONSE ===");
-      console.log("Response Status:", response.status);
-      console.log("Response Data:", JSON.stringify(response.data, null, 2));
-      console.log("Response Data Type:", typeof response.data);
-      console.log("Is Array:", Array.isArray(response.data));
-
-      // Handle different possible response structures
-      let result = {};
-      let propertiesData = [];
-
-      // Check various possible structures
-      if (response.data?.data?.data && Array.isArray(response.data.data.data)) {
-        // Structure: { data: { data: [...], current_page: 1, ... } }
-        console.log("Using structure: data.data.data");
-        result = response.data.data;
-        propertiesData = response.data.data.data;
-      } else if (response.data?.data && Array.isArray(response.data.data)) {
-        // Structure: { data: [...] }
-        console.log("Using structure: data.data");
-        result = response.data;
-        propertiesData = response.data.data;
-      } else if (
-        response.data?.properties &&
-        Array.isArray(response.data.properties)
-      ) {
-        // Structure: { properties: [...], pagination: {...} }
-        console.log("Using structure: data.properties");
-        propertiesData = response.data.properties;
-        result = response.data.pagination || response.data;
-      } else if (Array.isArray(response.data)) {
-        // Structure: [property1, property2, ...]
-        console.log("Using structure: direct array");
-        propertiesData = response.data;
-        result = {
-          current_page: page,
-          last_page: page,
-          total: response.data.length,
-          next_page_url: null,
-        };
-      } else if (response.data?.items && Array.isArray(response.data.items)) {
-        // Structure: { items: [...] }
-        console.log("Using structure: data.items");
-        propertiesData = response.data.items;
-        result = response.data;
-      } else if (
-        response.data?.results &&
-        Array.isArray(response.data.results)
-      ) {
-        // Structure: { results: [...] }
-        console.log("Using structure: data.results");
-        propertiesData = response.data.results;
-        result = response.data;
-      } else {
-        // Try to find any array in the response
-        console.log("Searching for arrays in response...");
-        const findArrayInObject = (obj, path = "") => {
-          for (const [key, value] of Object.entries(obj)) {
-            const currentPath = path ? `${path}.${key}` : key;
-            if (Array.isArray(value)) {
-              console.log(
-                `Found array at: ${currentPath}, length: ${value.length}`
-              );
-              return { data: value, path: currentPath };
-            } else if (value && typeof value === "object") {
-              const found = findArrayInObject(value, currentPath);
-              if (found) return found;
-            }
-          }
-          return null;
-        };
-
-        const foundArray = findArrayInObject(response.data);
-        if (foundArray) {
-          console.log(`Using found array at: ${foundArray.path}`);
-          propertiesData = foundArray.data;
-          result = response.data;
-        } else {
-          console.log("No array found in response, using empty array");
-          propertiesData = [];
-          result = response.data || {};
-        }
-      }
-
-      // Debug: Log processed data
-      console.log("=== PROCESSED DATA ===");
-      console.log("Properties Data:", propertiesData);
-      console.log("Properties Length:", propertiesData?.length || 0);
-      console.log("First Property:", propertiesData?.[0]);
-      console.log("Result Object:", result);
-
-      // Validate that we have an array
-      if (!Array.isArray(propertiesData)) {
-        console.error(
-          "Properties data is not an array:",
-          typeof propertiesData
-        );
-        propertiesData = [];
-      }
-
-      // Update properties based on whether we're loading more or starting fresh
-      if (page === 1) {
-        console.log(
-          "Setting properties (fresh load):",
-          propertiesData.length,
-          "items"
-        );
-        setProperties(propertiesData);
-      } else {
-        console.log(
-          "Adding properties (load more):",
-          propertiesData.length,
-          "items"
-        );
-        setProperties((prev) => {
-          const updated = [...prev, ...propertiesData];
-          console.log("Total properties after load more:", updated.length);
-          return updated;
+        // Build API parameters
+        const params = new URLSearchParams({
+          page: page.toString(),
         });
+
+        // Add subcategoryId if available from URL params
+        if (subcategoryId) {
+          params.append("subcategory_id", subcategoryId);
+          console.log("Added subcategoryId parameter:", subcategoryId);
+        }
+
+        // Add filter parameters - only add if they have values
+        Object.entries(filtersToUse).forEach(([key, value]) => {
+          if (value && value !== "" && value !== null && value !== undefined) {
+            // Handle arrays by converting to comma-separated strings
+            if (Array.isArray(value)) {
+              if (value.length > 0) {
+                params.append(key, value.join(","));
+              }
+            } else {
+              params.append(key, value.toString());
+            }
+          }
+        });
+
+        // Add location parameters if available
+        if (location) {
+          params.append("latitude", location.latitude.toString());
+          params.append("longitude", location.longitude.toString());
+        }
+
+        // Debug: Log the final URL and parameters
+        console.log("=== API REQUEST INFO ===");
+        console.log("Final API URL:", `/filter?${params.toString()}`);
+        console.log("Filters being sent:", filtersToUse);
+        console.log("URL Parameters:", Object.fromEntries(params.entries()));
+
+        // Use the filter endpoint
+        const response = await api.get(`/filter?${params.toString()}`);
+
+        // Debug: Log full API response to understand structure
+        console.log("=== FULL API RESPONSE ===");
+        console.log("Response Status:", response.status);
+        console.log("Response Data:", response.data);
+
+        // Based on your API response structure, the data is in response.data.data.data
+        const result = response.data.data;
+        const propertyData = result?.data || [];
+
+        // Debug: Log processed data
+        console.log("=== PROCESSED DATA ===");
+        console.log("Property Data:", propertyData);
+        console.log("Property Length:", propertyData?.length || 0);
+        console.log("First property:", propertyData?.[0]);
+        console.log("Result Object:", result);
+
+        // Validate that we have an array
+        if (!Array.isArray(propertyData)) {
+          console.error("Property data is not an array:", typeof propertyData);
+          setProperties([]);
+          return;
+        }
+
+        // Update properties based on whether we're loading more or starting fresh
+        if (page === 1) {
+          console.log("Setting properties (fresh load):", propertyData.length, "items");
+          setProperties(propertyData);
+        } else {
+          console.log("Adding properties (load more):", propertyData.length, "items");
+          setProperties((prev) => {
+            const updated = [...prev, ...propertyData];
+            console.log("Total properties after load more:", updated.length);
+            return updated;
+          });
+        }
+
+        // Update pagination state with safe defaults
+        setCurrentPage(result?.current_page || page);
+        setLastPage(result?.last_page || page);
+        setTotal(result?.total || propertyData?.length || 0);
+
+        // Check if there's more data to load
+        const hasMore =
+          result?.next_page_url !== null &&
+          result?.next_page_url !== undefined &&
+          (result?.current_page || page) < (result?.last_page || page) &&
+          propertyData &&
+          propertyData.length > 0;
+
+        console.log("Has more data:", hasMore);
+        setHasMoreData(hasMore);
+      } catch (err) {
+        console.error("=== API ERROR ===");
+        console.error("Error details:", err);
+        console.error("Error response:", err.response?.data);
+        console.error("Error status:", err.response?.status);
+
+        // Reset states on error
+        if (page === 1) {
+          setProperties([]);
+        }
+        setHasMoreData(false);
+      } finally {
+        if (loadMore) setLoadingMore(false);
+        else setLoading(false);
       }
+    },
+    [currentFilters, subcategoryId] // Add subcategoryId as dependency
+  );
 
-      // Update pagination state with safe defaults
-      setCurrentPage(result?.current_page || page);
-      setLastPage(result?.last_page || page);
-      setTotal(result?.total || propertiesData?.length || 0);
+  // Updated applyFilters function for auto-apply
+  const applyFilters = useCallback(
+    (newFilters) => {
+      console.log("=== APPLY FILTERS CALLED ===");
+      console.log("New filters received:", newFilters);
+      console.log("Previous filters:", currentFilters);
 
-      // Check if there's more data to load
-      const hasMore =
-        result?.next_page_url !== null &&
-        result?.next_page_url !== undefined &&
-        (result?.current_page || page) < (result?.last_page || page) &&
-        propertiesData &&
-        propertiesData.length > 0;
+      // Update current filters
+      setCurrentFilters(newFilters);
 
-      console.log("Has more data:", hasMore);
-      setHasMoreData(hasMore);
-    } catch (err) {
-      console.error("=== API ERROR ===");
-      console.error("Error details:", err);
-      console.error("Error response:", err.response?.data);
-      console.error("Error status:", err.response?.status);
+      // Reset pagination to first page
+      setCurrentPage(1);
+      setProperties([]); // Fixed: was setElectronics
 
-      // Reset states on error
-      if (page === 1) {
-        setProperties([]);
+      // Fetch new properties with filters
+      fetchProperties(1, false, newFilters);
+
+      // Close filter on mobile after applying (only if not auto-apply)
+      if (isMobile && !isInitialLoad) {
+        setIsFilterOpen(false);
       }
-      setHasMoreData(false);
-    } finally {
-      if (loadMore) setLoadingMore(false);
-      else setLoading(false);
-    }
-  };
+    },
+    [fetchProperties, isMobile, isInitialLoad] // Fixed: was fetchElectronics
+  );
 
-  // Function to handle filter application
-  const applyFilters = (newFilters) => {
-    console.log("=== APPLY FILTERS CALLED ===");
-    console.log("New filters received:", newFilters);
-    console.log("Previous filters:", currentFilters);
-
-    // Update current filters
-    setCurrentFilters(newFilters);
-
-    // Reset pagination to first page
-    setCurrentPage(1);
-    setProperties([]); // Clear existing properties
-
-    // Fetch new properties with filters
-    fetchProperties(1, false, newFilters);
-
-    // Close filter on mobile after applying
-    if (isMobile) {
-      setIsFilterOpen(false);
-    }
-  };
-
+  // Initial load effect
   useEffect(() => {
     fetchProperties(1);
-  }, []);
+    setIsInitialLoad(false);
+  }, [fetchProperties]); // Add fetchProperties as dependency
 
   const handleLoadMore = () => {
     // Only load more if we have more data and we're not already loading
@@ -351,17 +496,8 @@ const PropertyFilterPage = () => {
       }
     };
   }, [currentPage, lastPage, loadingMore, hasMoreData]);
-
-  const images = [
-    IMAGES.placeholderimg,
-    IMAGES.placeholderimg,
-    IMAGES.placeholderimg,
-    IMAGES.placeholderimg,
-  ];
-
-  // slider
-
-  // State for slider images
+  
+  
   const [sliderImages, setSliderImages] = useState([]);
   const [loadingImages, setLoadingImages] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -496,6 +632,7 @@ const PropertyFilterPage = () => {
               isMobile={isMobile}
               onApplyFilters={applyFilters}
               currentFilters={currentFilters}
+               autoApply={true} // Enable auto-apply
             />
           </div>
 
