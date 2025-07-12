@@ -218,12 +218,20 @@ const ElectronicsFilter = ({
     >
       <div className="h-[600px] overflow-y-auto pb-4 px-2">
         <div className="mb-4 sticky top-0">
-          <button
-            onClick={handleApplyFilters}
-            className="w-full bg-blue-900 my-4 cursor-pointer text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors"
-          >
-            Apply Filters
-          </button>
+         <div className="flex gap-2">
+    <button
+      onClick={handleApplyFilters}
+      className="flex-1 bg-blue-900 cursor-pointer text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors"
+    >
+      Apply Filters
+    </button>
+    <button
+      onClick={handleClearFilters}
+      className="flex-1 bg-gray-500 cursor-pointer text-white py-2 px-4 rounded hover:bg-gray-600 transition-colors"
+    >
+      Clear Filters
+    </button>
+  </div>
         </div>
 
         {/* Categories Section */}

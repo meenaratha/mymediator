@@ -8,6 +8,8 @@ import CarKilometersFilter from "./filter/car/CarKilometersFilter";
 import CarYearFilter from "./filter/car/CarYearFilter";
 import ListedBySection from "./filter/property/ListedBySection";
 import CarTransmissionFilter from "./filter/car/CarTransmissionFilter";
+import CarOwnerFilter from "./filter/car/CarOwnerFilter";
+import CarFuelTypeFilter from "./filter/car/CarFuelTypeFilter";
 
 const CarFilter = ({
   isFilterOpen,
@@ -24,7 +26,6 @@ const CarFilter = ({
     year: true,
     owners: true,
     fuel: true,
-    inspection: true,
     transmission: true,
   });
 
@@ -46,9 +47,9 @@ const CarFilter = ({
         brand: "",
         model: "",
         year_filter: "",
-        fuelType: "",
+        fuel_type: "",
         transmission: "",
-        owner: "",
+        no_of_owner: "",
         subcategory_id: "",
         latitude: "",
         longitude: "",
@@ -292,196 +293,23 @@ const CarFilter = ({
         />
 
         {/* No of owner Section */}
-        <div className="mb-4">
-          <div
-            className="flex justify-between items-center cursor-pointer py-2 border-b"
-            onClick={() => toggleSection("owners")}
-          >
-            <h2 className="font-medium text-gray-800">No of owner</h2>
-            <svg
-              className={`w-5 h-5 transition-transform duration-300 ${
-                expandedSections.owners ? "rotate-180" : ""
-              }`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </div>
-
-          <div
-            className={`transition-all duration-300 ease-in-out ${
-              expandedSections.owners ? "py-2" : "max-h-0 overflow-hidden"
-            }`}
-          >
-            <div className="py-2">
-              <div className="flex items-center py-1">
-                <input
-                  type="checkbox"
-                  id="first-owner"
-                  className="mr-2 h-4 w-4"
-                />
-                <label htmlFor="first-owner" className="text-sm">
-                  First (3,561)
-                </label>
-              </div>
-              <div className="flex items-center py-1">
-                <input
-                  type="checkbox"
-                  id="second-owner"
-                  className="mr-2 h-4 w-4"
-                />
-                <label htmlFor="second-owner" className="text-sm">
-                  Second (3,002)
-                </label>
-              </div>
-              <div className="flex items-center py-1">
-                <input
-                  type="checkbox"
-                  id="third-owner"
-                  className="mr-2 h-4 w-4"
-                />
-                <label htmlFor="third-owner" className="text-sm">
-                  Third (1,152)
-                </label>
-              </div>
-              <div className="flex items-center py-1">
-                <input
-                  type="checkbox"
-                  id="fourth-owner"
-                  className="mr-2 h-4 w-4"
-                />
-                <label htmlFor="fourth-owner" className="text-sm">
-                  Fourth (1,139)
-                </label>
-              </div>
-              <div className="flex items-center py-1">
-                <input
-                  type="checkbox"
-                  id="more-owners"
-                  className="mr-2 h-4 w-4"
-                />
-                <label htmlFor="more-owners" className="text-sm">
-                  More than Fourth (27)
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
+       <CarOwnerFilter
+       filters={filters}
+          setFilters={setFilters}
+          expandedSections={expandedSections}
+          toggleSection={toggleSection}
+       
+       />
 
         {/* Fuel Section */}
-        <div className="mb-4">
-          <div
-            className="flex justify-between items-center cursor-pointer py-2 border-b"
-            onClick={() => toggleSection("fuel")}
-          >
-            <h2 className="font-medium text-gray-800">Fuel</h2>
-            <svg
-              className={`w-5 h-5 transition-transform duration-300 ${
-                expandedSections.fuel ? "rotate-180" : ""
-              }`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </div>
+      <CarFuelTypeFilter
+       filters={filters}
+          setFilters={setFilters}
+          expandedSections={expandedSections}
+          toggleSection={toggleSection}
+      />
 
-          <div
-            className={`transition-all duration-300 ease-in-out ${
-              expandedSections.fuel ? "py-2" : "max-h-0 overflow-hidden"
-            }`}
-          >
-            <div className="py-2">
-              <div className="flex items-center py-1">
-                <input type="checkbox" id="petrol" className="mr-2 h-4 w-4" />
-                <label htmlFor="petrol" className="text-sm">
-                  Petrol (3,561)
-                </label>
-              </div>
-              <div className="flex items-center py-1">
-                <input type="checkbox" id="diesel" className="mr-2 h-4 w-4" />
-                <label htmlFor="diesel" className="text-sm">
-                  Diesel (3,002)
-                </label>
-              </div>
-              <div className="flex items-center py-1">
-                <input type="checkbox" id="lpg" className="mr-2 h-4 w-4" />
-                <label htmlFor="lpg" className="text-sm">
-                  LPG (1,152)
-                </label>
-              </div>
-              <div className="flex items-center py-1">
-                <input type="checkbox" id="cng" className="mr-2 h-4 w-4" />
-                <label htmlFor="cng" className="text-sm">
-                  CNG & Hybrid (1,139)
-                </label>
-              </div>
-              <div className="flex items-center py-1">
-                <input type="checkbox" id="electric" className="mr-2 h-4 w-4" />
-                <label htmlFor="electric" className="text-sm">
-                  Electric (27)
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* INSPECTION STATUS Section */}
-        <div className="mb-4">
-          <div
-            className="flex justify-between items-center cursor-pointer py-2 border-b"
-            onClick={() => toggleSection("inspection")}
-          >
-            <h2 className="font-medium text-gray-800">INSPECTION STATUS</h2>
-            <svg
-              className={`w-5 h-5 transition-transform duration-300 ${
-                expandedSections.inspection ? "rotate-180" : ""
-              }`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </div>
-
-          <div
-            className={`transition-all duration-300 ease-in-out ${
-              expandedSections.inspection ? "py-2" : "max-h-0 overflow-hidden"
-            }`}
-          >
-            <div className="py-2">
-              <div className="flex items-center py-1">
-                <input
-                  type="checkbox"
-                  id="inspected"
-                  className="mr-2 h-4 w-4"
-                />
-                <label htmlFor="inspected" className="text-sm">
-                  Inspected Cars Only (0)
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
+       
 
         {/* TRANSMISSION Section */}
         <div className="mb-4">

@@ -7,6 +7,8 @@ import BikeKilometersFilter from "./filter/bike/BikeKilometersFilter";
 import BikeYearFilter from "./filter/bike/BikeYearFilter";
 import ListedBySection from "./filter/property/ListedBySection";
 import BikeOwnerFilter from "./filter/bike/BikeOwnerFilter";
+import BikeFuelTypeFilter from "./filter/bike/BikeFuelTypeFilter";
+import BikeTransmissionFilter from "./filter/bike/BikeTransmissionFilter";
 
 const BikeFilter = ({
   isFilterOpen,
@@ -40,10 +42,10 @@ const BikeFilter = ({
     brand: "",
     model: "",
     year_filter: "",
-    fuelType: "",
+    fuel_type: "",
     kilometers: "",
     enginecc: "",
-    owner: "",
+    no_of_owner: "",
     subcategory_id: "",
     latitude: "",
     longitude: "",
@@ -285,12 +287,28 @@ const BikeFilter = ({
           toggleSection={toggleSection}
         />
 
+<BikeFuelTypeFilter
+filters={filters}
+          setFilters={setFilters}
+          expandedSections={expandedSections}
+          toggleSection={toggleSection}
+/>
+
         <BikeOwnerFilter
           filters={filters}
           setFilters={setFilters}
           expandedSections={expandedSections}
           toggleSection={toggleSection}
         />
+
+
+        {/* <BikeTransmissionFilter
+         filters={filters}
+          setFilters={setFilters}
+          expandedSections={expandedSections}
+          toggleSection={toggleSection}
+        
+        /> */}
       </div>
     </div>
   );

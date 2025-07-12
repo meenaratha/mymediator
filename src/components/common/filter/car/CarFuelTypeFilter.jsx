@@ -1,86 +1,86 @@
 import React, { useState, useEffect } from "react";
 import { api } from "@/api/axios";
 
-const BikeOwnerFilter = ({
+const CarFuelTypeFilter = ({
   filters,
   setFilters,
   expandedSections,
   toggleSection,
 }) => {
-  const [noOwnerOptions, setNoOwnerOptions] = useState([]);
+  const [fuelTypeOptions, setFuelTypeOptions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedNoOwner, setSelectedNoOwner] = useState([]);
+  const [selectedFuelTypes, setSelectedFuelTypes] = useState([]);
 
-  // Load no owner options from API on component mount
+  // Load fuel type options from API on component mount
   useEffect(() => {
-    fetchNoOwnerOptions();
+    fetchFuelTypeOptions();
   }, []);
 
   // Set initial selected values from filters
   useEffect(() => {
-    if (filters.no_of_owner) {
-      const filterValues = Array.isArray(filters.no_of_owner)
-        ? filters.no_of_owner
-        : [filters.no_of_owner];
+    if (filters.fuel_type) {
+      const filterValues = Array.isArray(filters.fuel_type)
+        ? filters.fuel_type
+        : [filters.fuel_type];
 
-      setSelectedNoOwner(filterValues.filter((val) => val && val !== ""));
+      setSelectedFuelTypes(filterValues.filter((val) => val && val !== ""));
     } else {
-      setSelectedNoOwner([]);
+      setSelectedFuelTypes([]);
     }
-  }, [filters.no_of_owner]);
+  }, [filters.fuel_type]);
 
-  const fetchNoOwnerOptions = async () => {
+  const fetchFuelTypeOptions = async () => {
     setLoading(true);
     try {
-      const response = await api.get('/bike/get/owner');
+      const response = await api.get('/car/get/fueltype');
 
       if (response.data && Array.isArray(response.data)) {
-        setNoOwnerOptions(response.data);
+        setFuelTypeOptions(response.data);
       } else {
-        setNoOwnerOptions([]);
+        setFuelTypeOptions([]);
       }
     } catch (error) {
-      setNoOwnerOptions([]);
+      setFuelTypeOptions([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleNoOwnerSelect = (option) => {
-    const isCurrentlySelected = selectedNoOwner.includes(option.value);
-    let newSelectedNoOwner;
+  const handleFuelTypeSelect = (option) => {
+    const isCurrentlySelected = selectedFuelTypes.includes(option.value);
+    let newSelectedFuelTypes;
 
     if (isCurrentlySelected) {
       // Remove from selection
-      newSelectedNoOwner = selectedNoOwner.filter(
+      newSelectedFuelTypes = selectedFuelTypes.filter(
         (val) => val !== option.value
       );
     } else {
       // Add to selection
-      newSelectedNoOwner = [...selectedNoOwner, option.value];
+      newSelectedFuelTypes = [...selectedFuelTypes, option.value];
     }
 
-    setSelectedNoOwner(newSelectedNoOwner);
+    setSelectedFuelTypes(newSelectedFuelTypes);
 
     // Update filters - send array or single value based on selection count
     const filterValue =
-      newSelectedNoOwner.length === 0
+      newSelectedFuelTypes.length === 0
         ? ""
-        : newSelectedNoOwner.length === 1
-        ? newSelectedNoOwner[0] // Single value for single selection
-        : newSelectedNoOwner; // Array for multiple selections
+        : newSelectedFuelTypes.length === 1
+        ? newSelectedFuelTypes[0] // Single value for single selection
+        : newSelectedFuelTypes; // Array for multiple selections
 
     setFilters((prev) => ({
       ...prev,
-      no_of_owner: filterValue,
+      fuel_type: filterValue,
     }));
   };
 
   const clearAllSelections = () => {
-    setSelectedNoOwner([]);
+    setSelectedFuelTypes([]);
     setFilters((prev) => ({
       ...prev,
-      no_of_owner: "",
+      fuel_type: "",
     }));
   };
 
@@ -93,22 +93,22 @@ const BikeOwnerFilter = ({
   };
 
   const getSelectedSummary = () => {
-    if (selectedNoOwner.length === 0) return "";
-    if (selectedNoOwner.length === 1) {
-      const option = noOwnerOptions.find((o) => o.value === selectedNoOwner[0]);
-      return option?.label || selectedNoOwner[0];
+    if (selectedFuelTypes.length === 0) return "";
+    if (selectedFuelTypes.length === 1) {
+      const option = fuelTypeOptions.find((o) => o.value === selectedFuelTypes[0]);
+      return option?.label || selectedFuelTypes[0];
     }
-    return `${selectedNoOwner.length} types`;
+    return `${selectedFuelTypes.length} types`;
   };
 
   if (loading) {
     return (
       <div className="mb-4">
         <div className="flex justify-between items-center cursor-pointer py-2 border-b">
-          <h2 className="font-medium text-gray-800">No Owner</h2>
+          <h2 className="font-medium text-gray-800">Fuel Type</h2>
         </div>
         <div className="py-4 text-center">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-500 mx-auto"></div>
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto"></div>
           <p className="text-sm text-gray-500 mt-2">Loading...</p>
         </div>
       </div>
@@ -119,19 +119,19 @@ const BikeOwnerFilter = ({
     <div className="mb-4">
       <div
         className="flex justify-between items-center cursor-pointer py-2 border-b"
-        onClick={() => toggleSection("noOwner")}
+        onClick={() => toggleSection("fuelType")}
       >
         <h2 className="font-medium text-gray-800">
-          No Owner
-          {selectedNoOwner.length > 0 && (
-            <span className="ml-2 text-xs bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full">
-              {selectedNoOwner.length} selected
+          Fuel Type
+          {selectedFuelTypes.length > 0 && (
+            <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+              {selectedFuelTypes.length} selected
             </span>
           )}
         </h2>
         <svg
           className={`w-5 h-5 transition-transform duration-300 ${
-            expandedSections.noOwner ? "rotate-180" : ""
+            expandedSections.fuelType ? "rotate-180" : ""
           }`}
           fill="none"
           stroke="currentColor"
@@ -148,19 +148,19 @@ const BikeOwnerFilter = ({
 
       <div
         className={`transition-all duration-300 ease-in-out overflow-hidden custom-scrollbar ${
-          expandedSections.noOwner ? "max-h-96 py-2" : "max-h-0"
+          expandedSections.fuelType ? "max-h-96 py-2" : "max-h-0"
         }`}
       >
         {/* Selection Summary */}
-        {selectedNoOwner.length > 0 && (
-          <div className="mb-3 p-2 bg-emerald-50 border border-emerald-200 rounded text-sm">
+        {selectedFuelTypes.length > 0 && (
+          <div className="mb-3 p-2 bg-blue-50 border border-blue-200 rounded text-sm">
             <div className="flex justify-between items-center">
-              <span className="text-emerald-800">
+              <span className="text-blue-800">
                 Selected: {getSelectedSummary()}
               </span>
               <button
                 onClick={clearAllSelections}
-                className="text-emerald-600 hover:text-emerald-800 text-xs underline"
+                className="text-blue-600 hover:text-blue-800 text-xs underline"
               >
                 Clear All
               </button>
@@ -168,27 +168,27 @@ const BikeOwnerFilter = ({
           </div>
         )}
 
-        {noOwnerOptions.length > 0 ? (
+        {fuelTypeOptions.length > 0 ? (
           <div className="grid grid-cols-1 gap-2 mb-2">
-            {noOwnerOptions.map((option, index) => {
-              const isSelected = selectedNoOwner.includes(option.value);
+            {fuelTypeOptions.map((option, index) => {
+              const isSelected = selectedFuelTypes.includes(option.value);
 
               return (
                 <div
                   key={option.value || index}
                   className={`rounded text-sm p-4 flex justify-between gap-[15px] cursor-pointer transition-all duration-200 ${
                     isSelected
-                      ? "bg-emerald-100 border-2 border-emerald-500 shadow-sm"
-                      : "bg-gray-100 hover:bg-emerald-50 hover:border-emerald-300 border-2 border-transparent"
+                      ? "bg-blue-100 border-2 border-blue-500 shadow-sm"
+                      : "bg-gray-100 hover:bg-blue-50 hover:border-blue-300 border-2 border-transparent"
                   }`}
-                  onClick={() => handleNoOwnerSelect(option)}
+                  onClick={() => handleFuelTypeSelect(option)}
                 >
                   <div className="flex items-center">
                     {/* Checkbox style indicator */}
                     <div
                       className={`w-4 h-4 mr-3 border-2 rounded flex items-center justify-center ${
                         isSelected
-                          ? "border-emerald-500 bg-emerald-500"
+                          ? "border-blue-500 bg-blue-500"
                           : "border-gray-300"
                       }`}
                     >
@@ -208,7 +208,7 @@ const BikeOwnerFilter = ({
                     </div>
                     <span
                       className={`font-medium ${
-                        isSelected ? "text-emerald-800" : ""
+                        isSelected ? "text-blue-800" : ""
                       }`}
                     >
                       {option.label}
@@ -216,7 +216,7 @@ const BikeOwnerFilter = ({
                   </div>
                   <div
                     className={`text-xs flex items-center ${
-                      isSelected ? "text-emerald-600" : "text-gray-500"
+                      isSelected ? "text-blue-600" : "text-gray-500"
                     }`}
                   >
                     {option.count !== undefined
@@ -231,7 +231,7 @@ const BikeOwnerFilter = ({
           <div className="text-center py-4">
             <p className="text-gray-500 text-sm">No options available</p>
             <button
-              onClick={fetchNoOwnerOptions}
+              onClick={fetchFuelTypeOptions}
               className="mt-2 text-blue-600 text-sm hover:underline"
             >
               Retry
@@ -240,28 +240,28 @@ const BikeOwnerFilter = ({
         )}
 
         {/* Action Buttons */}
-        {selectedNoOwner.length > 0 && (
+        {selectedFuelTypes.length > 0 && (
           <div className="mt-3 pt-2 border-t space-y-2">
             <div className="flex gap-2">
               <button
                 onClick={clearAllSelections}
                 className="flex-1 text-sm text-red-600 hover:text-red-800 py-2 hover:bg-red-50 rounded transition-colors border border-red-200"
               >
-                Clear All ({selectedNoOwner.length})
+                Clear All ({selectedFuelTypes.length})
               </button>
               <button
                 onClick={() => {
-                  // Select all no owner options
-                  const allValues = noOwnerOptions.map((o) => o.value);
-                  setSelectedNoOwner(allValues);
+                  // Select all fuel type options
+                  const allValues = fuelTypeOptions.map((o) => o.value);
+                  setSelectedFuelTypes(allValues);
                   setFilters((prev) => ({
                     ...prev,
-                    no_of_owner:
+                    fuel_type:
                       allValues.length === 1 ? allValues[0] : allValues,
                   }));
                 }}
-                className="flex-1 text-sm text-emerald-600 hover:text-emerald-800 py-2 hover:bg-emerald-50 rounded transition-colors border border-emerald-200"
-                disabled={selectedNoOwner.length === noOwnerOptions.length}
+                className="flex-1 text-sm text-blue-600 hover:text-blue-800 py-2 hover:bg-blue-50 rounded transition-colors border border-blue-200"
+                disabled={selectedFuelTypes.length === fuelTypeOptions.length}
               >
                 Select All
               </button>
@@ -273,4 +273,4 @@ const BikeOwnerFilter = ({
   );
 };
 
-export default BikeOwnerFilter;
+export default CarFuelTypeFilter;
