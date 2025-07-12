@@ -6,8 +6,10 @@ import IMAGES from "@/utils/images.js";
 import ElectronicsFilter from "../../components/common/ElectronicsFilter";
 import ElectronicsListingGrid from "../../components/common/ElectronicsListingGrid";
 import { api } from "@/api/axios";
+import { useParams } from 'react-router-dom';
 
 const ElectronicsFilterPage = () => {
+  const { subcategoryId } = useParams();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const isMobile = useMediaQuery({ maxWidth: 767 });
   const [electronics, setElectronics] = useState([]);
@@ -203,7 +205,8 @@ const ElectronicsFilterPage = () => {
       try {
         // Get location from localStorage
         const location = getLocationFromStorage();
-
+// subcategoryId is directly available from useParams()
+      console.log("Extracted subcategoryId from useParams:", subcategoryId);
         // Use provided filters or current filters
         const filtersToUse = filters || currentFilters;
 
@@ -212,6 +215,12 @@ const ElectronicsFilterPage = () => {
           page: page.toString(),
         });
 
+
+        // Add subcategoryId as subcategoryId if available
+      if (subcategoryId) {
+        params.append("subcategory_id", subcategoryId);
+        console.log("Added subcategoryId parameter:", subcategoryId);
+      }
         // Add filter parameters - only add if they have values
         Object.entries(filtersToUse).forEach(([key, value]) => {
           if (value && value !== "" && value !== null && value !== undefined) {

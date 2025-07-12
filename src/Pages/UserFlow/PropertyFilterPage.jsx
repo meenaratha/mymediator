@@ -41,6 +41,7 @@ const PropertyFilterPage = () => {
     Category_id:"",
     latitude: "",
     longitude: "",
+    super_builtup_area:"",
   });
 
   const toggleFilter = () => {

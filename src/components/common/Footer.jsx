@@ -10,6 +10,7 @@ import CheckIcon from "@mui/icons-material/Check";
 import "../../assets/css/footer.css";
 import EnquiryForm from "../../features/EnquiryForm";
 import { useState } from "react";
+import GeneralEnquiryForm from "../../features/GeneralEnquiryForm";
 
 const Footer = () => {
   const [showEnquiryPopup, setShowEnquiryPopup] = useState(false);
@@ -17,7 +18,10 @@ const Footer = () => {
     <>
      {/* Enquiry Form Popup */}
 {showEnquiryPopup && (
-  <EnquiryForm onClose={() => setShowEnquiryPopup(false)} />
+  <GeneralEnquiryForm  onClose={() => setShowEnquiryPopup(false)}
+  enquirableType="general"
+  enquirableId=""
+  vendorData="" />
 )}
       {/* Footer Section */}
       <footer className="footer-container">

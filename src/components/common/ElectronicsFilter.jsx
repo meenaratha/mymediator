@@ -7,6 +7,7 @@ import ElectronicCategoryFilter from "./filter/electronics/ElectronicCategoryFil
 import ElectronicsBrandModelSection from "./filter/electronics/ElectronicsBrandModelSection";
 import ElectronicPrizeRange from "./filter/electronics/ElectronicPrizeRange";
 import ElectronicYearRangeSection from "./filter/electronics/ElectronicYearRangeSection";
+import { useLocation } from "react-router-dom";
 
 const ElectronicsFilter = ({
   isFilterOpen,
@@ -15,6 +16,20 @@ const ElectronicsFilter = ({
   currentFilters,
   autoApply = true, // New prop to enable/disable auto-apply
 }) => {
+  const location = useLocation();
+const prevPathRef = React.useRef(location.pathname);
+
+useEffect(() => {
+  if (prevPathRef.current !== location.pathname) {
+    prevPathRef.current = location.pathname;
+
+    // Call your clear filters function
+    handleClearAllFilters();
+    console.log("URL changed, filters cleared.");
+  }
+}, [location.pathname]);
+
+
   const [expandedSections, setExpandedSections] = useState({
     categories: true,
     location: true,

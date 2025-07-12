@@ -9,6 +9,7 @@ import ConstructionStatusSection from "./filter/property/ConstructionStatusSecti
 import ListedBySection from "./filter/property/ListedBySection";
 import BuildingDirectionSection from "./filter/property/BuildingDirectionSection";
 import CategoriesSection from "./filter/property/CategoriesSection";
+import SuperBuildupAreaSection from "./filter/property/SuperBuildupAreaSection";
 
 const PropertyFilter = ({
   isFilterOpen,
@@ -53,6 +54,7 @@ const PropertyFilter = ({
     maintenance_id: "",
     construction_status_id: "",
     building_direction_id: "",
+    super_builtup_area:"",
     subcategory_id: "",
     latitude: "",
     longitude: "",
@@ -306,6 +308,13 @@ const PropertyFilter = ({
           {/* Building Direction Section */}
           <BuildingDirectionSection
             filters={filters}
+            setFilters={setFilters}
+            expandedSections={expandedSections}
+            toggleSection={toggleSection}
+          />
+
+          <SuperBuildupAreaSection
+           filters={filters}
             setFilters={setFilters}
             expandedSections={expandedSections}
             toggleSection={toggleSection}
