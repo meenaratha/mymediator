@@ -27,8 +27,9 @@ import { Skeleton } from "@mui/material";
 import { useAuth } from "../../auth/AuthContext"; // Import the useAuth hook
 import { useLoadScript, Autocomplete } from "@react-google-maps/api";
 import { Heart, } from 'lucide-react';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import IMAGES from "../../utils/images";
-
+import { Tooltip } from "@mui/material";
 const GOOGLE_MAP_LIBRARIES = ["places"];
 const Header = () => {
   const navigate = useNavigate();
@@ -580,10 +581,14 @@ const Header = () => {
 
               {/* notification box */}
               <div className="flex gap-8 items-center">
-                <Heart
-                  className="w-[30px] h-[30px] text-red-600 cursor-pointer"
-                  onClick={() => navigate("/wishlist")}
-                />
+               {isAuthenticated && (
+  <Tooltip title="View Wishlist" arrow>
+    <FavoriteIcon
+      className="w-[30px] h-[30px] text-red-600 cursor-pointer"
+      onClick={() => navigate("/wishlist")}
+    />
+  </Tooltip>
+)}
                 <motion.div
                   animate={
                     isNotificationShaking

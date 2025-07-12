@@ -113,7 +113,7 @@ const ElectronicsFilter = ({
   // Clear all filters function
   const handleClearAllFilters = () => {
     const clearedFilters = {
-      type: "electronic",
+      type: "electronics",
       price_range: "",
       brand: "",
       model: "",
@@ -210,14 +210,14 @@ const ElectronicsFilter = ({
         styles.mymediator__filterContainer
       } bg-white rounded-lg shadow-sm ${
         isMobile
-          ? "w-full max-w-sm transform transition-transform duration-300 ease-in-out z-40 p-4 h-full"
-          : "h-[600px] overflow-y-auto"
+          ? "w-full max-w-sm transform transition-transform duration-300 ease-in-out z-40 p-4 pb-[20px] h-full"
+          : "h-[600px] overflow-y-auto sticky top-[150px]"
       } ${
         isFilterOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
       }`}
     >
       <div className="h-[600px] overflow-y-auto pb-4 px-2">
-        <div className="mb-4 sticky top-0">
+        <div className="py-6 sticky top-0 bg-[#fff] z-40">
          <div className="flex gap-2">
     <button
       onClick={handleApplyFilters}
@@ -226,7 +226,7 @@ const ElectronicsFilter = ({
       Apply Filters
     </button>
     <button
-      onClick={handleClearFilters}
+      onClick={handleClearAllFilters}
       className="flex-1 bg-gray-500 cursor-pointer text-white py-2 px-4 rounded hover:bg-gray-600 transition-colors"
     >
       Clear Filters

@@ -180,8 +180,8 @@ const ElectronicYearRangeSection = ({
         </div>
 
         <div
-          className={`transition-all duration-300 ease-in-out overflow-hidden custom-scrollbar ${
-            expandedSections.yearRange ? "max-h-96 py-2" : "max-h-0"
+          className={`transition-all duration-300 ease-in-out overflow-y-auto custom-scrollbar ${
+            expandedSections.yearRange ? " py-2" : "max-h-0"
           }`}
         >
           {/* Selection Summary */}

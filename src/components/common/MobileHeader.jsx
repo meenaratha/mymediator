@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link ,useNavigate} from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "../../assets/images/common/logo.png";
 import SearchIcon from "@mui/icons-material/Search";
@@ -20,10 +20,16 @@ import PasswordResetModel from "./PasswordResetModel";
 import { Loader } from "@googlemaps/js-api-loader";
 import { Autocomplete, LoadScript } from "@react-google-maps/api";
 import { useLoadScript } from "@react-google-maps/api";
+import { api } from "../../api/axios"; // Import API
+import { Skeleton } from "@mui/material"; // Import Skeleton for loading
+import { useAuth } from "../../auth/AuthContext"; // Import auth context
+
 const GOOGLE_MAP_LIBRARIES = ["places"];
 
 const MobileHeader = ({ isFixed }) => {
-   const navigate = useNavigate();
+  const navigate = useNavigate();
+  const { isAuthenticated, user, logout, loading } = useAuth(); // Get auth state
+
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLocationOpen, setIsLocationOpen] = useState(false);
@@ -35,96 +41,189 @@ const MobileHeader = ({ isFixed }) => {
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [activeCategory, setActiveCategory] = useState(null);
   const mobileLocationRef = useRef(null);
-  const mobileAutocompleteRef = useRef(null); 
+  const mobileAutocompleteRef = useRef(null);
   const [locationLoading, setLocationLoading] = useState(false);
+
+  // Dynamic data states
+  const [categories, setCategories] = useState([]);
+  const [megaMenuData, setMegaMenuData] = useState({});
+  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
 
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
     libraries: GOOGLE_MAP_LIBRARIES,
   });
-  
-  const categories = {
-    Property: {
-      icon: "",
-      subCategories: [
-        "For Sale: Houses & Apartments",
-        "For Rent: Houses & Apartments",
-        "Lands & Plots",
-        "Commercial",
-        "PG & Guest Houses",
-      ],
-    },
-    Car: {
-      icon: "",
-      subCategories: [
-        "Cars",
-        "Commercial Vehicles",
-        "Spare Parts",
-        "Other Vehicles",
-      ],
-    },
-    Electronics: {
-      icon: "",
-      subCategories: [
-        "Mobile Phones",
-        "Laptops",
-        "TVs",
-        "Cameras",
-        "Games & Entertainment",
-      ],
-    },
-    Bike: {
-      icon: "",
-      subCategories: ["Motorcycles", "Scooters", "Spare Parts", "Bicycles"],
-    },
-    Jobs: {
-      icon: "",
-      subCategories: [
-        "Data Entry",
-        "Sales & Marketing",
-        "BPO & Telecaller",
-        "Driver",
-        "Office Assistant",
-      ],
-    },
-  };
+
+  // Fetch categories and subcategories for mobile menu
+  useEffect(() => {
+    const fetchCategoriesAndSubcategories = async () => {
+      try {
+        setIsLoadingCategories(true);
+        const response = await api.get("/categories");
+
+        if (response.data.status && response.data.data) {
+          const categoriesData = response.data.data;
+          setCategories(categoriesData);
+
+          // Create megamenu data structure for mobile
+          const megaMenuStructure = {};
+
+          for (const category of categoriesData) {
+            try {
+              // Fetch subcategories for each category
+              const subResponse = await api.get(
+                `/categories/${category.id}/subcategories`
+              );
+
+              if (subResponse.data.status && subResponse.data.data) {
+                megaMenuStructure[category.name] = {
+                  title: category.name,
+                  slug: category.slug,
+                  id: category.id,
+                  items: subResponse.data.data.map((sub) => ({
+                    name: sub.name,
+                    slug: sub.slug,
+                    id: sub.id,
+                  })),
+                };
+              } else {
+                // If no subcategories, add empty items array
+                megaMenuStructure[category.name] = {
+                  title: category.name,
+                  slug: category.slug,
+                  id: category.id,
+                  items: [],
+                };
+              }
+            } catch (subError) {
+              console.error(
+                `Error fetching subcategories for ${category.name}:`,
+                subError
+              );
+              megaMenuStructure[category.name] = {
+                title: category.name,
+                slug: category.slug,
+                id: category.id,
+                items: [],
+              };
+            }
+          }
+
+          setMegaMenuData(megaMenuStructure);
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      } finally {
+        setIsLoadingCategories(false);
+      }
+    };
+
+    fetchCategoriesAndSubcategories();
+  }, []);
+
   const popularLocations = ["Kerala", "Tamil Nadu", "Punjab", "Maharashtra"];
+
   const fetchAndSetCurrentLocation = async () => {
-    if (!window.google) return;
+    if (!window.google || !isLoaded) {
+      alert("Maps not loaded yet. Please try again.");
+      return;
+    }
+    
     setLocationLoading(true);
+    
     try {
-      const position = await new Promise((resolve, reject) =>
-        navigator.geolocation.getCurrentPosition(resolve, reject)
-      );
+      // Check if geolocation is supported
+      if (!navigator.geolocation) {
+        throw new Error("Geolocation is not supported by this browser.");
+      }
+
+      const position = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(
+          resolve, 
+          reject,
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 60000
+          }
+        );
+      });
+
       const { latitude, longitude } = position.coords;
 
-      const geocoder = new window.google.maps.Geocoder();
-      geocoder.geocode(
-        { location: { lat: latitude, lng: longitude } },
-        (results, status) => {
-          if (status === "OK" && results[0]) {
-            const components = results[0].address_components;
-            const getComponent = (type) =>
-              components.find((c) => c.types.includes(type))?.long_name || "";
-
-            const city =
-              getComponent("locality") ||
-              getComponent("administrative_area_level_2");
-            const state = getComponent("administrative_area_level_1");
-            const formatted =
-              city && state
-                ? results[0].formatted_address
-                : `${city}, ${state}`;
-
-            setSelectedLocation(formatted);
-            setLocationQuery(formatted);
-            localStorage.setItem("user_location", formatted);
-            setIsLocationOpen(false);
-          }
-        }
+      // Use Google Maps Geocoding API
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`
       );
-    } catch (err) {
-      console.error("Geolocation error:", err);
+      
+      if (!response.ok) {
+        throw new Error("Failed to fetch location data");
+      }
+
+      const data = await response.json();
+      
+      if (data.status !== "OK" || !data.results || data.results.length === 0) {
+        throw new Error("No location data found");
+      }
+
+      const result = data.results[0];
+      const components = result.address_components;
+      
+      const getComponent = (type) =>
+        components.find((c) => c.types.includes(type))?.long_name || "";
+
+      const city =
+        getComponent("locality") ||
+        getComponent("sublocality") ||
+        getComponent("administrative_area_level_2");
+      
+      const state = getComponent("administrative_area_level_1");
+      const country = getComponent("country");
+      
+      // Create location object
+      const locationData = {
+        address: result.formatted_address,
+        city,
+        state,
+        country,
+        latitude,
+        longitude,
+      };
+
+      // Update states and localStorage
+      const displayLocation = result.formatted_address || `${city}, ${state}`;
+      setSelectedLocation(displayLocation);
+      setLocationQuery(displayLocation);
+      localStorage.setItem("selectedLocation", JSON.stringify(locationData));
+      localStorage.setItem("user_location", displayLocation);
+      
+      // Close location modal
+      setIsLocationOpen(false);
+      
+      // Optional: Send to backend
+      try {
+        await api.post("/location", locationData);
+      } catch (apiError) {
+        console.error("Error sending location to backend:", apiError);
+        // Don't show error to user as location was set successfully
+      }
+
+    } catch (error) {
+      console.error("Geolocation error:", error);
+      
+      let errorMessage = "Unable to get your location. ";
+      
+      if (error.code === 1) {
+        errorMessage += "Please enable location access in your browser settings.";
+      } else if (error.code === 2) {
+        errorMessage += "Location information is unavailable.";
+      } else if (error.code === 3) {
+        errorMessage += "Location request timed out.";
+      } else {
+        errorMessage += "Please try again or select location manually.";
+      }
+      
+      alert(errorMessage);
     } finally {
       setLocationLoading(false);
     }
@@ -162,27 +261,41 @@ const MobileHeader = ({ isFixed }) => {
     localStorage.setItem("user_location", location);
   };
 
-
-
-  const handleCategoryClick = (category) => {
-    if (activeCategory === category) {
+  const handleCategoryClick = (categoryName) => {
+    if (activeCategory === categoryName) {
       setActiveCategory(null); // Close if already open
     } else {
-      setActiveCategory(category); // Open if closed
+      setActiveCategory(categoryName); // Open if closed
     }
   };
 
+  // Handle subcategory click
+  const handleSubcategoryClick = (
+    categorySlug,
+    subcategorySlug,
+    subcategoryId
+  ) => {
+    setIsMenuOpen(false);
+    navigate(`/filter/${categorySlug}/${subcategorySlug}/${subcategoryId}`);
+  };
+
+  // Handle category main click (when no subcategories)
+  const handleCategoryMainClick = (categorySlug) => {
+    setIsMenuOpen(false);
+    navigate(`/${categorySlug}`);
+  };
+
   useEffect(() => {
-    if (isSearchOpen) {
+    if (isSearchOpen && categories.length > 0) {
       const interval = setInterval(() => {
         setPlaceholderIndex((prevIndex) =>
-          prevIndex === Object.keys(categories).length - 1 ? 0 : prevIndex + 1
+          prevIndex === categories.length - 1 ? 0 : prevIndex + 1
         );
       }, 2000);
 
       return () => clearInterval(interval);
     }
-  }, [isSearchOpen, Object.keys(categories).length]);
+  }, [isSearchOpen, categories.length]);
 
   const [loginFormModel, setLoginFormModel] = useState(false);
   const [signupFormModel, setSignupFormModel] = useState(false);
@@ -192,13 +305,47 @@ const MobileHeader = ({ isFixed }) => {
 
   const handleLoginClick = () => {
     setLoginFormModel(true);
+    setIsMenuOpen(false);
   };
-  const handleNotificationClick = ()=>{
+
+  const handleNotificationClick = () => {
     navigate("/notification");
-  }
+  };
+
+  // Handle logout
+  const handleLogout = async () => {
+    await logout();
+    setIsMenuOpen(false);
+    navigate("/");
+  };
+
+  // Handle profile navigation
+  const handleProfileNavigation = (path) => {
+    navigate(path);
+    setIsMenuOpen(false);
+  };
+
+  // Categories skeleton loader for mobile
+  const CategoriesSkeleton = () => (
+    <div className="space-y-2">
+      {[1, 2, 3, 4, 5].map((item) => (
+        <div key={item} className="flex items-center gap-3 p-3">
+          <Skeleton variant="rectangular" width={24} height={24} />
+          <Skeleton variant="text" width="60%" height={20} />
+          <Skeleton
+            variant="rectangular"
+            width={20}
+            height={20}
+            className="ml-auto"
+          />
+        </div>
+      ))}
+    </div>
+  );
 
   if (loadError) return <div>Error loading maps</div>;
   if (!isLoaded) return <div>Loading...</div>;
+
   return (
     <>
       {/* Main Header */}
@@ -289,7 +436,9 @@ const MobileHeader = ({ isFixed }) => {
                                   transition={{ duration: 0.3 }}
                                   className="text-gray-500"
                                 >
-                                  {Object.keys(categories)[placeholderIndex]}
+                                  {categories.length > 0
+                                    ? categories[placeholderIndex]?.name
+                                    : "Loading"}
                                 </motion.span>
                               </AnimatePresence>
                             </div>
@@ -315,14 +464,14 @@ const MobileHeader = ({ isFixed }) => {
                     RECENT SEARCHES
                   </h3>
                   <div className="space-y-3">
-                    {Object.keys(categories).map((category) => (
+                    {categories.map((category) => (
                       <div
-                        key={category}
+                        key={category.id}
                         className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer"
-                        onClick={() => setSearchQuery(category)}
+                        onClick={() => setSearchQuery(category.name)}
                       >
                         <SearchIcon className="text-gray-400" />
-                        <span className="text-gray-700">{category}</span>
+                        <span className="text-gray-700">{category.name}</span>
                       </div>
                     ))}
                   </div>
@@ -371,7 +520,7 @@ const MobileHeader = ({ isFixed }) => {
                       const state = getComponent("administrative_area_level_1");
                       const address = place.formatted_address;
                       const location =
-                        city && state ?address : `${city}, ${state}`  ;
+                        city && state ? address : `${city}, ${state}`;
                       setSelectedLocation(location);
                       setLocationQuery(location);
                       localStorage.setItem("user_location", location);
@@ -391,12 +540,24 @@ const MobileHeader = ({ isFixed }) => {
 
               {/* Use Current Location */}
               <div className="px-4 pb-4 border-b">
-                <div className="flex items-center gap-3 text-blue-600">
-                  <GpsFixedIcon />
+                <div 
+                  className="flex items-center gap-3 text-blue-600 cursor-pointer hover:bg-blue-50 p-3 rounded-lg"
+                  onClick={fetchAndSetCurrentLocation}
+                >
+                  {locationLoading ? (
+                    <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <GpsFixedIcon />
+                  )}
                   <div>
-                    <div className="font-medium">Use current location</div>
+                    <div className="font-medium">
+                      {locationLoading ? "Getting location..." : "Use current location"}
+                    </div>
                     <div className="text-sm text-gray-500">
-                      Location blocked. Check browser/phone settings.
+                      {locationLoading 
+                        ? "Please wait..." 
+                        : "Get your current location automatically"
+                      }
                     </div>
                   </div>
                 </div>
@@ -471,59 +632,190 @@ const MobileHeader = ({ isFixed }) => {
                   <KeyboardArrowRightIcon className="text-gray-600 ml-auto" />
                 </div>
 
-                {/* Categories */}
+                {/* Auth Section */}
                 <div className="border-t border-gray-200 pt-4">
-                  <div
-                    className="text-sm text-gray-500 mb-2 px-3"
-                    onClick={handleLoginClick}
-                  >
-                    LOGIN / REGISTRATION
-                  </div>
-                  <div className="text-sm text-gray-500 mb-2 px-3">
-                    CATEGORIES
-                  </div>
-                  <div className="space-y-1">
-                    {Object.entries(categories).map(
-                      ([category, { icon, subCategories }]) => (
-                        <div key={category}>
-                          <div
-                            className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer"
-                            onClick={() => handleCategoryClick(category)}
-                          >
-                            <span className="text-xl">{icon}</span>
-                            <span className="text-gray-700">{category}</span>
-                            <KeyboardArrowRightIcon
-                              className={`text-gray-600 ml-auto transform transition-transform ${
-                                activeCategory === category ? "rotate-90" : ""
-                              }`}
-                            />
-                          </div>
-
-                          {/* Submenu */}
-                          <AnimatePresence>
-                            {activeCategory === category && (
-                              <motion.div
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: "auto", opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                transition={{ duration: 0.2 }}
-                                className="overflow-hidden bg-gray-50"
-                              >
-                                {subCategories.map((subCategory) => (
-                                  <div
-                                    key={subCategory}
-                                    className="px-11 py-3 text-sm text-gray-600 hover:bg-gray-100 cursor-pointer"
-                                  >
-                                    {subCategory}
-                                  </div>
-                                ))}
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
+                  {loading ? (
+                    <Skeleton
+                      variant="text"
+                      width="70%"
+                      height={20}
+                      className="mb-4"
+                    />
+                  ) : isAuthenticated ? (
+                    <div className="mb-4">
+                      <div className="text-sm text-gray-500 mb-2 px-3">
+                        USER MENU
+                      </div>
+                      <div className="space-y-1">
+                        <div
+                          className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer"
+                          onClick={() =>
+                            handleProfileNavigation("/profile-edit")
+                          }
+                        >
+                          <span className="text-gray-700">My Profile</span>
+                          <KeyboardArrowRightIcon className="text-gray-600 ml-auto" />
                         </div>
-                      )
-                    )}
+                        <div
+                          className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer"
+                          onClick={() =>
+                            handleProfileNavigation("/seller-enquiry-list")
+                          }
+                        >
+                          <span className="text-gray-700">Enquiry List</span>
+                          <KeyboardArrowRightIcon className="text-gray-600 ml-auto" />
+                        </div>
+                        <div
+                          className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer"
+                          onClick={() =>
+                            handleProfileNavigation("/subscription-plan")
+                          }
+                        >
+                          <span className="text-gray-700">Subscription</span>
+                          <KeyboardArrowRightIcon className="text-gray-600 ml-auto" />
+                        </div>
+                        <div
+                          className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer"
+                          onClick={() => handleProfileNavigation("/wishlist")}
+                        >
+                          <span className="text-gray-700">My Wishlist</span>
+                          <KeyboardArrowRightIcon className="text-gray-600 ml-auto" />
+                        </div>
+                        <div
+                          className="flex items-center gap-3 p-3 hover:bg-red-50 rounded-lg cursor-pointer"
+                          onClick={handleLogout}
+                        >
+                          <span className="text-red-600">Sign Out</span>
+                          <KeyboardArrowRightIcon className="text-red-600 ml-auto" />
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      className="text-sm text-blue-600 mb-4 px-3 cursor-pointer font-medium"
+                      onClick={handleLoginClick}
+                    >
+                      LOGIN / REGISTRATION
+                    </div>
+                  )}
+
+                  {/* sell */}
+                  <Link
+                    to="/sell"
+                    className="space-y-1 mb-6 flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <span className="text-gray-700">SELL</span>
+                    <KeyboardArrowRightIcon
+                      className={`text-gray-600 ml-auto transform transition-transform `}
+                    />
+                  </Link>
+
+ {/*   Categories */}
+                  <div className="text-sm text-gray-500 mb-2 px-3">
+                     CATEGORIES
                   </div>
+
+                  <div className="space-y-1">
+
+                     <Link to="/property"
+                              className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
+                                 <span className="text-gray-700">
+                               Property List
+                              </span>
+                              </Link>
+
+                               <Link to="/electronics"
+                              className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
+                                 <span className="text-gray-700">
+                               Electronic List
+                              </span>
+                              </Link>
+
+                               <Link to="/car"
+                              className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
+                                 <span className="text-gray-700">
+                               Car List
+                              </span>
+                              </Link>
+                               <Link to="/bike"
+                              className="flex mb-4 items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
+                                 <span className="text-gray-700">
+                               Bike List
+                              </span>
+                              </Link>
+                  </div>
+
+                  {/* Dynamic Sub Categories */}
+                  <div className="text-sm text-gray-500 mb-2 px-3">
+                    SUB CATEGORIES
+                  </div>
+
+                  {isLoadingCategories ? (
+                    <CategoriesSkeleton />
+                  ) : (
+                    <div className="space-y-1">
+                      {Object.entries(megaMenuData).map(
+                        ([categoryName, categoryData]) => (
+                          <div key={categoryName}>
+                            <div
+                              className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer"
+                              onClick={() => {
+                                if (categoryData.items.length > 0) {
+                                  handleCategoryClick(categoryName);
+                                } else {
+                                  handleCategoryMainClick(categoryData.slug);
+                                }
+                              }}
+                            >
+                              <span className="text-gray-700">
+                                {categoryData.title}
+                              </span>
+                              {categoryData.items.length > 0 && (
+                                <KeyboardArrowRightIcon
+                                  className={`text-gray-600 ml-auto transform transition-transform ${
+                                    activeCategory === categoryName
+                                      ? "rotate-90"
+                                      : ""
+                                  }`}
+                                />
+                              )}
+                            </div>
+
+                            {/* Submenu */}
+                            <AnimatePresence>
+                              {activeCategory === categoryName &&
+                                categoryData.items.length > 0 && (
+                                  <motion.div
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: "auto", opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="overflow-hidden bg-gray-50"
+                                  >
+                                    {categoryData.items.map((subCategory) => (
+                                      <div
+                                        key={subCategory.id}
+                                        className="px-11 py-3 text-sm text-gray-600 hover:bg-gray-100 cursor-pointer"
+                                        onClick={() =>
+                                          handleSubcategoryClick(
+                                            categoryData.slug,
+                                            subCategory.slug,
+                                            subCategory.id
+                                          )
+                                        }
+                                      >
+                                        {subCategory.name}
+                                      </div>
+                                    ))}
+                                  </motion.div>
+                                )}
+                            </AnimatePresence>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -531,6 +823,7 @@ const MobileHeader = ({ isFixed }) => {
         )}
       </AnimatePresence>
 
+      {/* Modal Components */}
       {loginFormModel && (
         <LoginFormModel
           setLoginFormModel={setLoginFormModel}

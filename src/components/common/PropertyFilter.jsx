@@ -10,7 +10,12 @@ import ListedBySection from "./filter/property/ListedBySection";
 import BuildingDirectionSection from "./filter/property/BuildingDirectionSection";
 import CategoriesSection from "./filter/property/CategoriesSection";
 
-const PropertyFilter = ({ isFilterOpen, isMobile, onApplyFilters, currentFilters }) => {
+const PropertyFilter = ({
+  isFilterOpen,
+  isMobile,
+  onApplyFilters,
+  currentFilters,
+}) => {
   const [expandedSections, setExpandedSections] = useState({
     categories: true,
     location: true,
@@ -20,7 +25,6 @@ const PropertyFilter = ({ isFilterOpen, isMobile, onApplyFilters, currentFilters
     constructionStatus: false,
     listedBy: false,
   });
-  
 
   const toggleSection = (section) => {
     setExpandedSections({
@@ -44,8 +48,7 @@ const PropertyFilter = ({ isFilterOpen, isMobile, onApplyFilters, currentFilters
     bathroom_min: "",
     bedroom_min: "",
     furnished_id: "",
-    super_area_min: "",
-    super_area_max: "",
+    super_builtup_area: "",
     bhk_id: "",
     maintenance_id: "",
     construction_status_id: "",
@@ -53,14 +56,14 @@ const PropertyFilter = ({ isFilterOpen, isMobile, onApplyFilters, currentFilters
     subcategory_id: "",
     latitude: "",
     longitude: "",
-    ...currentFilters // Override with current filters from parent
+    ...currentFilters, // Override with current filters from parent
   });
 
   // Update local filters when currentFilters prop changes
   useEffect(() => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      ...currentFilters
+      ...currentFilters,
     }));
   }, [currentFilters]);
 
@@ -68,24 +71,27 @@ const PropertyFilter = ({ isFilterOpen, isMobile, onApplyFilters, currentFilters
   const handleApplyFilters = () => {
     console.log("=== HANDLE APPLY FILTERS ===");
     console.log("Current filters state:", filters);
-    
+
     // Clean up filters - remove empty values
-    const cleanedFilters = Object.entries(filters).reduce((acc, [key, value]) => {
-      if (value && value !== "" && value !== null && value !== undefined) {
-        // Handle arrays
-        if (Array.isArray(value)) {
-          if (value.length > 0) {
+    const cleanedFilters = Object.entries(filters).reduce(
+      (acc, [key, value]) => {
+        if (value && value !== "" && value !== null && value !== undefined) {
+          // Handle arrays
+          if (Array.isArray(value)) {
+            if (value.length > 0) {
+              acc[key] = value;
+            }
+          } else {
             acc[key] = value;
           }
-        } else {
-          acc[key] = value;
         }
-      }
-      return acc;
-    }, {});
-    
+        return acc;
+      },
+      {}
+    );
+
     console.log("Cleaned filters to send:", cleanedFilters);
-    
+
     // Call the parent's apply filters function
     if (onApplyFilters) {
       onApplyFilters(cleanedFilters);
@@ -99,7 +105,7 @@ const PropertyFilter = ({ isFilterOpen, isMobile, onApplyFilters, currentFilters
     city: "Chennai",
     state: "Tamil Nadu",
     latitude: "",
-    longitude: ""
+    longitude: "",
   });
 
   // Helper functions for extracting city and state
@@ -118,32 +124,41 @@ const PropertyFilter = ({ isFilterOpen, isMobile, onApplyFilters, currentFilters
   // Function to get location from localStorage
   const loadLocationFromStorage = () => {
     try {
-      const selectedLocationStr = localStorage.getItem('selectedLocation');
-      
+      const selectedLocationStr = localStorage.getItem("selectedLocation");
+
       if (!selectedLocationStr) {
         console.log("No location found in localStorage, using default");
         return;
       }
-      
+
       const selectedLocation = JSON.parse(selectedLocationStr);
       console.log("Loaded location from localStorage:", selectedLocation);
-      
+
       if (selectedLocation.latitude && selectedLocation.longitude) {
         const newLocationData = {
-          address: selectedLocation.address || selectedLocation.formatted_address || "Location Selected",
-          city: selectedLocation.city || extractCityFromAddress(selectedLocation.address) || "Unknown City",
-          state: selectedLocation.state || extractStateFromAddress(selectedLocation.address) || "Unknown State", 
+          address:
+            selectedLocation.address ||
+            selectedLocation.formatted_address ||
+            "Location Selected",
+          city:
+            selectedLocation.city ||
+            extractCityFromAddress(selectedLocation.address) ||
+            "Unknown City",
+          state:
+            selectedLocation.state ||
+            extractStateFromAddress(selectedLocation.address) ||
+            "Unknown State",
           latitude: parseFloat(selectedLocation.latitude),
-          longitude: parseFloat(selectedLocation.longitude)
+          longitude: parseFloat(selectedLocation.longitude),
         };
-        
+
         setLocationData(newLocationData);
-        
+
         // Update filters with latitude and longitude (hidden values)
-        setFilters(prev => ({
+        setFilters((prev) => ({
           ...prev,
           latitude: newLocationData.latitude,
-          longitude: newLocationData.longitude
+          longitude: newLocationData.longitude,
         }));
       }
     } catch (error) {
@@ -281,7 +296,7 @@ const PropertyFilter = ({ isFilterOpen, isMobile, onApplyFilters, currentFilters
           />
 
           {/* Listed By Section */}
-          <ListedBySection 
+          <ListedBySection
             filters={filters}
             setFilters={setFilters}
             expandedSections={expandedSections}

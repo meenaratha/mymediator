@@ -32,7 +32,7 @@ const Feedback = ({ onClose, rateableData, rateableType = 'property' }) => {
       title: 'Thank You!',
       text: 'Your rating has been submitted successfully.',
       showConfirmButton: false,
-      timer: 1000,
+      timer: 3000,
       timerProgressBar: true,
       allowOutsideClick: true,
       allowEscapeKey: true
@@ -69,12 +69,13 @@ const Feedback = ({ onClose, rateableData, rateableType = 'property' }) => {
       const response = await api.post('/rating', payload);
       
       console.log('Rating submitted successfully:', response.data);
-// Show simple success SweetAlert
-      await showSuccessAlert();
+
       // Close the feedback modal after successful submission
       if (onClose) {
         onClose();
       }
+      // Show simple success SweetAlert
+      await showSuccessAlert();
 
     } catch (error) {
       console.error('Error submitting rating:', error);

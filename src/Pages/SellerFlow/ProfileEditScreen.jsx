@@ -173,7 +173,8 @@ const ProfileEditScreen = () => {
         });
 
         // Navigate to profile edit page
-        navigate(`/profile-edit`);
+        // navigate(`/profile-edit`);
+        navigate(0);
         
       } else {
         setError(response.data.message || 'Failed to update profile');

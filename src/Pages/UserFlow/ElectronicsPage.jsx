@@ -514,7 +514,7 @@ const ElectronicsFilterPage = () => {
           <div
             className={`fixed md:static inset-0 w-full md:w-3/12 ${
               isMobile
-                ? "transform transition-transform duration-300 ease-in-out z-40 top-[17%] my-[10px] bottom-[5px]"
+                ? "transform transition-transform duration-300 ease-in-out z-40 top-[17%] my-[10px] bottom-0 mb-0 "
                 : ""
             } ${
               isFilterOpen

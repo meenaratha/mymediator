@@ -44,7 +44,7 @@ const UserDashboardLayout = () => {
     },
     {
       icon: <FaClipboardList className="w-5 h-5" />,
-      title: "My Post details",
+      title: "My ads details ",
       path: "/seller-post-details",
     },
     {
