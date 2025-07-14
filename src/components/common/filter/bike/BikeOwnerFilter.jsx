@@ -18,16 +18,16 @@ const BikeOwnerFilter = ({
 
   // Set initial selected values from filters
   useEffect(() => {
-    if (filters.no_of_owner) {
-      const filterValues = Array.isArray(filters.no_of_owner)
-        ? filters.no_of_owner
-        : [filters.no_of_owner];
+    if (filters.number_of_owner_id) {
+      const filterValues = Array.isArray(filters.number_of_owner_id)
+        ? filters.number_of_owner_id
+        : [filters.number_of_owner_id];
 
       setSelectedNoOwner(filterValues.filter((val) => val && val !== ""));
     } else {
       setSelectedNoOwner([]);
     }
-  }, [filters.no_of_owner]);
+  }, [filters.number_of_owner_id]);
 
   const fetchNoOwnerOptions = async () => {
     setLoading(true);
@@ -72,7 +72,7 @@ const BikeOwnerFilter = ({
 
     setFilters((prev) => ({
       ...prev,
-      no_of_owner: filterValue,
+      number_of_owner_id: filterValue,
     }));
   };
 
@@ -80,7 +80,7 @@ const BikeOwnerFilter = ({
     setSelectedNoOwner([]);
     setFilters((prev) => ({
       ...prev,
-      no_of_owner: "",
+      number_of_owner_id: "",
     }));
   };
 
@@ -256,7 +256,7 @@ const BikeOwnerFilter = ({
                   setSelectedNoOwner(allValues);
                   setFilters((prev) => ({
                     ...prev,
-                    no_of_owner:
+                    number_of_owner_id:
                       allValues.length === 1 ? allValues[0] : allValues,
                   }));
                 }}

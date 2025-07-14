@@ -18,16 +18,16 @@ const BikeFuelTypeFilter = ({
  
    // Set initial selected values from filters
    useEffect(() => {
-     if (filters.fuel_type) {
-       const filterValues = Array.isArray(filters.fuel_type)
-         ? filters.fuel_type
-         : [filters.fuel_type];
+     if (filters.fuel_type_id) {
+       const filterValues = Array.isArray(filters.fuel_type_id)
+         ? filters.fuel_type_id
+         : [filters.fuel_type_id];
  
        setSelectedFuelTypes(filterValues.filter((val) => val && val !== ""));
      } else {
        setSelectedFuelTypes([]);
      }
-   }, [filters.fuel_type]);
+   }, [filters.fuel_type_id]);
  
    const fetchFuelTypeOptions = async () => {
      setLoading(true);
@@ -72,7 +72,7 @@ const BikeFuelTypeFilter = ({
  
      setFilters((prev) => ({
        ...prev,
-       fuel_type: filterValue,
+       fuel_type_id: filterValue,
      }));
    };
  
@@ -80,7 +80,7 @@ const BikeFuelTypeFilter = ({
      setSelectedFuelTypes([]);
      setFilters((prev) => ({
        ...prev,
-       fuel_type: "",
+       fuel_type_id: "",
      }));
    };
  
@@ -256,7 +256,7 @@ const BikeFuelTypeFilter = ({
                    setSelectedFuelTypes(allValues);
                    setFilters((prev) => ({
                      ...prev,
-                     fuel_type:
+                     fuel_type_id:
                        allValues.length === 1 ? allValues[0] : allValues,
                    }));
                  }}

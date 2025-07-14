@@ -473,7 +473,7 @@ const CarDetails = ({ car }) => {
         <div className="border-b border-gray-200 p-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between">
             <div className="w-full md:w-1/2">
-              <div className="flex items-center py-2">
+              <div className="flex items-center py-2 flex-wrap gap-4">
                 <h2 className="md:text-2xl text-[20px] font-bold">
                   {car.title || `${car.brand} ${car.model}`}
                 </h2>
@@ -485,7 +485,7 @@ const CarDetails = ({ car }) => {
 
               <div className="flex items-center mt-2 mb-2">
                 <p className="mr-4">
-                  { car.year} - {car.kilometers || 'N/A'} km
+                  { car.year} - {car.kilometers } km
                 </p>
                 
 
@@ -547,7 +547,7 @@ const CarDetails = ({ car }) => {
         title={`Check out this ${car.brand} ${car.model} - ₹${car.price ? parseFloat(car.price).toLocaleString() : "N/A"}`}
         description={car.description || `${car.subcategory || 'Car'} in excellent condition`}
         modalTitle="Share this car"
-        showPlatforms={['whatsapp', 'facebook', 'twitter', 'instagram', 'telegram', 'linkedin']}
+        showPlatforms={['whatsapp', 'facebook', 'twitter', 'instagram', 'telegram', ]}
       />
 
       {/* Snackbar for notifications */}

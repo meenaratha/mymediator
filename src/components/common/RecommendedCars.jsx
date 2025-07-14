@@ -124,7 +124,7 @@ const RecommendedCars = () => {
         >
           {recommendedCars.map((car) => (
             <SwiperSlide key={car.id}>
-              <Card 
+              <Card
                 onClick={() => handleCardClick(car)}
                 className="cursor-pointer max-w-[275px] w-full rounded-lg shadow-md overflow-hidden hover:shadow-lg mx-auto transition-transform hover:scale-[1.02]"
               >
@@ -134,12 +134,16 @@ const RecommendedCars = () => {
                     alt={car.title || `${car.brand} ${car.model}`}
                     className="w-full h-36 object-cover"
                   />
-                  <div className="absolute top-2 right-2 bg-white rounded-md px-1 py-0.5 flex items-center">
-                    <span className="text-xs font-semibold mr-0.5">
-                      {car.average_rating || "4.5"}
-                    </span>
-                    <StarIcon sx={{ color: "#FFD700" }} fontSize="small" />
-                  </div>
+                  {car.average_rating && car.average_rating !== null ? (
+                    <div className="absolute top-2 right-2 bg-white rounded-md px-1 py-0.5 flex items-center">
+                      <span className="text-xs font-semibold mr-0.5">
+                        {car.average_rating}
+                      </span>
+                      <StarIcon sx={{ color: "#FFD700" }} fontSize="small" />
+                    </div>
+                  ) : (
+                    ""
+                  )}
                 </div>
 
                 <CardContent className="p-3">
@@ -150,29 +154,31 @@ const RecommendedCars = () => {
                   <div className="flex items-center text-sm text-gray-500 mt-1">
                     <LocationOnIcon sx={{ color: red[500] }} fontSize="small" />
                     <span className="truncate">
-                      {car.city}, {car.district}
+                      {car.district},{car.state}
                     </span>
                   </div>
-
-                  <div className="flex items-center mt-2">
-                    <SpeedIcon fontSize="small" className="text-gray-600" />
-                    <span className="ml-1 text-sm text-gray-600">
-                      {car.kilometers_driven || 'N/A'} km
-                    </span>
-                  </div>
+                  {car.kilometers !== null ? (
+                    <div className="flex items-center mt-2">
+                      <SpeedIcon fontSize="small" className="text-gray-600" />
+                      <span className="ml-1 text-sm text-gray-600">
+                        {car.kilometers} km
+                      </span>
+                    </div>
+                  ) : (
+                    ""
+                  )}
 
                   <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">
                     <span className="text-sm text-gray-500">
-                      {car.post_year ||car.manufacturing_year }
+                      {car.post_year || car.manufacturing_year}
                     </span>
                     <span className="font-bold text-lg">
-                      ₹ {car.price ? 
-                        (parseFloat(car.price) >= 100000 ? 
-                          (parseFloat(car.price) / 100000).toFixed(2) + "L" : 
-                          parseFloat(car.price).toLocaleString()
-                        ) : 
-                        car.amount || "N/A"
-                      }
+                      ₹{" "}
+                      {car.price
+                        ? parseFloat(car.price) >= 100000
+                          ? (parseFloat(car.price) / 100000).toFixed(2) + "L"
+                          : parseFloat(car.price).toLocaleString()
+                        : car.amount || "N/A"}
                     </span>
                   </div>
                 </CardContent>

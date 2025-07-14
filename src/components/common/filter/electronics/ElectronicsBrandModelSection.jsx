@@ -34,24 +34,24 @@ const ElectronicsBrandModelSection = ({
 
   // Set initial selected values from filters (excluding subcategory changes)
   useEffect(() => {
-    if (filters.brand) {
-      const filterBrands = Array.isArray(filters.brand)
-        ? filters.brand
-        : [filters.brand];
+    if (filters.brand_id) {
+      const filterBrands = Array.isArray(filters.brand_id)
+        ? filters.brand_id
+        : [filters.brand_id];
       setSelectedBrands(filterBrands.filter((val) => val && val !== ""));
     } else {
       setSelectedBrands([]);
     }
 
-    if (filters.model) {
-      const filterModels = Array.isArray(filters.model)
-        ? filters.model
-        : [filters.model];
+    if (filters.model_id) {
+      const filterModels = Array.isArray(filters.model_id)
+        ? filters.model_id
+        : [filters.model_id];
       setSelectedModels(filterModels.filter((val) => val && val !== ""));
     } else {
       setSelectedModels([]);
     }
-  }, [filters.brand, filters.model]);
+  }, [filters.brand_id, filters.model_id]);
 
   // Clear selections when subcategory changes
   useEffect(() => {

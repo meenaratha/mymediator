@@ -269,9 +269,9 @@ const PropertyForm = () => {
       },
     },
 
-    "defult": {
-      title: "default",
-      subcategoryId: 3,
+    defult: {
+      title: "Default Property",
+      subcategoryId: null, // Changed from 3 to null
       type: "default",
       showFields: {
         bachelor: false,
@@ -289,23 +289,47 @@ const PropertyForm = () => {
         bikeParking: false,
         carParking: false,
         plotArea: false, // Hidden by default
-        length: false,   // Hidden by default
-        breadth: false,  // Hidden by default
+        length: false, // Hidden by default
+        breadth: false, // Hidden by default
       },
     },
   };
 
   // Get current slug configuration
-const getCurrentConfig = () => {
-  const config = SLUG_CONFIG[slug];
-  if (!config) {
-    console.warn(`No configuration found for slug: ${slug}, using default config with all fields hidden`);
-    // Return the default configuration with all fields hidden
-    return SLUG_CONFIG["defult"]; // Use the default config from SLUG_CONFIG
-  }
-  return config;
-};
-
+  const getCurrentConfig = () => {
+    const config = SLUG_CONFIG[slug];
+    if (!config) {
+      console.warn(
+        `No configuration found for slug: ${slug}, using dynamic config`
+      );
+      // Return a complete dynamic configuration
+      return {
+        title: "Property Form",
+        subcategoryId: id ? parseInt(id) : null, // Use URL id parameter instead of hardcoded 3
+        type: "dynamic",
+        showFields: {
+          bachelor: false,
+          wash_room: false,
+          bhk: false,
+          bedroom: false,
+          bathroom: false,
+          furnished: false,
+          constructionStatus: false,
+          maintenance: false,
+          superBuildArea: false,
+          carpetArea: false,
+          floorNumber: false,
+          totalFloor: false,
+          bikeParking: false,
+          carParking: false,
+          plotArea: false,
+          length: false,
+          breadth: false,
+        },
+      };
+    }
+    return config;
+  };
 
   // Helper function to check if field should be shown
   const shouldShowField = (fieldName) => {
@@ -878,13 +902,25 @@ const getCurrentConfig = () => {
       // Prepare the media_to_delete string from deletedMediaIds state
       const mediaToDeleteString = deletedMediaIds.images.join(",");
 
+      // FIXED: Correctly determine subcategory_id
+      let subcategoryId;
+
+      if (isEditMode) {
+        // In edit mode, use the subcategory_id from the API response (stored in formData)
+        subcategoryId = formData.subcategory_id || getSubcategoryId();
+      } else {
+        // In create mode, prioritize URL id parameter over slug-based ID
+        subcategoryId = id ? parseInt(id) : getSubcategoryId();
+      }
+
       // Prepare submission data with URL params
       const submissionData = {
         ...formData,
         media_to_delete: allDeletedMedia, // Formatted string
         action_id: isEditMode ? formData.action_id : undefined,
+        subcategory_id: getSubcategoryId(), // Subcategory ID based on slug
         urlId: getSubcategoryId(), // ID from URL params
-        subcategory_id: id, // Subcategory ID based on slug
+
         slug: slug, // Current slug
         form_type: "property",
       };
@@ -1262,7 +1298,6 @@ const getCurrentConfig = () => {
           {/* {getCurrentConfig().title} */}
           {!isEditMode ? `${subName} Form` : `${editFormTitle} Form`}
         </h1>
-
       </div>
 
       {/* Show API error if exists */}
@@ -1271,8 +1306,6 @@ const getCurrentConfig = () => {
           <strong>Error:</strong> {apiError}
         </div>
       )}
-
-      
 
       <form onSubmit={handleSubmit}>
         {/* Row 1 - Common fields for all property types */}

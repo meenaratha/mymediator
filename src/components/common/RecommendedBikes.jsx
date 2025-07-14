@@ -113,23 +113,29 @@ const RecommendedBikes = () => {
             },
           }}
         >
-         {recommendedBikes.map((bike) => (
+          {recommendedBikes.map((bike) => (
             <SwiperSlide key={bike.id}>
-              <Card 
+              <Card
                 onClick={() => handleCardClick(bike)}
-              className="cursor-pointer max-w-[275px] w-full rounded-lg shadow-md overflow-hidden hover:shadow-lg mx-auto">
+                className="cursor-pointer max-w-[275px] w-full rounded-lg shadow-md overflow-hidden hover:shadow-lg mx-auto"
+              >
                 <div className="relative">
                   <img
                     src={bike.image_url || IMAGES.placeholderimg}
                     alt={bike.title}
                     className="w-full h-36 object-cover"
                   />
-                  <div className="absolute top-2 right-2 bg-white rounded-md px-1 py-0.5 flex items-center">
-                    <span className="text-xs font-semibold mr-0.5">
-                      {bike.average_rating || "4.5"}
-                    </span>
-                    <StarIcon sx={{ color: "#FFD700" }} fontSize="small" />
-                  </div>
+
+                  {bike.average_rating && bike.average_rating !== null ? (
+                    <div className="absolute top-2 right-2 bg-white rounded-md px-1 py-0.5 flex items-center">
+                      <span className="text-xs font-semibold mr-0.5">
+                        {bike.average_rating}
+                      </span>
+                      <StarIcon sx={{ color: "#FFD700" }} fontSize="small" />
+                    </div>
+                  ) : (
+                    ""
+                  )}
                 </div>
 
                 <CardContent className="p-3">
@@ -139,21 +145,28 @@ const RecommendedBikes = () => {
 
                   <div className="flex items-center text-sm text-gray-500 mt-1">
                     <LocationOnIcon sx={{ color: red[500] }} fontSize="small" />
-                    <span className="truncate"> {bike.district},{bike.state}</span>
-                  </div>
-
-                  <div className="flex items-center mt-2">
-                    <SpeedIcon fontSize="small" className="text-gray-600" />
-                    <span className="ml-1 text-sm text-gray-600">
-                      {bike.kilometers_driven || 'N/A'} km
+                    <span className="truncate">
+                      {" "}
+                      {bike.district},{bike.state}
                     </span>
                   </div>
+
+                  {bike.kilometers !== null ? (
+                    <div className="flex items-center mt-2">
+                      <SpeedIcon fontSize="small" className="text-gray-600" />
+                      <span className="ml-1 text-sm text-gray-600">
+                        {bike.kilometers} km
+                      </span>
+                    </div>
+                  ) : (
+                    ""
+                  )}
 
                   <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">
-                    <span className="text-sm text-gray-500">{bike.year}</span>
-                    <span className="font-bold text-lg">
-                      ₹ {bike.price ? (parseFloat(bike.price) / 100000).toFixed(2) : "N/A"}L
+                    <span className="text-sm text-gray-500">
+                      {bike.post_year}
                     </span>
+                    <span className="font-bold text-lg">₹ {bike.price}</span>
                   </div>
                 </CardContent>
               </Card>

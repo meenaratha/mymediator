@@ -32,8 +32,9 @@ const BikesPage = () => {
     latitude: "",
     longitude: "",
     engine_cc_range: "",
-    kilometers_range: "",
-    fuel_type: "",
+    kilometer_range: "",
+    fuel_type_id: "",
+    number_of_owner_id: "",
   });
 
  // Add state to track if this is the initial load

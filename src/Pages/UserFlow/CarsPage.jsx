@@ -24,6 +24,7 @@ const CarsPage = () => {
   // Add state for current filters
   const [currentFilters, setCurrentFilters] = useState({
     type: "car",
+    listed_by_id:"",
     price_range: "",
     subcategory_id: "",
     year_filter: "",

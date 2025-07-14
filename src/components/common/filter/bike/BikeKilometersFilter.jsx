@@ -21,11 +21,11 @@ const BikeKilometersFilter = ({
 
     // Set initial selected values from filters
     useEffect(() => {
-      if (filters.kilometers_range) {
+      if (filters.kilometer_range) {
         // Handle both single value and array
-        const filterValues = Array.isArray(filters.kilometers_range)
-          ? filters.kilometers_range
-          : [filters.kilometers_range];
+        const filterValues = Array.isArray(filters.kilometer_range)
+          ? filters.kilometer_range
+          : [filters.kilometer_range];
 
         setSelectedKilometersRanges(
           filterValues.filter((val) => val && val !== "")
@@ -33,7 +33,7 @@ const BikeKilometersFilter = ({
       } else {
         setSelectedKilometersRanges([]);
       }
-    }, [filters.kilometers_range]);
+    }, [filters.kilometer_range]);
 
     const fetchKilometersRanges = async () => {
       setLoading(true);
@@ -93,7 +93,7 @@ const BikeKilometersFilter = ({
 
       setFilters((prev) => ({
         ...prev,
-        kilometers_range: filterValue,
+        kilometer_range: filterValue,
       }));
 
       console.log("Selected kilometers ranges:", {
@@ -107,7 +107,7 @@ const BikeKilometersFilter = ({
       setSelectedKilometersRanges([]);
       setFilters((prev) => ({
         ...prev,
-        kilometers_range: "",
+        kilometer_range: "",
       }));
     };
 
@@ -300,7 +300,7 @@ const BikeKilometersFilter = ({
                     setSelectedKilometersRanges(allValues);
                     setFilters((prev) => ({
                       ...prev,
-                      kilometers_range:
+                      kilometer_range:
                         allValues.length === 1 ? allValues[0] : allValues,
                     }));
                   }}

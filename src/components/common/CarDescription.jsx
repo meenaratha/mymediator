@@ -91,15 +91,14 @@ const CarDescription = () => {
 
   return (
     <>
- {/* Report Ads Modal */}
+      {/* Report Ads Modal */}
       <ReportAdsModal
         isOpen={showReportModal}
         onClose={handleCloseModal}
         adId={car.id}
-        adType={ car.form_type }
+        adType={car.form_type}
         adTitle={car.title}
       />
-
 
       <CarDetails car={car} />
 
@@ -114,7 +113,7 @@ const CarDescription = () => {
                 <div className="flex items-center space-x-2">
                   <DirectionsCarOutlined className="text-black font-bold" />
                   <span className="text-sm font-medium text-gray-600">
-                    {car.transmission }
+                    {car.transmission}
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -126,19 +125,19 @@ const CarDescription = () => {
                 <div className="flex items-center space-x-2">
                   <LocalGasStationOutlined className="text-black font-bold" />
                   <span className="text-sm font-medium text-gray-600">
-                    {car.fuel_type || car.fuelType || 'Petrol'}
+                    {car.fuel_type || car.fuelType || "Petrol"}
                   </span>
                 </div>
               </div>
 
               {/* Middle section with owner, location, and date */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 py-4 border-b border-[#E1E1E1]">
-                {/* <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2">
                   <PersonOutlined className="text-gray-500" />
                   <span className="text-sm font-medium text-gray-600">
-                    Owner {car.owner_number || car.ownerNumber || '1'}
+                    {car.number_of_owner}
                   </span>
-                </div> */}
+                </div>
                 <div className="flex items-center space-x-2">
                   <LocationOnOutlined className="text-black font-bold" />
                   <span className="text-sm font-medium text-gray-600">
@@ -148,7 +147,7 @@ const CarDescription = () => {
                 <div className="flex items-center space-x-2">
                   <CalendarTodayOutlined className="text-black font-bold" />
                   <span className="text-sm font-medium text-gray-600">
-                    {car.year}
+                    {car.post_year}
                   </span>
                 </div>
               </div>
@@ -157,7 +156,8 @@ const CarDescription = () => {
               <div className="pt-4">
                 <h3 className="text-lg font-bold mb-2">Description</h3>
                 <p className="text-gray-700 text-sm">
-                  {car.description || `This ${ car.year} ${car.brand} ${car.model} is in excellent condition. Well-maintained and ready for its next owner.`}
+                  {car.description ||
+                    `This ${car.year} ${car.brand} ${car.model} is in excellent condition. Well-maintained and ready for its next owner.`}
                 </p>
               </div>
             </div>
@@ -182,8 +182,9 @@ const CarDescription = () => {
                   </div>
                 </div>
                 <Link
-                   to= {`/seller-profile/${car.vendor_id}`}
-                  className="text-blue-600 font-semibold text-sm">
+                  to={`/seller-profile/${car.vendor_id}`}
+                  className="text-blue-600 font-semibold text-sm"
+                >
                   See Profile
                 </Link>
               </div>
@@ -196,14 +197,13 @@ const CarDescription = () => {
                     zoom={13}
                     scrollWheelZoom={false}
                     className="w-[150px] h-[150px] rounded-[10px] "
-                     onClick={openGoogleMaps}
+                    onClick={openGoogleMaps}
                   >
-                    <TileLayer
-                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    />
+                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                     <Marker position={[mapCenter.lat, mapCenter.lng]}>
                       <Popup>
-                        {car.brand} {car.model} <br /> {car.manufacturing_year || car.year}
+                        {car.brand} {car.model} <br />{" "}
+                        {car.manufacturing_year || car.year}
                       </Popup>
                     </Marker>
                   </MapContainer>
@@ -220,11 +220,14 @@ const CarDescription = () => {
               {/* Ad ID and Report Section */}
               <div className="flex justify-between items-center text-gray-600 pt-4 border-t">
                 <div className="text-sm">
-                  <span className="font-semibold">ADS ID :</span> {car.unique_code || car.id}
+                  <span className="font-semibold">ADS ID :</span>{" "}
+                  {car.unique_code || car.id}
                 </div>
-                <div 
-                 onClick={handleReportClick}
-                className="flex items-center text-blue-600 cursor-pointer" aria-label="report">
+                <div
+                  onClick={handleReportClick}
+                  className="flex items-center text-blue-600 cursor-pointer"
+                  aria-label="report"
+                >
                   <ReportProblemOutlined fontSize="small" />
                   <span className="ml-1 text-sm">Report Ad</span>
                 </div>
@@ -257,32 +260,32 @@ const CarDescription = () => {
               <span>Year </span>
               <span>:</span>
             </div>
-            <span className="px-[10px]">{car.manufacturing_year || car.year}</span>
+            <span className="px-[10px]">{car.post_year}</span>
           </div>
-          
+
           <div className="grid grid-cols-2">
             <div className="flex gap-[15px] justify-between">
               <span>Fuel Type </span>
               <span>:</span>
             </div>
-            <span className="px-[10px]">{car.fuel_type || car.fuelType || 'Petrol'}</span>
+            <span className="px-[10px]">
+              {car.fuel_type || car.fuelType || "Petrol"}
+            </span>
           </div>
           <div className="grid grid-cols-2">
             <div className="flex gap-[15px] justify-between">
               <span>Transmission </span>
               <span>:</span>
             </div>
-            <span className="px-[10px]">{car.transmission || 'Manual'}</span>
+            <span className="px-[10px]">{car.transmission || "Manual"}</span>
           </div>
           <div className="grid grid-cols-2">
             <div className="flex gap-[15px] justify-between">
               <span>Kilometers </span>
               <span>:</span>
             </div>
-            <span className="px-[10px]">{ car.kilometers || 'N/A'} km</span>
+            <span className="px-[10px]">{car.kilometers || "N/A"} km</span>
           </div>
-         
-          
         </div>
       </div>
     </>

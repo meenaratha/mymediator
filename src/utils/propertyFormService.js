@@ -85,7 +85,7 @@ class PropertyFormService {
     const basePayload = {
       form_type: "property",
 
-      subcategory_id: subcategoryId,
+      subcategory_id: urlId,
       url_id: urlId, // ID from URL params
       action_id: formData.action_id,
       property_name: formData.propertyName,
@@ -369,7 +369,9 @@ class PropertyFormService {
       },
     };
 
-    return configs[slug] || configs["lands-plots"];
+    // return configs[slug] || configs["lands-plots"];
+        return configs[slug] ;
+
   }
 
   // Validate slug

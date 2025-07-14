@@ -800,7 +800,7 @@ const PropertyDetails = ({ property }) => {
           "instagram",
           "facebook",
           "telegram",
-          "linkedin",
+          
         ]}
       />
 

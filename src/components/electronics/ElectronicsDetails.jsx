@@ -265,7 +265,7 @@ const ElectronicsDetails = ({ electronics }) => {
                   pagination={{ clickable: true }}
                   navigation={false}
                   modules={[Navigation, Thumbs]}
-                  className="rounded-lg overflow-hidden max-h-[280px]"
+                  className="rounded-lg overflow-hidden max-h-[280px] h-[100%]"
                 >
                   {images.map((thumb, index) => (
                     <SwiperSlide
@@ -575,7 +575,7 @@ const ElectronicsDetails = ({ electronics }) => {
           "instagram",
           "facebook",
           "telegram",
-          "linkedin",
+         
         ]}
       />
 

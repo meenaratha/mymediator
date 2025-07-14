@@ -29,7 +29,7 @@ const SellerPropertyTabContent = ({
         const formatBHK = (bedrooms, bhkId) => {
           if (bedrooms) return `${bedrooms}BHK`;
           if (bhkId) return `${bhkId}BHK`;
-          return "N/A";
+          return "";
         };
 
         // Format area display
@@ -37,7 +37,7 @@ const SellerPropertyTabContent = ({
           if (superBuiltupArea) return superBuiltupArea;
           if (carpetArea) return carpetArea;
           if (plotArea) return plotArea;
-          return "N/A";
+          return "";
         };
 
         // Format property type
@@ -45,7 +45,7 @@ const SellerPropertyTabContent = ({
           if (plotArea && plotArea > 0) return "Plot";
           if (subcategoryId === 2) return "Apartment";
           if (subcategoryId === 3) return "Plot";
-          return "Individual";
+          return "";
         };
 
         return {
@@ -207,11 +207,11 @@ const SellerPropertyTabContent = ({
                         />
                         {property.sqft} {property.type === "Plot" ? "Sq. Ft" : "Sq. Ft"}
                       </span>
-                      {property.bhk !== "null" && (
+                      {property.bhk !== "null" ? (
                         <span className="border border-gray-300 rounded px-1 mr-2">
                           {property.bhk}
                         </span>
-                      )}
+                      ):("")}
                      
                      
                     </div>

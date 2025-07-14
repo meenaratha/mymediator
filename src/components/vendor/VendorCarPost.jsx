@@ -2,6 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import LoadMoreButton from '../common/LoadMoreButton';
 import { api } from '../../api/axios';
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import IMAGES from '../../utils/images';
+import { red } from "@mui/material/colors";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import SpeedIcon from "@mui/icons-material/Speed";
 
 const VendorCarPost = () => {
   const navigate = useNavigate();
@@ -68,6 +73,23 @@ const VendorCarPost = () => {
     navigate(`/car/${car.action_slug}`, { state: { car } });
   };
 
+  const formatPrice = (price) => {
+    if (!price) return "Price on request";
+
+    const numPrice = parseFloat(price);
+    if (numPrice >= 10000000) {
+      return `₹${(numPrice / 10000000).toFixed(1)}Cr`;
+    } else if (numPrice >= 100000) {
+      return `₹${(numPrice / 100000).toFixed(1)}L`;
+    } else if (numPrice >= 1000) {
+      return `₹${(numPrice / 1000).toFixed(1)}K`;
+    }
+    return `₹${numPrice.toLocaleString()}`;
+  };
+
+
+
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -80,82 +102,81 @@ const VendorCarPost = () => {
     <>
       {/* Car Grid - Responsive columns: 1 on mobile, 2 on medium, 3 on large, 6 on xl */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
-        {Array.isArray(cars) && cars.length > 0 ? (
-          cars.map((car) => (
-            <div 
-              key={car.id}  
-              onClick={() => handleCarClick(car)}
-              className="cursor-pointer bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
-            >
-              <div className="relative h-32 overflow-hidden">
-                <img 
-                  src={car.image_url || '/placeholder-car.jpg'} 
-                  alt={car.title || car.brand} 
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.target.src = '/placeholder-car.jpg'; // Fallback image
-                  }}
-                />
-              </div>
-              <div className="p-2">
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-full" title={car.car_name || car.brand}>
-                    {car.title || car.brand}
-                  </h3>
+        {Array.isArray(cars) && cars.length > 0
+          ? cars.map((car) => (
+              <div
+                key={car.id}
+                onClick={() => handleCarClick(car)}
+                className="cursor-pointer bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
+              >
+                <div className="relative h-32 overflow-hidden">
+                  <img
+                    src={car.image_url || IMAGES.placeholderimg}
+                    alt={car.title || car.brand}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.src = "/placeholder-car.jpg"; // Fallback image
+                    }}
+                  />
                 </div>
-
-                 {/* Additional car info - Location */}
-                <div className="mt-1 mb-2 text-xs text-gray-500 overflow-hidden text-ellipsis whitespace-nowrap">
-                   {car.city}, {car.district} 
-                </div>
-                
-                {/* Car details row 1 - Brand and Model Year */}
-                <div className=" mb-2 flex items-center gap-1 text-xs text-gray-600 mb-1 overflow-hidden">
-                  <div className="flex items-center flex-shrink-0">
-                    <span className="inline-block mr-1 whitespace-nowrap">{car.brand}</span>
-                    <span className="mx-1 flex-shrink-0">|</span>
+                <div className="p-2">
+                  <div className="flex justify-between items-center mb-2">
+                    <h3
+                      className="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-full"
+                      title={car.car_name || car.brand}
+                    >
+                      {car.title || car.brand}
+                    </h3>
                   </div>
 
-                   <div className="flex items-center overflow-hidden text-ellipsis whitespace-nowrap">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" className="bi bi-speedometer2 flex-shrink-0" viewBox="0 0 16 16">
-                      <path d="M8 4a.5.5 0 0 1 .5.5V6a.5.5 0 0 1-1 0V4.5A.5.5 0 0 1 8 4zM3.732 5.732a.5.5 0 0 1 .707 0l.915.914a.5.5 0 1 1-.708.708l-.914-.915a.5.5 0 0 1 0-.707zM2 10a.5.5 0 0 1 .5-.5h1.586a.5.5 0 0 1 0 1H2.5A.5.5 0 0 1 2 10zm9.5 0a.5.5 0 0 1 .5-.5h1.586a.5.5 0 0 1 0 1H12a.5.5 0 0 1-.5-.5zm.754-4.246a.389.389 0 0 0-.527-.02L7.547 9.31a.91.91 0 1 0 1.302 1.258l3.434-4.297a.389.389 0 0 0-.029-.518z"/>
-                      <path fillRule="evenodd" d="M0 10a8 8 0 1 1 15.547 2.661c-.442 1.253-1.845 1.602-2.932 1.25C11.309 13.488 9.475 13 8 13c-1.474 0-3.31.488-4.615.911-1.087.352-2.49.003-2.932-1.25A7.988 7.988 0 0 1 0 10zm8-7a7 7 0 0 0-6.603 9.329c.203.575.923.876 1.68.63C4.397 12.533 6.358 12 8 12s3.604.532 4.923.96c.757.245 1.477-.056 1.68-.631A7 7 0 0 0 8 3z"/>
-                    </svg>
-                    <span className="ml-1 overflow-hidden text-ellipsis">
-                      {car.kilometers } km
+                  {/* Additional car info - Location */}
+
+                  <div className="flex items-center text-sm text-gray-500 mt-1">
+                    <LocationOnIcon sx={{ color: red[500], fontSize: 16 }} />
+                    <span className="truncate ml-1">
+                      {car.district}, {car.state}
                     </span>
                   </div>
+
+                  {/* Car details row 1 - Brand and Model Year */}
+                
+
+                  <div className="flex items-center mt-2 space-x-4 text-sm text-gray-600 flex-wrap gap-2">
+                    {car.brand !== null ? (
+                      <span className="font-medium">
+                        {car.brand} 
+                      </span>
+                    ) : (
+                      <span className="font-medium">
+                      {car.brand_name}
+                      </span>
+                    )}
                   
-                </div>
-                
-               
-                
-                {/* Price and KM driven */}
-                <div className="mb-2 flex justify-between items-center text-xs">
-                 <div className="flex items-center overflow-hidden text-ellipsis whitespace-nowrap">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" className="bi bi-calendar flex-shrink-0" viewBox="0 0 16 16">
-                      <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
-                    </svg>
-                    <span className="ml-1 overflow-hidden text-ellipsis">{ car.year}</span>
+                    {car.kilometers && (
+                      <div className="flex items-center">
+                        <SpeedIcon style={{ fontSize: 14 }} />
+                        <span className="ml-1">{car.kilometers}k km</span>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex items-center font-semibold flex-shrink-0">
-                    <span className="text-sm whitespace-nowrap">
-                      ₹ {car.price ? (car.price / 100000).toFixed(1) : '0'} L
-                    </span>
+
+                  {/* Price and KM driven */}
+                  <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">
+                    <div className="flex items-center">
+                      <CalendarTodayIcon style={{ fontSize: 14 }} />
+                      <span className="ml-1">{car.post_year}</span>
+                    </div>
+
+                    <span className="font-bold text-lg">{car.price}</span>
                   </div>
                 </div>
-                
-               
               </div>
-            </div>
-          ))
-        ) : (
-          !loading && (
-            <div className="col-span-full text-center py-8 text-gray-500">
-              No cars found.
-            </div>
-          )
-        )}
+            ))
+          : !loading && (
+              <div className="col-span-full text-center py-8 text-gray-500">
+                No cars found.
+              </div>
+            )}
       </div>
 
       {/* Load More Button */}

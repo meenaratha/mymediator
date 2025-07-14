@@ -3,6 +3,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import LoadMoreButton from '../common/LoadMoreButton';
 import { api } from '../../api/axios';
 import IMAGES from '../../utils/images';
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import { red } from "@mui/material/colors";
+import DevicesIcon from "@mui/icons-material/Devices";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 
 const VendorElectronicPost = () => {
   const navigate = useNavigate();
@@ -14,6 +18,21 @@ const VendorElectronicPost = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMorePages, setHasMorePages] = useState(true);
   const [totalElectronics, setTotalElectronics] = useState(0);
+
+  const formatPrice = (price) => {
+    if (!price) return "Price on request";
+
+    const numPrice = parseFloat(price);
+    if (numPrice >= 10000000) {
+      return `₹${(numPrice / 10000000).toFixed(1)}Cr`;
+    } else if (numPrice >= 100000) {
+      return `₹${(numPrice / 100000).toFixed(1)}L`;
+    } else if (numPrice >= 1000) {
+      return `₹${(numPrice / 1000).toFixed(1)}K`;
+    }
+    return `₹${numPrice.toLocaleString()}`;
+  };
+
 
   // Fetch electronics function
   const fetchElectronics = async (page = 1, append = false) => {
@@ -81,75 +100,82 @@ const VendorElectronicPost = () => {
     <>
       {/* Electronics Grid - Responsive columns: 1 on mobile, 2 on medium, 3 on large, 6 on xl */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
-        {Array.isArray(electronics) && electronics.length > 0 ? (
-          electronics.map((electronic) => (
-            <div 
-              key={electronic.id}  
-              onClick={() => handleElectronicClick(electronic)}
-              className="cursor-pointer bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
-            >
-              <div className="relative h-32 overflow-hidden">
-                <img 
-                  src={electronic.image_url || IMAGES.placeholderimg} 
-                  alt={electronic.title || electronic.brand} 
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.target.src = '/placeholder-electronic.jpg'; // Fallback image
-                  }}
-                />
-              </div>
-              <div className="p-2">
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-full" title={electronic.product_name || electronic.item_name}>
-                    {electronic.title }
-                  </h3>
+        {Array.isArray(electronics) && electronics.length > 0
+          ? electronics.map((electronic) => (
+              <div
+                key={electronic.id}
+                onClick={() => handleElectronicClick(electronic)}
+                className="cursor-pointer bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
+              >
+                <div className="relative h-32 overflow-hidden">
+                  <img
+                    src={electronic.image_url || IMAGES.placeholderimg}
+                    alt={electronic.title || electronic.brand}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.src = "/placeholder-electronic.jpg"; // Fallback image
+                    }}
+                  />
                 </div>
-                
-                {/* Electronics details row 1 - Brand and Category */}
-                <div className="mb-2 flex items-center gap-1 text-xs text-gray-600 mb-1 overflow-hidden">
-                  <div className="flex items-center flex-shrink-0 gap-4 flex-wrap">
-                    <span className="inline-block mr-1 whitespace-nowrap">{electronic.brand || electronic.brand_name}</span>
+                <div className="p-2">
+                  <div className="flex justify-between items-center mb-2">
+                    <h3
+                      className="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-[270px]"
+                      title={electronic.product_name || electronic.item_name}
+                    >
+                      {electronic.title}
+                    </h3>
                   </div>
-                  <div className="flex items-center overflow-hidden text-ellipsis whitespace-nowrap">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-tag flex-shrink-0" viewBox="0 0 16 16">
-                      <path d="M6 4.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm-1 0a.5.5 0 1 0-1 0 .5.5 0 0 0 1 0z"/>
-                      <path d="M2 1h4.586a1 1 0 0 1 .707.293l7 7a1 1 0 0 1 0 1.414l-4.586 4.586a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 1 6.586V2a1 1 0 0 1 1-1zm0 5.586 7 7L13.586 9l-7-7H2v4.586z"/>
-                    </svg>
-                    <span className="ml-1 overflow-hidden text-ellipsis">{electronic.model_name || electronic.model}</span>
-                  </div>
-                </div>
-                
-              
-                
-                {/* Price and Warranty */}
-                <div className="mb-2 flex justify-between items-center text-xs">
-                  <div className="flex items-center overflow-hidden text-ellipsis whitespace-nowrap">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-calendar-check flex-shrink-0" viewBox="0 0 16 16">
-                      <path d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
-                      <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
-                    </svg>
-                    <span className="ml-1 overflow-hidden text-ellipsis">
-                      {electronic.year || "2025" }
+
+                  <div className="flex items-center text-sm text-gray-500 mt-1 mb-2">
+                    <LocationOnIcon
+                      sx={{ color: red[500], fontSize: 16 }}
+                      className="mr-1"
+                    />
+                    <span className="line-clamp-1">
+                      {" "}
+                      {electronic.district},{electronic.state}
                     </span>
                   </div>
-                  <div className="flex items-center font-semibold flex-shrink-0">
-                    <span className="text-sm whitespace-nowrap">
-                      ₹ {electronic.price }
+
+                  {/* Brand and Model */}
+                  <div className="flex items-center mt-2 space-x-4 text-sm text-gray-600">
+                    {electronic.brand && (
+                      <span className="font-medium">{electronic.brand}</span>
+                    )}
+                    {electronic.model && (
+                      <div className="flex items-center">
+                        <DevicesIcon style={{ fontSize: 14 }} />
+                        <span className="ml-1 truncate">
+                          {electronic.model}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Price and Warranty */}
+
+                  <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">
+                    {electronic.post_year && (
+                      <div className="flex items-center">
+                        <CalendarTodayIcon style={{ fontSize: 14 }} />
+                        <span className="ml-1">
+                          {electronic.post_year || electronic.year}
+                        </span>
+                      </div>
+                    )}
+                    <span className="font-bold text-lg">
+                      {formatPrice(electronic.price || electronic.amount)}
                     </span>
                   </div>
                 </div>
-                
-               
               </div>
-            </div>
-          ))
-        ) : (
-          !loading && (
-            <div className="col-span-full text-center py-8 text-gray-500">
-              No electronics found.
-            </div>
-          )
-        )}
+            ))
+          : !loading && (
+              <div className="col-span-full text-center py-8 text-gray-500">
+                No electronics found.
+              </div>
+            )}
       </div>
 
       {/* Load More Button */}

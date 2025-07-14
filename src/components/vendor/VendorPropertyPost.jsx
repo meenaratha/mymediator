@@ -3,6 +3,10 @@ import LoadMoreButton from '../common/LoadMoreButton';
 import { api } from '../../api/axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import IMAGES from '../../utils/images';
+import SquareFootIcon from "@mui/icons-material/SquareFoot";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import BedIcon from "@mui/icons-material/Bed";
+import { red } from "@mui/material/colors";
 
 const VendorPropertyPost = () => {
   const navigate = useNavigate();
@@ -103,56 +107,72 @@ const VendorPropertyPost = () => {
             const formattedProperty = formatPropertyData(property);
             
             return (
-              <div 
-                key={property.id}  
+              <div
+                key={property.id}
                 onClick={() => handleProductClick(property)}
                 className="cursor-pointer bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
               >
                 <div className="relative h-32 overflow-hidden">
-                  <img 
-                    src={property.image_url || IMAGES.placeholderimg} 
-                    alt={property.property_name} 
+                  <img
+                    src={property.image_url || IMAGES.placeholderimg}
+                    alt={property.property_name}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      e.target.src = '/placeholder-property.jpg'; // Fallback image
+                      e.target.src = "/placeholder-property.jpg"; // Fallback image
                     }}
                   />
                 </div>
                 <div className="p-2">
                   <div className="flex justify-between items-center mb-2">
-                    <h3 className="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-full" title={property.property_name}>
+                    <h3
+                      className="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-[250px]"
+                      title={property.property_name}
+                    >
                       {property.property_name}
                     </h3>
                   </div>
-                   {/* Additional property info */}
-                  <div className="my-2 text-xs text-gray-500 overflow-hidden text-ellipsis whitespace-nowrap">
-                    {property.district}, {property.state}
+                  {/* Additional property info */}
+                  <div className="flex items-center text-sm text-gray-500 mt-1">
+                    {/* Location icon */}
+                    <LocationOnIcon sx={{ color: red[500] }} />
+                    <span>
+                      {property.district}, {property.state}
+                    </span>
                   </div>
-                  <div className="mb-3 flex items-center gap-1 text-xs text-gray-600 mb-1 overflow-hidden">
-                    <div className="flex items-center flex-shrink-0 gap-4">
-                      <span className="inline-block mr-1 whitespace-nowrap">{property.bedrooms} bhk</span>
-                       <div className="flex items-center overflow-hidden text-ellipsis whitespace-nowrap">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" className="bi bi-rulers flex-shrink-0" viewBox="0 0 16 16">
-                        <path d="M1 0a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h5v-1H2v-1h4v-1H4v-1h2v-1H2v-1h4V9H4V8h2V7H2V6h4V2h1v4h1V4h1v2h1V2h1v4h1V4h1v2h1V2h1v4h1V1a1 1 0 0 0-1-1zm15 11v-1h-1v-1h-1v1h-1v1h1v1h1v-1zM6 11v1H5v1h1v1h1v-1h1v-1H7v-1z"/>
-                      </svg>
-                      <span className="ml-1 overflow-hidden text-ellipsis">
-                        {property.super_builtup_area || property.carpet_area || 'N/A'} sq. ft
-                      </span>
-                    </div>
-                    </div>
-                    
-                  </div>
-                  <div className="mb-2 flex justify-between items-center text-xs">
-                                          <span className="">{property.post_year}</span>
 
-                    <div className="flex justify-between items-center  gap-4 font-semibold ">
-                      <span className="text-sm whitespace-nowrap">
-                        ₹ {property.amount ? (property.amount / 100000).toFixed(1) : '0'} L
-                      </span>
-                    </div>
+                  <div className="flex items-center mt-2 space-x-4">
+                    {property.super_builtup_area !== null ? (
+                      <div className="flex items-center">
+                        {/* Bed icon */}
+                        <SquareFootIcon />
+                        <span className="ml-1 text-sm">
+                          {property.super_builtup_area || "N/A"} Sq.ft
+                        </span>
+                      </div>
+                    ) : (
+                      ""
+                    )}
+
+                    {property.bhk !== null ? (
+                      <div className="flex items-center">
+                        {/* Bath icon */}
+                        <BedIcon />
+                        <span className="ml-1 text-sm">
+                          {property.bhk || property.bedrooms}
+                        </span>
+                      </div>
+                    ) : (
+                      ""
+                    )}
                   </div>
-                  
-                 
+                  <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">
+                    <span className="text-sm text-gray-500">
+                      {property.post_year || "2022"}
+                    </span>
+                    <span className="font-bold text-lg">
+                      ₹ {property.amount?.toLocaleString() || 0}
+                    </span>
+                  </div>
                 </div>
               </div>
             );

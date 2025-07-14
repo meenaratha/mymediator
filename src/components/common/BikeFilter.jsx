@@ -29,6 +29,8 @@ const BikeFilter = ({
     }
   }, [location.pathname]);
 
+  // Disable auto-apply on mobile devices
+  const shouldAutoApply = autoApply && !isMobile;
 
   const [expandedSections, setExpandedSections] = useState({
     categories: true,
@@ -46,19 +48,18 @@ const BikeFilter = ({
     });
   };
 
-
-
   // Initialize filters state with current filters or default values
   const [filters, setFilters] = useState({
     type: "bike",
     price_range: "",
-    brand: "",
-    model: "",
+    listed_by_id: "",
+    brand_id: "",
+    model_id: "",
     year_filter: "",
-    fuel_type: "",
-    kilometers: "",
-    enginecc: "",
-    no_of_owner: "",
+    fuel_type_id: "",
+    kilometer_range: "",
+    engine_cc_range: "",
+    number_of_owner_id: "",
     subcategory_id: "",
     latitude: "",
     longitude: "",
@@ -74,7 +75,7 @@ const BikeFilter = ({
 
   // Auto-apply filters when filters change (with debounce) - only if autoApply is enabled
   useEffect(() => {
-    if (!autoApply) return; // Skip auto-apply if disabled
+    if (!shouldAutoApply) return; // Skip auto-apply if disabled or on mobile
 
     const timeoutId = setTimeout(() => {
       handleApplyFilters();
@@ -83,21 +84,21 @@ const BikeFilter = ({
     return () => clearTimeout(timeoutId);
   }, [
     filters.price_range,
+    filters.listed_by_id,
     filters.brand_id,
     filters.model_id,
     filters.year_filter,
-    filters.fuel_type,
-    filters.kilometers_range,
+    filters.fuel_type_id,
+    filters.kilometer_range,
     filters.engine_cc_range,
-    filters.no_of_owner,
+    filters.number_of_owner_id,
     filters.subcategory_id,
-    filters.km_driven,
-    filters.body_type,
-    autoApply,
+    filters.kilometer_range,
+    shouldAutoApply,
   ]); // Dependencies: all filter values that should trigger auto-apply
 
   // Function to handle filter application
-  const handleApplyFilters = () => {
+  const handleApplyFilters = (shouldCloseFilter = true) => {
     console.log("=== HANDLE APPLY FILTERS ===");
     console.log("Current filters state:", filters);
 
@@ -134,26 +135,26 @@ const BikeFilter = ({
     const clearedFilters = {
       type: "bike",
       price_range: "",
+      listed_by_id: "",
       brand_id: "",
       model_id: "",
       year_filter: "",
-      fuel_type: "",
-      kilometers_range: "",
+      fuel_type_id: "",
+      kilometer_range: "",
       engine_cc_range: "",
-      no_of_owner: "",
+      number_of_owner_id: "",
       subcategory_id: "",
       latitude: filters.latitude, // Keep location
       longitude: filters.longitude, // Keep location
-      km_driven: "",
-      body_type: "",
     };
 
     setFilters(clearedFilters);
 
-    // Apply the cleared filters immediately if auto-apply is disabled
-    if (!autoApply && onApplyFilters) {
-      onApplyFilters(clearedFilters);
-    }
+     if (!shouldAutoApply) {
+       if (onApplyFilters) {
+         onApplyFilters(clearedFilters, false); // Don't close filter when clearing
+       }
+     }
   };
 
   const [locationData, setLocationData] = useState({
@@ -241,20 +242,20 @@ const BikeFilter = ({
     >
       <div className="h-[600px] overflow-y-auto pb-4 px-2">
         <div className="py-6 sticky top-0 bg-[#fff] z-40">
-         <div className="flex gap-2">
-    <button
-      onClick={handleApplyFilters}
-      className="flex-1 bg-blue-900 cursor-pointer text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors"
-    >
-      Apply Filters
-    </button>
-    <button
-      onClick={handleClearAllFilters}
-      className="flex-1 bg-gray-500 cursor-pointer text-white py-2 px-4 rounded hover:bg-gray-600 transition-colors"
-    >
-      Clear Filters
-    </button>
-  </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleApplyFilters(true)}
+              className="flex-1 bg-blue-900 cursor-pointer text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors"
+            >
+              Apply Filters
+            </button>
+            <button
+              onClick={handleClearAllFilters}
+              className="flex-1 bg-gray-500 cursor-pointer text-white py-2 px-4 rounded hover:bg-gray-600 transition-colors"
+            >
+              Clear Filters
+            </button>
+          </div>
         </div>
 
         {/* Categories Section */}
@@ -359,12 +360,12 @@ const BikeFilter = ({
           toggleSection={toggleSection}
         />
 
-<BikeFuelTypeFilter
-filters={filters}
+        <BikeFuelTypeFilter
+          filters={filters}
           setFilters={setFilters}
           expandedSections={expandedSections}
           toggleSection={toggleSection}
-/>
+        />
 
         <BikeOwnerFilter
           filters={filters}
@@ -372,7 +373,6 @@ filters={filters}
           expandedSections={expandedSections}
           toggleSection={toggleSection}
         />
-
 
         {/* <BikeTransmissionFilter
          filters={filters}

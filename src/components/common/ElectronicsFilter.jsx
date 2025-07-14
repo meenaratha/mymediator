@@ -17,19 +17,20 @@ const ElectronicsFilter = ({
   autoApply = true, // New prop to enable/disable auto-apply
 }) => {
   const location = useLocation();
-const prevPathRef = React.useRef(location.pathname);
+  const prevPathRef = React.useRef(location.pathname);
 
-useEffect(() => {
-  if (prevPathRef.current !== location.pathname) {
-    prevPathRef.current = location.pathname;
+  useEffect(() => {
+    if (prevPathRef.current !== location.pathname) {
+      prevPathRef.current = location.pathname;
 
-    // Call your clear filters function
-    handleClearAllFilters();
-    console.log("URL changed, filters cleared.");
-  }
-}, [location.pathname]);
+      // Call your clear filters function
+      handleClearAllFilters();
+      console.log("URL changed, filters cleared.");
+    }
+  }, [location.pathname]);
 
-
+  // Disable auto-apply on mobile devices
+  const shouldAutoApply = autoApply && !isMobile;
   const [expandedSections, setExpandedSections] = useState({
     categories: true,
     location: true,
@@ -46,10 +47,6 @@ useEffect(() => {
       [section]: !expandedSections[section],
     });
   };
-
-  const [priceRange, setPriceRange] = useState([0, 100]);
-  const [selectedBrands, setSelectedBrands] = useState([]);
-  const [selectedCondition, setSelectedCondition] = useState(null);
 
   // Initialize filters state with current filters or default values
   const [filters, setFilters] = useState({
@@ -74,8 +71,7 @@ useEffect(() => {
 
   // Auto-apply filters when filters change (with debounce)
   useEffect(() => {
-    if (!autoApply) return; // Skip auto-apply if disabled
-
+    if (!shouldAutoApply) return; // Skip auto-apply if disabled or on mobile
     const timeoutId = setTimeout(() => {
       handleApplyFilters();
     }, 500); // 500ms debounce to prevent too many API calls
@@ -87,13 +83,11 @@ useEffect(() => {
     filters.model,
     filters.year_filter,
     filters.subcategory_id,
-    autoApply,
+    shouldAutoApply,
   ]); // Dependencies: all filter values that should trigger auto-apply
 
-
-
   // Function to handle filter application
-  const handleApplyFilters = () => {
+  const handleApplyFilters = (shouldCloseFilter = true) => {
     console.log("=== HANDLE APPLY FILTERS ===");
     console.log("Current filters state:", filters);
 
@@ -119,7 +113,7 @@ useEffect(() => {
 
     // Call the parent's apply filters function
     if (onApplyFilters) {
-      onApplyFilters(cleanedFilters);
+      onApplyFilters(cleanedFilters, shouldCloseFilter);
     } else {
       console.error("onApplyFilters function not provided!");
     }
@@ -141,9 +135,9 @@ useEffect(() => {
     setFilters(clearedFilters);
 
     // If auto-apply is disabled, manually apply the cleared filters
-    if (!autoApply) {
+    if (!shouldAutoApply) {
       if (onApplyFilters) {
-        onApplyFilters(clearedFilters);
+        onApplyFilters(clearedFilters , false);
       }
     }
   };
@@ -233,20 +227,20 @@ useEffect(() => {
     >
       <div className="h-[600px] overflow-y-auto pb-4 px-2">
         <div className="py-6 sticky top-0 bg-[#fff] z-40">
-         <div className="flex gap-2">
-    <button
-      onClick={handleApplyFilters}
-      className="flex-1 bg-blue-900 cursor-pointer text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors"
-    >
-      Apply Filters
-    </button>
-    <button
-      onClick={handleClearAllFilters}
-      className="flex-1 bg-gray-500 cursor-pointer text-white py-2 px-4 rounded hover:bg-gray-600 transition-colors"
-    >
-      Clear Filters
-    </button>
-  </div>
+          <div className="flex gap-2">
+            <button
+              onClick={handleApplyFilters}
+              className="flex-1 bg-blue-900 cursor-pointer text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors"
+            >
+              Apply Filters
+            </button>
+            <button
+              onClick={handleClearAllFilters}
+              className="flex-1 bg-gray-500 cursor-pointer text-white py-2 px-4 rounded hover:bg-gray-600 transition-colors"
+            >
+              Clear Filters
+            </button>
+          </div>
         </div>
 
         {/* Categories Section */}
@@ -335,9 +329,6 @@ useEffect(() => {
           expandedSections={expandedSections}
           toggleSection={toggleSection}
         />
-
-        
-       
       </div>
     </div>
   );
