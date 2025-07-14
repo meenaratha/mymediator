@@ -26,6 +26,7 @@ const UserDashboardLayout = () => {
   const location = useLocation();
   const { logout } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const menuItems = [
     {
       icon: <FaUser className="w-5 h-5" />,
@@ -48,10 +49,10 @@ const UserDashboardLayout = () => {
       path: "/seller-post-details",
     },
     {
-          icon: <Heart className="w-5 h-5" />,
-          title: "Wishlist",
-          path: "/wishlist",
-        },
+      icon: <Heart className="w-5 h-5" />,
+      title: "Wishlist",
+      path: "/wishlist",
+    },
     {
       icon: <FaFileContract className="w-5 h-5" />,
       title: "Terms and Conditions",
@@ -72,7 +73,6 @@ const UserDashboardLayout = () => {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -92,7 +92,6 @@ const UserDashboardLayout = () => {
 
     fetchUserProfile();
   }, []);
-  
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -105,10 +104,67 @@ const UserDashboardLayout = () => {
     }
   };
 
-const [accountDelete, setAccountDelete] = useState(false);
+  const [accountDelete, setAccountDelete] = useState(false);
 
   const handleDeleteAccount = () => {
     setAccountDelete(true);
+  };
+
+  // Delete account API call
+  const handleConfirmDeleteAccount = async () => {
+    if (isDeletingAccount) return; // Prevent multiple clicks
+
+    setIsDeletingAccount(true);
+
+    try {
+      console.log("Initiating account deletion...");
+
+      // Call the delete account API
+      const response = await api.get("/deleteacount");
+
+      console.log("Delete account response:", response.data);
+
+      // Show success message
+      toast.success("Account deleted successfully");
+
+      // Close the modal
+      setAccountDelete(false);
+
+      // Log out the user and redirect
+      setTimeout(async () => {
+        try {
+          await logout();
+          console.log("User logged out after account deletion");
+        } catch (logoutError) {
+          console.error("Error during logout after deletion:", logoutError);
+          // Force logout even if API call fails
+          localStorage.clear();
+          window.location.href = "/";
+        }
+      }, 1000); // Small delay to show success message
+    } catch (error) {
+      console.error("Error deleting account:", error);
+
+      // Handle different error scenarios
+      if (error.response?.status === 401) {
+        toast.error("Authentication failed. Please log in again.");
+        await logout();
+      } else if (error.response?.status === 403) {
+        toast.error("You don't have permission to delete this account.");
+      } else if (error.response?.status === 404) {
+        toast.error("Account not found.");
+      } else if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("Failed to delete account. Please try again.");
+      }
+    } finally {
+      setIsDeletingAccount(false);
+    }
+  };
+
+  const handleCancelDeleteAccount = () => {
+    setAccountDelete(false);
   };
 
   const handleLogout = async () => {
@@ -129,8 +185,6 @@ const [accountDelete, setAccountDelete] = useState(false);
       setIsLoggingOut(false);
     }
   };
-
-
 
   return (
     <>
@@ -301,7 +355,11 @@ const [accountDelete, setAccountDelete] = useState(false);
 
       <Footer />
       {accountDelete && (
-        <AccountDeleteModel onClose={() => setAccountDelete(false)} />
+        <AccountDeleteModel
+          onClose={handleCancelDeleteAccount}
+          onConfirm={handleConfirmDeleteAccount}
+          isDeleting={isDeletingAccount}
+        />
       )}
     </>
   );
