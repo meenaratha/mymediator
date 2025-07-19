@@ -100,7 +100,7 @@ const CarCard = ({ item }) => {
         <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">
           <span className="text-sm text-gray-500">{item.year}</span>
           <span className="font-bold text-lg text-black">
-            ₹ {parseFloat(item.price).toLocaleString()}
+            ₹ {item.price}
           </span>
         </div>
       </CardContent>

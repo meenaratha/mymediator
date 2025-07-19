@@ -49,6 +49,8 @@ const PropertyCard = ({
     setShowStatusDropdown(!showStatusDropdown);
   };
 
+  
+
   const handleEdit = (e) => {
     e.stopPropagation();
     navigate(`/property/${editformslug}/${id}/edit`, {
@@ -201,7 +203,6 @@ const PropertyCard = ({
     return "cursor-pointer hover:shadow-lg transition-shadow";
   };
 
-  // Get status badge styling
   // Get status badge styling with proper priority
   const getStatusBadge = () => {
     // Priority 1: SOLD status (highest priority)
@@ -234,7 +235,7 @@ const PropertyCard = ({
 
       if (currentStatus === "pending") {
         return (
-          <span className="absolute top-2 right-2 bg-yellow-500 text-white px-2 py-1 rounded text-xs font-semibold z-10">
+          <span className="absolute top-2 left-2 bg-yellow-500 text-white px-2 py-1 rounded text-xs font-semibold z-10">
             PENDING
           </span>
         );
@@ -242,7 +243,7 @@ const PropertyCard = ({
 
       // For any other status
       return (
-        <span className="absolute top-2 right-2 bg-blue-500 text-white px-2 py-1 rounded text-xs font-semibold z-10">
+        <span className="absolute top-2 left-2 bg-blue-500 text-white px-2 py-1 rounded text-xs font-semibold z-10">
           {currentStatus.toUpperCase()}
         </span>
       );
@@ -463,6 +464,7 @@ const PropertyCard = ({
   );
 };
 
+
 const PropertyPostDetails = () => {
   const isMobile = useMediaQuery({ maxWidth: 567 });
   const isTablet = useMediaQuery({ minWidth: 568, maxWidth: 899 });
@@ -647,14 +649,8 @@ const PropertyPostDetails = () => {
                       : null
                   }
                   bedroom={property.bedrooms}
-                  price={
-                    property.amount
-                      ? property.amount.toLocaleString()
-                      : property.price
-                      ? parseFloat(property.price).toLocaleString()
-                      : ""
-                  }
-                  status={property.status || "available"}
+                  price={property.amount}
+                  status={property.status_label || "available"}
                   isPublished={property.is_published || 0}
                   onStatusChange={handleStatusChange}
                   onDelete={handleDeleteProperty}

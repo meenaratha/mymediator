@@ -306,7 +306,7 @@ const PropertyDescription = () => {
            {property.furnished !== null ? (
             <div className="grid grid-cols-2">
               <div className="flex gap-[15px] justify-between">
-                <span>furnished </span>
+                <span>Furnished </span>
                 <span>:</span>
               </div>
               <span className="px-[10px]">{property.furnished}</span>

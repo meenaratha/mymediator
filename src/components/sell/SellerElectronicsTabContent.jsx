@@ -9,6 +9,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { api, apiForFiles } from "../../api/axios.js";
 import IMAGES from "../../utils/images.js";
 import { useMediaQuery } from "react-responsive";
+import { useNavigate } from "react-router-dom";
 
 const SellerElectronicsTabContent = ({ 
   enquiryData = [], 
@@ -17,6 +18,7 @@ const SellerElectronicsTabContent = ({
   onRefresh = () => {} 
 }) => {
   const isMobile = useMediaQuery({ maxWidth: 767 });
+  const navigate = useNavigate();
 
   // State for electronics cards with expanded state
   const [electronics, setElectronics] = useState([]);
@@ -26,32 +28,32 @@ const SellerElectronicsTabContent = ({
     if (enquiryData && enquiryData.length > 0) {
       const formattedElectronics = enquiryData.map((item, index) => {
         const electronicsData = item.enquirable || {};
-     
-           
-      return {
-        id: item.id,
-        title: electronicsData.title || "Electronics Item", // ✅ Correct
-        location: electronicsData.address || "Location not specified", // ✅ Fixed
-        price: parseFloat(electronicsData.price) || 0, // ✅ Correct
-        year: electronicsData.year, // ✅ Keep as null if not available
-        image: electronicsData.image_url || electronicsData.images?.[0], // ✅ Fixed
-        brand: electronicsData.brand_name || null, // ✅ Handle null
-        model: electronicsData.model_name || null, // ✅ Handle null
-        specifications: electronicsData.specifications || "No specifications",
-        features: electronicsData.features || "No features listed",
-        expanded: index === 0,
-        productCode: electronicsData.unique_code,
-        status: electronicsData.status,
-        description: electronicsData.description,
-        customerDetails: {
-          name: item.name || "Customer Name",
-          mobileNumber: item.mobile_number || "Not provided",
-          email: item.email || "Not provided",
-          whatsappNumber:
-            item.whatsapp_number || item.mobile_number || "Not provided",
-          message: item.message || "No message provided",
-        },
-      };
+
+        return {
+          id: item.id,
+          title: electronicsData.title || "Electronics Item", // ✅ Correct
+          location: electronicsData.address || "Location not specified", // ✅ Fixed
+          price: parseFloat(electronicsData.price) || 0, // ✅ Correct
+          year: electronicsData.year, // ✅ Keep as null if not available
+          image: electronicsData.image_url || electronicsData.images?.[0], // ✅ Fixed
+          brand: electronicsData.brand_name || null, // ✅ Handle null
+          model: electronicsData.model_name || null, // ✅ Handle null
+          specifications: electronicsData.specifications || "No specifications",
+          features: electronicsData.features || "No features listed",
+          slug: electronicsData.action_slug,
+          expanded: index === 0,
+          productCode: electronicsData.unique_code,
+          status: electronicsData.status,
+          description: electronicsData.description,
+          customerDetails: {
+            name: item.name || "Customer Name",
+            mobileNumber: item.mobile_number || "Not provided",
+            email: item.email || "Not provided",
+            whatsappNumber:
+              item.whatsapp_number || item.mobile_number || "Not provided",
+            message: item.message || "No message provided",
+          },
+        };
       });
       setElectronics(formattedElectronics);
     } else {
@@ -60,23 +62,28 @@ const SellerElectronicsTabContent = ({
     }
   }, [enquiryData]);
 
+  // Handle navigation to property details
+  const handleElectronicsClick = (slug) => {
+    navigate(`/electronic/${slug}`);
+  };
+
   // Toggle expanded state for an electronics item
-  const toggleExpand = (id) => {
+  const toggleExpand = (id, event) => {
+     event.stopPropagation(); 
     setElectronics(
       electronics.map((item) =>
-        item.id === id
-          ? { ...item, expanded: !item.expanded }
-          : item
+        item.id === id ? { ...item, expanded: !item.expanded } : item
       )
     );
   };
 
   // Handle delete with API call
-  const handleDelete = async (id) => {
+  const handleDelete = async (id, event) => {
+      event.stopPropagation(); 
     if (window.confirm("Are you sure you want to delete this enquiry?")) {
       try {
         let endpoint;
-        
+
         if (activeEnquiryType === "electronic") {
           // Property enquiry - delete from user API
           endpoint = `/enquiries/${id}`;
@@ -89,15 +96,15 @@ const SellerElectronicsTabContent = ({
 
         // Remove from local state
         setElectronics(electronics.filter((item) => item.id !== id));
-        
+
         // Refresh data from server
         onRefresh();
-        
+
         // Show success message
-        alert('Enquiry deleted successfully');
+        alert("Enquiry deleted successfully");
       } catch (error) {
-        console.error('Error deleting enquiry:', error);
-        alert('Failed to delete enquiry. Please try again.');
+        console.error("Error deleting enquiry:", error);
+        alert("Failed to delete enquiry. Please try again.");
       }
     }
   };
@@ -121,7 +128,8 @@ const SellerElectronicsTabContent = ({
             No electronics enquiries found
           </div>
           <div className="text-sm text-gray-500">
-            No {activeEnquiryType === "property" ? "property" : "post"} electronics enquiries available at the moment
+            No {activeEnquiryType === "property" ? "property" : "post"}{" "}
+            electronics enquiries available at the moment
           </div>
         </div>
       </div>
@@ -141,7 +149,7 @@ const SellerElectronicsTabContent = ({
                   boxShadow: "0px 0.96px 3.83px 0px #A9A9A940",
                   border: "1px solid #D7D7D7",
                 }}
-                onClick={() => toggleExpand(item.id)}
+                onClick={() => handleElectronicsClick(item.slug)}
               >
                 <div className="flex">
                   <div className="w-20 h-20 flex-shrink-0">
@@ -181,11 +189,13 @@ const SellerElectronicsTabContent = ({
                         </span>
                       </div>
                     </div>
-                   
-                   
+
                     <div className="flex items-center justify-between mt-3 pb-[10px]">
                       <div className="font-bold">
-                        ₹ {item.price ? item.price.toLocaleString() : "Not specified"}
+                        ₹{" "}
+                        {item.price
+                          ? item.price.toLocaleString()
+                          : "Not specified"}
                       </div>
                       <div className="flex items-center gap-2">
                         {item.year && (
@@ -195,7 +205,7 @@ const SellerElectronicsTabContent = ({
                         )}
                         <button
                           className="text-sm flex items-center cursor-pointer"
-                          onClick={() => toggleExpand(item.id)}
+                          onClick={(e) => toggleExpand(item.id , e)}
                         >
                           View more
                           {item.expanded ? (
@@ -236,8 +246,8 @@ const SellerElectronicsTabContent = ({
                         <DeleteIcon
                           style={{ fontSize: 20 }}
                           onClick={(e) => {
-                            e.stopPropagation(); // Prevent card expansion toggle
-                            handleDelete(item.id);
+                          
+                            handleDelete(item.id, e);
                           }}
                         />
                       </button>
@@ -245,22 +255,31 @@ const SellerElectronicsTabContent = ({
 
                     <div className="text-sm pb-[15px]">
                       <strong>Mobile number :</strong> &nbsp;
-                      <a href={`tel:${item.customerDetails?.mobileNumber}`} className="text-black hover:underline">
+                      <a
+                        href={`tel:${item.customerDetails?.mobileNumber}`}
+                        className="text-black hover:underline"
+                      >
                         {item.customerDetails?.mobileNumber || "Not provided"}
                       </a>
                     </div>
 
                     <div className="text-sm pb-[15px]">
                       <strong>E-mail Id :</strong> &nbsp;
-                      <a href={`mailto:${item.customerDetails?.email}`} className="text-black hover:underline">
+                      <a
+                        href={`mailto:${item.customerDetails?.email}`}
+                        className="text-black hover:underline"
+                      >
                         {item.customerDetails?.email || "Not provided"}
                       </a>
                     </div>
 
                     <div className="pb-[15px] text-sm">
                       <strong>Whatsapp number :</strong>&nbsp;{" "}
-                      <a 
-                        href={`https://wa.me/${item.customerDetails?.whatsappNumber?.replace(/[^0-9]/g, '')}`}
+                      <a
+                        href={`https://wa.me/${item.customerDetails?.whatsappNumber?.replace(
+                          /[^0-9]/g,
+                          ""
+                        )}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-black hover:underline"

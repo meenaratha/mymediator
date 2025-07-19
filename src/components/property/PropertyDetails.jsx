@@ -873,7 +873,7 @@ const PropertyDetails = ({ property }) => {
                       <img
                         src={img}
                         alt={`Thumbnail ${idx}`}
-                        className="w-full h-full object-cover"
+                        className="w-24 h-24 object-cover"
                       />
                     </div>
                   ))}

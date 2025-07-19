@@ -9,6 +9,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { api, apiForFiles } from "../../api/axios.js";
 import IMAGES from "../../utils/images.js";
 import { useMediaQuery } from "react-responsive";
+import { useNavigate } from "react-router-dom";
 
 const SellerCarTabContent = ({ 
   enquiryData = [], 
@@ -17,6 +18,7 @@ const SellerCarTabContent = ({
   onRefresh = () => {} 
 }) => {
   const isMobile = useMediaQuery({ maxWidth: 767 });
+  const navigate = useNavigate();
 
   // State for car cards with expanded state
   const [cars, setCars] = useState([]);
@@ -26,15 +28,15 @@ const SellerCarTabContent = ({
     if (enquiryData && enquiryData.length > 0) {
       const formattedCars = enquiryData.map((item, index) => {
         const carData = item.enquirable || {};
-        
+
         // Format fuel type
         const formatFuelType = (fuelTypeId) => {
           const fuelTypes = {
             1: "Petrol",
-            2: "Diesel", 
+            2: "Diesel",
             3: "CNG",
             4: "Electric",
-            5: "Hybrid"
+            5: "Hybrid",
           };
           return fuelTypes[fuelTypeId] || "Not specified";
         };
@@ -43,7 +45,7 @@ const SellerCarTabContent = ({
         const formatTransmission = (transmissionId) => {
           const transmissions = {
             1: "Manual",
-            2: "Automatic"
+            2: "Automatic",
           };
           return transmissions[transmissionId] || "Not specified";
         };
@@ -54,7 +56,7 @@ const SellerCarTabContent = ({
             1: "1st Owner",
             2: "2nd Owner",
             3: "3rd Owner",
-            4: "4th Owner"
+            4: "4th Owner",
           };
           return owners[ownerId] || "Not specified";
         };
@@ -76,6 +78,7 @@ const SellerCarTabContent = ({
           description: carData.description,
           brandId: carData.brand_id,
           modelId: carData.model_id,
+          slug: carData.action_slug,
           subcategoryId: carData.subcategory_id,
           customerDetails: {
             name: item.name || "Customer Name",
@@ -94,23 +97,29 @@ const SellerCarTabContent = ({
     }
   }, [enquiryData]);
 
+  // Handle navigation to property details
+  const handleCarClick = (slug) => {
+    navigate(`/car/${slug}`);
+  };
+
   // Toggle expanded state for a car
-  const toggleExpand = (id) => {
+  const toggleExpand = (id, event) => {
+    event.stopPropagation(); // Prevent navigation when clicking view more
+
     setCars(
       cars.map((car) =>
-        car.id === id
-          ? { ...car, expanded: !car.expanded }
-          : car
+        car.id === id ? { ...car, expanded: !car.expanded } : car
       )
     );
   };
 
   // Handle delete with API call
-  const handleDelete = async (id) => {
+  const handleDelete = async (id, event) => {
+      event.stopPropagation();
     if (window.confirm("Are you sure you want to delete this enquiry?")) {
       try {
         let endpoint;
-        
+
         if (activeEnquiryType === "property") {
           // Property enquiry - delete from user API
           endpoint = `/enquiries/${id}`;
@@ -123,15 +132,15 @@ const SellerCarTabContent = ({
 
         // Remove from local state
         setCars(cars.filter((car) => car.id !== id));
-        
+
         // Refresh data from server
         onRefresh();
-        
+
         // Show success message
-        alert('Enquiry deleted successfully');
+        alert("Enquiry deleted successfully");
       } catch (error) {
-        console.error('Error deleting enquiry:', error);
-        alert('Failed to delete enquiry. Please try again.');
+        console.error("Error deleting enquiry:", error);
+        alert("Failed to delete enquiry. Please try again.");
       }
     }
   };
@@ -155,7 +164,8 @@ const SellerCarTabContent = ({
             No car enquiries found
           </div>
           <div className="text-sm text-gray-500">
-            No {activeEnquiryType === "property" ? "property" : "post"} car enquiries available at the moment
+            No {activeEnquiryType === "property" ? "property" : "post"} car
+            enquiries available at the moment
           </div>
         </div>
       </div>
@@ -175,7 +185,7 @@ const SellerCarTabContent = ({
                   boxShadow: "0px 0.96px 3.83px 0px #A9A9A940",
                   border: "1px solid #D7D7D7",
                 }}
-                onClick={() => toggleExpand(car.id)}
+                onClick={() => handleCarClick(car.slug)}
               >
                 <div className="flex">
                   <div className="w-20 h-20 flex-shrink-0">
@@ -210,36 +220,38 @@ const SellerCarTabContent = ({
                           style={{ fontSize: 16 }}
                           className="mr-1 text-red-500"
                         />
-                        <span className="text-sm truncate">
-                          {car.location}
-                        </span>
+                        <span className="text-sm truncate">{car.location}</span>
                       </div>
                     </div>
                     <div className="text-sm mt-1 flex items-center flex-wrap gap-2">
-                     
                       <span className="flex items-center">
                         <SpeedIcon style={{ fontSize: 14 }} className="mr-1" />
                         {car.kilometers} km
                       </span>
                       <span className="flex items-center">
-                        <LocalGasStationIcon style={{ fontSize: 14 }} className="mr-1" />
+                        <LocalGasStationIcon
+                          style={{ fontSize: 14 }}
+                          className="mr-1"
+                        />
                         {car.fuelType}
                       </span>
                     </div>
-                    
+
                     <div className="flex items-center justify-between mt-3 pb-[10px]">
                       <div className="font-bold">
-                        ₹ {car.price ? car.price.toLocaleString() : "Not specified"}
+                        ₹{" "}
+                        {car.price
+                          ? car.price.toLocaleString()
+                          : "Not specified"}
                       </div>
-                       <span className="flex items-center">
+                      <span className="flex items-center">
                         <span className="mr-1">📅</span>
                         {car.year}
                       </span>
                       <div className="flex items-center gap-2">
-                       
                         <button
                           className="text-sm flex items-center cursor-pointer"
-                          onClick={() => toggleExpand(car.id)}
+                          onClick={(e) => toggleExpand(car.id , e)}
                         >
                           View more
                           {car.expanded ? (
@@ -280,8 +292,8 @@ const SellerCarTabContent = ({
                         <DeleteIcon
                           style={{ fontSize: 20 }}
                           onClick={(e) => {
-                            e.stopPropagation(); // Prevent card expansion toggle
-                            handleDelete(car.id);
+                         
+                            handleDelete(car.id, e);
                           }}
                         />
                       </button>
@@ -289,22 +301,31 @@ const SellerCarTabContent = ({
 
                     <div className="text-sm pb-[15px]">
                       <strong>Mobile number :</strong> &nbsp;
-                      <a href={`tel:${car.customerDetails?.mobileNumber}`} className="text-gray hover:underline">
+                      <a
+                        href={`tel:${car.customerDetails?.mobileNumber}`}
+                        className="text-gray hover:underline"
+                      >
                         {car.customerDetails?.mobileNumber || "Not provided"}
                       </a>
                     </div>
 
                     <div className="text-sm pb-[15px]">
                       <strong>E-mail Id :</strong> &nbsp;
-                      <a href={`mailto:${car.customerDetails?.email}`} className="text-gray hover:underline">
+                      <a
+                        href={`mailto:${car.customerDetails?.email}`}
+                        className="text-gray hover:underline"
+                      >
                         {car.customerDetails?.email || "Not provided"}
                       </a>
                     </div>
 
                     <div className="pb-[15px] text-sm">
                       <strong>Whatsapp number :</strong>&nbsp;{" "}
-                      <a 
-                        href={`https://wa.me/${car.customerDetails?.whatsappNumber?.replace(/[^0-9]/g, '')}`}
+                      <a
+                        href={`https://wa.me/${car.customerDetails?.whatsappNumber?.replace(
+                          /[^0-9]/g,
+                          ""
+                        )}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-gray hover:underline"

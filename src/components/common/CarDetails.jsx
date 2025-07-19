@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -266,7 +267,7 @@ const CarDetails = ({ car }) => {
                         <img
                           src={thumb}
                           alt={`Thumbnail ${index + 1}`}
-                          className="w-24 h-full rounded object-cover"
+                          className="w-24 h-24 rounded object-cover"
                         />
                       </SwiperSlide>
                     ))}

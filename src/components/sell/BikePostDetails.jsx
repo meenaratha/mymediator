@@ -38,22 +38,20 @@ const BikeCard = ({
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [adsEnabled, setAdsEnabled] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(status);
-  const [currentPublishStatus, setCurrentPublishStatus] = useState(isPublished);
+ // Convert is_published to boolean - handle both 0/1 and true/false
+  const [currentPublishStatus, setCurrentPublishStatus] = useState(
+    isPublished === 1 || isPublished === true
+  );
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [isUpdatingPublish, setIsUpdatingPublish] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const toggleDropdown = () => {
     setShowStatusDropdown(!showStatusDropdown);
   };
 
-  // Add navigation handler for card click
-  const handleCardClick = () => {
-    navigate(`/bike/${slug}`);
-  };
-
-  const toggleAds = (e) => {
-    e.stopPropagation();
-    setAdsEnabled(!adsEnabled);
-  };
+ 
+  
 
   const handleEdit = (e) => {
     e.stopPropagation();
@@ -77,44 +75,192 @@ const BikeCard = ({
     }
   };
 
-  const updateStatus = async (newStatus) => {
-    try {
-      await api.patch(`/bike/status/${id}`, { status: newStatus });
-      setCurrentStatus(newStatus);
-      onStatusChange(id, newStatus);
-      toast.success(`Status updated to ${newStatus}`);
-    } catch (error) {
-      console.error("Failed to update status:", error);
-      toast.error("Failed to update status");
-    }
-  };
-
-  const updatePublishStatus = async (publishStatus) => {
-    try {
-      await api.patch(`/bike/publish/${id}`, { is_published: publishStatus });
-      setCurrentPublishStatus(publishStatus);
-      toast.success(`Bike ${publishStatus ? 'published' : 'unpublished'} successfully`);
-    } catch (error) {
-      console.error("Failed to update publish status:", error);
-      toast.error("Failed to update publish status");
-    }
-  };
-
-  const markAsSold = (e) => {
-    e.stopPropagation();
-    updateStatus("sold");
-    setShowStatusDropdown(false);
-  };
-
-  const markAsAvailable = (e) => {
-    e.stopPropagation();
-    updateStatus("available");
-    setShowStatusDropdown(false);
-  };
+  // Update property status (available, sold, pending, etc.)
+     const updateStatus = async (newStatus) => {
+       setIsUpdatingStatus(true);
+       try {
+         const response = await api.patch(`/bike/status/${id}`, {
+           status: newStatus,
+         });
+   
+         console.log("Status update response:", response.data);
+   
+         // Extract status from API response
+         const updatedStatus = response.data?.data?.status || newStatus;
+   
+         setCurrentStatus(updatedStatus);
+         onStatusChange(id, updatedStatus);
+   
+         // Show success message based on API response
+         if (response.data?.message) {
+           toast.success(response.data.message);
+         } else {
+           toast.success(`Status updated to ${updatedStatus}`);
+         }
+       } catch (error) {
+         console.error("Failed to update status:", error);
+   
+         // Show specific error message if available
+         const errorMessage =
+           error.response?.data?.message || "Failed to update status";
+         toast.error(errorMessage);
+       } finally {
+         setIsUpdatingStatus(false);
+       }
+     };
+   
+     // Update publish/unpublish status
+     const updatePublishStatus = async (publishStatus) => {
+       setIsUpdatingPublish(true);
+       try {
+         // Convert boolean to 1/0 for API
+         const apiValue = publishStatus ? 1 : 0;
+   
+         const response = await api.patch(`/bike/publish/${id}`, {
+           is_published: apiValue,
+         });
+   
+         console.log("Publish status update response:", response.data);
+   
+         // Extract is_published from API response
+         const updatedPublishStatus = response.data?.data?.is_published;
+   
+         // Convert API response (0/1) to boolean for internal state
+         const booleanStatus =
+           updatedPublishStatus === 1 || updatedPublishStatus === true;
+   
+         setCurrentPublishStatus(booleanStatus);
+   
+         // Show success message from API or default
+         if (response.data?.message) {
+           toast.success(response.data.message);
+         } else {
+           const statusText = booleanStatus ? "published" : "unpublished";
+           toast.success(`Property ${statusText} successfully`);
+         }
+   
+         console.log("Final publish status:", {
+           requested: publishStatus,
+           apiResponse: updatedPublishStatus,
+           finalState: booleanStatus,
+         });
+       } catch (error) {
+         console.error("Failed to update publish status:", error);
+   
+         // Show specific error message if available
+         const errorMessage =
+           error.response?.data?.message || "Failed to update publish status";
+         toast.error(errorMessage);
+       } finally {
+         setIsUpdatingPublish(false);
+       }
+     };
+   
+     const markAsSold = (e) => {
+       e.stopPropagation();
+       updateStatus("sold");
+       setShowStatusDropdown(false);
+     };
+   
+     const markAsAvailable = (e) => {
+       e.stopPropagation();
+       updateStatus("available");
+       setShowStatusDropdown(false);
+     };
+   
+     // Check if navigation should be disabled
+     const isNavigationDisabled = () => {
+       const isSold = currentStatus === "sold" || currentStatus === "soldout";
+       const isUnpublished = !currentPublishStatus;
+   
+       return isSold || isUnpublished;
+     };
+   
+     // Handle card click with conditional navigation
+     const handleCardClick = (event) => {
+       // Prevent navigation if clicking on action buttons
+       if (event.target.closest(".action-button")) {
+         return;
+       }
+   
+       // Check if navigation should be disabled
+       if (isNavigationDisabled()) {
+         if (currentStatus === "sold" || currentStatus === "available") {
+           toast.info("This property has been sold and is no longer available");
+         } else if (!currentPublishStatus) {
+           toast.info("This property is currently unpublished");
+         }
+         return;
+       }
+   
+       // Navigate to property details
+       navigate(`/bike/${slug}`);
+     };
+   
+     // Get card styling based on status
+     const getCardStyling = () => {
+       if (isNavigationDisabled()) {
+         return "opacity-100 bg-[#c1bebe] cursor-not-allowed z-99 relative";
+       }
+       return "cursor-pointer hover:shadow-lg transition-shadow";
+     };
+   
+     // Get status badge styling with proper priority
+     const getStatusBadge = () => {
+       // Priority 1: SOLD status (highest priority)
+       if (currentStatus === "sold" || currentStatus === "soldout") {
+         return (
+           <span className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-semibold z-10">
+             SOLD
+           </span>
+         );
+       }
+   
+       // Priority 2: UNPUBLISHED status
+       if (!currentPublishStatus) {
+         return (
+           <span className="absolute top-2 left-2 bg-gray-500 text-white px-2 py-1 rounded text-xs font-semibold z-10">
+             UNPUBLISHED
+           </span>
+         );
+       }
+   
+       // Priority 3: Other statuses for published properties
+       if (currentPublishStatus) {
+         if (currentStatus === "available") {
+           return (
+             <span className="absolute top-2 left-2 bg-blue-900 text-white px-2 py-1 rounded text-xs font-semibold z-10">
+               AVAILABLE
+             </span>
+           );
+         }
+   
+         if (currentStatus === "pending") {
+           return (
+             <span className="absolute top-2 left-2 bg-yellow-500 text-white px-2 py-1 rounded text-xs font-semibold z-10">
+               PENDING
+             </span>
+           );
+         }
+   
+         // For any other status
+         return (
+           <span className="absolute top-2 left-2 bg-blue-500 text-white px-2 py-1 rounded text-xs font-semibold z-10">
+             {currentStatus.toUpperCase()}
+           </span>
+         );
+       }
+   
+       return null;
+     };
 
   return (
-    <div onClick={handleCardClick} className="cursor-pointer flex items-start p-2 bg-white rounded-lg shadow-sm border border-gray-100 w-full">
-      {/* Bike Image */}
+    <div
+      onClick={handleCardClick}
+      className={`flex items-start p-2 bg-white rounded-lg shadow-sm border border-gray-100 w-full relative ${getCardStyling()}`}
+    >
+      {/* Status Badge */}
+      {getStatusBadge()} {/* Bike Image */}
       <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
         <img
           src={bikeImage || IMAGES.propertybanner1}
@@ -122,7 +268,6 @@ const BikeCard = ({
           className="w-full h-full object-cover"
         />
       </div>
-
       {/* Bike Details */}
       <div className="ml-3 flex-1 min-w-0">
         {/* Bike Title and Location */}
@@ -137,8 +282,6 @@ const BikeCard = ({
           </div>
         </div>
 
-       
-
         {/* Year, Kilometers, and Engine CC */}
         <div className="flex  gap-4 items-center mt-1 text-gray-600 flex-wrap md:flex-nowrap gap-[8px] mb-2">
           {kilometers && (
@@ -147,8 +290,7 @@ const BikeCard = ({
               <span className="text-sm">{kilometers} km</span>
             </>
           )}
-         
-          
+
           {year && (
             <>
               <CalendarTodayIcon style={{ fontSize: 18 }} />
@@ -178,14 +320,17 @@ const BikeCard = ({
             {/* Status Dropdown */}
             <div className="relative">
               <button
-               onClick={(e) => {
+                onClick={(e) => {
                   e.stopPropagation();
                   toggleDropdown();
                 }}
-                className="bg-[#0f1c5e] text-white px-4 py-1 rounded-md text-sm flex items-center"
+                className="action-button bg-[#0f1c5e] text-white px-4 py-1 rounded-md text-sm flex items-center disabled:opacity-50"
+                disabled={isUpdatingStatus || isUpdatingPublish}
               >
                 Status
-                {showStatusDropdown ? (
+                {isUpdatingStatus || isUpdatingPublish ? (
+                  <div className="animate-spin h-3 w-3 border border-white border-t-transparent rounded-full ml-1"></div>
+                ) : showStatusDropdown ? (
                   <KeyboardArrowUpIcon style={{ fontSize: 18 }} />
                 ) : (
                   <KeyboardArrowDownIcon style={{ fontSize: 18 }} />
@@ -194,13 +339,16 @@ const BikeCard = ({
 
               {/* Status Dropdown */}
               {showStatusDropdown && (
-                <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+                <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200">
                   {/* Sold/Available Toggle */}
                   <div className="px-4 py-3 border-b border-gray-100">
                     <div className="flex items-center justify-between">
                       <span
-                        className={`text-sm text-white px-2 py-1 rounded 
-      ${currentStatus === "sold" ? "bg-red-600" : "bg-green-600"}`}
+                        className={`text-sm text-white px-2 py-1 rounded ${
+                          currentStatus === "sold"
+                            ? "bg-red-600"
+                            : "bg-green-600"
+                        }`}
                       >
                         {currentStatus === "sold" ? "Sold Out" : "Available"}
                       </span>
@@ -217,6 +365,10 @@ const BikeCard = ({
                           currentStatus === "sold"
                             ? "bg-red-500"
                             : "bg-green-500"
+                        } ${
+                          isUpdatingStatus
+                            ? "opacity-50 pointer-events-none"
+                            : ""
                         }`}
                       >
                         <span
@@ -234,19 +386,26 @@ const BikeCard = ({
                   <div className="px-4 py-3 border-b border-gray-100">
                     <div className="flex items-center justify-between">
                       <span
-                        className={`text-sm text-white px-2 py-1 rounded 
-    ${currentPublishStatus ? "bg-green-600" : "bg-yellow-500"}`}
+                        className={`text-sm text-white px-2 py-1 rounded ${
+                          currentPublishStatus
+                            ? "bg-green-600"
+                            : "bg-yellow-500"
+                        }`}
                       >
                         {currentPublishStatus ? "Published" : "Draft"}
                       </span>
                       <div
                         onClick={(e) => {
                           e.stopPropagation();
-                          updatePublishStatus(currentPublishStatus ? 0 : 1);
+                          updatePublishStatus(!currentPublishStatus);
                           setShowStatusDropdown(false);
                         }}
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
                           currentPublishStatus ? "bg-blue-500" : "bg-gray-300"
+                        } ${
+                          isUpdatingPublish
+                            ? "opacity-50 pointer-events-none"
+                            : ""
                         }`}
                       >
                         <span
@@ -259,12 +418,12 @@ const BikeCard = ({
                       </div>
                     </div>
                   </div>
-                  {/* delete */}
-                  <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-center ">
-                    {/* Delete Icon */}
+
+                  {/* Delete Button */}
+                  <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-center">
                     <button
                       onClick={handleDelete}
-                      className="text-white flex items-center justify-center gap-2 px-4 py-2 bg-red-600 rounded disabled:opacity-60"
+                      className="action-button text-white flex items-center justify-center gap-2 px-4 py-2 bg-red-600 rounded disabled:opacity-60 hover:bg-red-700 transition-colors"
                       title="Delete property"
                       disabled={isDeleting}
                     >
@@ -440,12 +599,12 @@ const BikePostDetails = () => {
                 <BikeCard
                   key={bike.id}
                   id={bike.id}
-                slug={bike.action_slug}
-                editformslug={bike.slug}
-                editformslugName={bike.subcategory}
+                  slug={bike.action_slug}
+                  editformslug={bike.slug}
+                  editformslugName={bike.subcategory}
                   bikeImage={bike.image_url || bike.images?.[0]?.url}
                   bikeTitle={bike.title}
-                  location={`${bike.district || ''}${
+                  location={`${bike.district || ""}${
                     bike.state ? `, ${bike.state}` : ""
                   }`}
                   brand={bike.brand_name || bike.brand}
@@ -453,10 +612,8 @@ const BikePostDetails = () => {
                   year={bike.year}
                   kilometers={bike.kilometers}
                   engineCC={bike.engine_cc}
-                  price={
-                    bike.price ? parseInt(bike.price).toLocaleString() : ""
-                  }
-                  status={bike.status || "available"}
+                  price={bike.price}
+                  status={bike.status_label || "available"}
                   isPublished={bike.is_published || 0}
                   subcategory={bike.subcategory}
                   onStatusChange={handleStatusChange}

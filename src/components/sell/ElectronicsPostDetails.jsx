@@ -242,7 +242,7 @@ const ElectronicsCard = ({
   
         if (currentStatus === "pending") {
           return (
-            <span className="absolute top-2 right-2 bg-yellow-500 text-white px-2 py-1 rounded text-xs font-semibold z-10">
+            <span className="absolute top-2 left-2 bg-yellow-500 text-white px-2 py-1 rounded text-xs font-semibold z-10">
               PENDING
             </span>
           );
@@ -250,7 +250,7 @@ const ElectronicsCard = ({
   
         // For any other status
         return (
-          <span className="absolute top-2 right-2 bg-blue-500 text-white px-2 py-1 rounded text-xs font-semibold z-10">
+          <span className="absolute top-2 left-2 bg-blue-500 text-white px-2 py-1 rounded text-xs font-semibold z-10">
             {currentStatus.toUpperCase()}
           </span>
         );
@@ -628,9 +628,9 @@ const ElectronicsPostDetails = () => {
                   features={item.features}
                   specifications={item.specifications}
                   price={
-                    item.price ? parseFloat(item.price).toLocaleString() : ""
+                    item.price 
                   }
-                  status={item.status || "available"}
+                  status={item.status_label || "available"}
                   isPublished={item.is_published || 0}
                   subcategory={item.subcategory}
                   onStatusChange={handleStatusChange}

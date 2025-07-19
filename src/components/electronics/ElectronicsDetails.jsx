@@ -288,7 +288,7 @@ const ElectronicsDetails = ({ electronics }) => {
                       <img
                         src={thumb}
                         alt={`Thumbnail ${index + 1}`}
-                        className="w-24 h-full rounded object-cover"
+                        className="w-24 h-24 rounded object-cover"
                       />
                     </SwiperSlide>
                   ))}
@@ -416,7 +416,9 @@ const ElectronicsDetails = ({ electronics }) => {
                   <h3 className="font-semibold text-lg">
                     {electronics.vendor_name || "Seller"}
                   </h3>
-                  <p className="text-sm text-gray-500">{electronics.listed_by}</p>
+                  <p className="text-sm text-gray-500">
+                    {electronics.listed_by}
+                  </p>
                 </div>
                 <div className="ml-auto">
                   <Link
@@ -494,7 +496,7 @@ const ElectronicsDetails = ({ electronics }) => {
               <div className="flex items-center py-2">
                 <h2 className="md:text-2xl text-[20px] font-bold">
                   {electronics.title ||
-                    `${electronics.brand} ${electronics.model}`}
+                    `${electronics.brand} ${electronics.model}`}{" "}
                 </h2>
                 <div className="w-[fit-content] ml-4 bg-blue-100 text-blue-800 px-2 py-1 rounded-md flex items-center text-xs">
                   <VerifiedIcon fontSize="small" className="mr-1" />
@@ -503,8 +505,13 @@ const ElectronicsDetails = ({ electronics }) => {
               </div>
 
               <div className="flex items-center mt-2 mb-2">
-                <p className="mr-4">{electronics.subcategory}</p>
-                 {electronics.total_ratings !== null ? (
+                <p className="mr-4">
+                  {electronics.brand !== null
+                    ? electronics.brand
+                    : electronics.brand_name}
+                 - {electronics.post_year}
+                </p>
+                {electronics.total_ratings !== null ? (
                   <div className="flex items-center">
                     <StarIcon className="text-orange-500" />
                     <span className="ml-1">{electronics.total_ratings}</span>
@@ -575,7 +582,6 @@ const ElectronicsDetails = ({ electronics }) => {
           "instagram",
           "facebook",
           "telegram",
-         
         ]}
       />
 

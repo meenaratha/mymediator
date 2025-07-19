@@ -208,14 +208,7 @@ const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
     }
   };
 
-  const handleEnquiryClick = () => {
-    console.log("🔄 Enquiry button clicked");
-    console.log("Current showEnquiryPopup state:", showEnquiryPopup);
-
-    setShowEnquiryPopup(true);
-
-    console.log("✅ setShowEnquiryPopup(true) called");
-  };
+ 
 
   if (!bike) {
     return <div className="text-center py-8">Bike not found</div>;
@@ -282,7 +275,7 @@ const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
                         <img
                           src={thumb}
                           alt={`Thumbnail ${index + 1}`}
-                          className="w-24 h-full rounded object-cover"
+                          className="w-24 h-24 rounded object-cover"
                         />
                       </SwiperSlide>
                     ))}
@@ -539,7 +532,7 @@ const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
                 </h3>
                 <div className="flex mt-4 space-x-4 justify-center">
                   <button
-                    onClick={handleEnquiryClick}
+                    onClick={() => setShowEnquiryPopup(true)}
                     className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] cursor-pointer flex items-center justify-center flex-1"
                     type="button" // Add explicit type
                   >
