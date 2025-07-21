@@ -92,7 +92,7 @@ const PropertyCard = ({ item, category }) => {
           }}
         />
         <div className="absolute top-2 left-2">
-          <span className="bg-blue-600 text-white px-2 py-1 rounded-full text-xs font-medium capitalize">
+          <span className="bg-blue-900 text-white px-2 py-1 rounded-full text-xs font-medium capitalize">
             {item.subcategory || category}
           </span>
         </div>
@@ -106,7 +106,10 @@ const PropertyCard = ({ item, category }) => {
       </div>
 
       <CardContent className="p-3">
-        <h3 className="font-bold text-lg truncate" title={item.title || item.property_name}>
+        <h3
+          className="font-bold text-lg truncate"
+          title={item.title || item.property_name}
+        >
           {item.title || item.property_name}
         </h3>
 
@@ -141,9 +144,12 @@ const PropertyCard = ({ item, category }) => {
 
         {(category === "bike" || category === "car") && (
           <div className="flex items-center mt-2 space-x-4 text-sm text-gray-600 flex-wrap gap-2">
-            {item.brand && <span className="font-medium">{item.brand}</span>}
-           {/* {item.model && <span>({item.model})</span>} */}
-           
+            {item.brand && (
+              <span className="font-medium truncate max-w-[120px] overflow-hidden whitespace-nowrap">
+                {item.brand}
+              </span>
+            )}
+
             {item.kilometers && (
               <div className="flex items-center">
                 <SpeedIcon style={{ fontSize: 14 }} />
@@ -155,9 +161,13 @@ const PropertyCard = ({ item, category }) => {
 
         {category === "electronics" && (
           <div className="flex items-center mt-2 space-x-4 text-sm text-gray-600">
-            {item.brand && <span className="font-medium">{item.brand}</span>}
+            {item.brand && (
+              <span className="font-medium truncate max-w-[80px] overflow-hidden whitespace-nowrap">
+                {item.brand}
+              </span>
+            )}
             {item.subcategory && (
-              <div className="flex items-center">
+              <div className="flex items-center truncate max-w-[100px] overflow-hidden whitespace-nowrap">
                 <DevicesIcon style={{ fontSize: 14 }} />
                 <span className="ml-1 truncate">{item.subcategory}</span>
               </div>
@@ -173,15 +183,16 @@ const PropertyCard = ({ item, category }) => {
              ""}
           </span> */}
 
-           {item.year && (
-              <div className="flex items-center">
-                <CalendarTodayIcon style={{ fontSize: 14 }} />
-                <span className="ml-1">{item.year}</span>
-              </div>
-            )}
-          <span className="font-bold text-lg">
+          {item.year && (
+            <div className="flex items-center">
+              <CalendarTodayIcon style={{ fontSize: 14 }} />
+              <span className="ml-1">{item.year}</span>
+            </div>
+          )}
+          {/* <span className="font-bold text-lg">
             {formatPrice(item.price || item.amount)}
-          </span>
+          </span> */}
+          <span className="font-bold text-lg">{item.price || item.amount}</span>
         </div>
       </CardContent>
     </Card>
