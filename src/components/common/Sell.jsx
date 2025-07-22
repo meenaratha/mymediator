@@ -291,7 +291,7 @@ const Sell = () => {
                     <img
                       src={getCategoryImage(category)}
                       alt={category.name}
-                      className={`w-16 h-16 object-contain transition-all duration-300 ${
+                      className={`w-25 h-25 object-contain transition-all duration-300 ${
                         isActive ? "" : ""
                       }`}
                       onError={(e) => {

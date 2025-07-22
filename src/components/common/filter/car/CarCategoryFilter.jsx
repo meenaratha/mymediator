@@ -178,10 +178,10 @@ const CarCategoryFilter = ({
         </div>
 
         <div
-          className={`transition-all duration-300 ease-in-out overflow-hidden custom-scrollbar ${
+          className={`transition-all duration-300 ease-in-out overflow-y-auto custom-scrollbar ${
             expandedSections.categories
               ? "max-h-96 py-2"
-              : "max-h-0 overflow-hidden"
+              : "max-h-0 overflow-y-auto"
           }`}
         >
           {/* Header Info */}

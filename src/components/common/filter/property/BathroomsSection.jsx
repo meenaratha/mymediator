@@ -367,9 +367,9 @@ const BathroomsSection = ({
       </div>
 
       <div
-        className={`transition-all duration-300 ease-in-out overflow-hidden ${
-          !toggleSection || expandedSections?.bathrooms 
-            ? "max-h-96 py-2" 
+        className={`transition-all duration-300 ease-in-out overflow-y-auto ${
+          !toggleSection || expandedSections?.bathrooms
+            ? "max-h-96 py-2"
             : "max-h-0"
         }`}
       >
@@ -394,7 +394,7 @@ const BathroomsSection = ({
           <div className="grid grid-cols-1 gap-2 py-2">
             {bathrooms.map((bathroom, index) => {
               const isSelected = selectedBathrooms.includes(bathroom.value);
-              
+
               return (
                 <div
                   key={bathroom.value || index}
@@ -407,11 +407,13 @@ const BathroomsSection = ({
                 >
                   <div className="flex items-center">
                     {/* Checkbox style indicator */}
-                    <div className={`w-4 h-4 mr-3 border-2 rounded flex items-center justify-center ${
-                      isSelected 
-                        ? "border-green-500 bg-green-500" 
-                        : "border-gray-300"
-                    }`}>
+                    <div
+                      className={`w-4 h-4 mr-3 border-2 rounded flex items-center justify-center ${
+                        isSelected
+                          ? "border-green-500 bg-green-500"
+                          : "border-gray-300"
+                      }`}
+                    >
                       {isSelected && (
                         <svg
                           className="w-3 h-3 text-white"
@@ -426,22 +428,28 @@ const BathroomsSection = ({
                         </svg>
                       )}
                     </div>
-                    <span className={`font-medium ${isSelected ? 'text-green-800' : ''}`}>
+                    <span
+                      className={`font-medium ${
+                        isSelected ? "text-green-800" : ""
+                      }`}
+                    >
                       {formatLabel(bathroom)}
                     </span>
                   </div>
-                  
+
                   {/* Bathroom icon */}
-                  <svg 
-                    className={`w-4 h-4 ${isSelected ? 'text-green-600' : 'text-gray-400'}`}
-                    fill="none" 
-                    stroke="currentColor" 
+                  <svg
+                    className={`w-4 h-4 ${
+                      isSelected ? "text-green-600" : "text-gray-400"
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
-                    <path 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
-                      strokeWidth="2" 
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
                       d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M13 7a4 4 0 11-8 0 4 4 0 018 0zM13 7V3a2 2 0 012 2v2M11 7V3a2 2 0 00-2 2v2"
                     />
                   </svg>
@@ -451,7 +459,9 @@ const BathroomsSection = ({
           </div>
         ) : (
           <div className="text-center py-4">
-            <p className="text-gray-500 text-sm">No bathroom options available</p>
+            <p className="text-gray-500 text-sm">
+              No bathroom options available
+            </p>
             <button
               onClick={fetchBathrooms}
               className="mt-2 text-blue-600 text-sm hover:underline"
@@ -474,11 +484,12 @@ const BathroomsSection = ({
               <button
                 onClick={() => {
                   // Select all bathrooms
-                  const allValues = bathrooms.map(b => b.value);
+                  const allValues = bathrooms.map((b) => b.value);
                   setSelectedBathrooms(allValues);
-                  setFilters(prev => ({
+                  setFilters((prev) => ({
                     ...prev,
-                    bathroom_min: allValues.length === 1 ? allValues[0] : allValues
+                    bathroom_min:
+                      allValues.length === 1 ? allValues[0] : allValues,
                   }));
                 }}
                 className="flex-1 text-sm text-green-600 hover:text-green-800 py-2 hover:bg-green-50 rounded transition-colors border border-green-200"
@@ -489,8 +500,6 @@ const BathroomsSection = ({
             </div>
           </div>
         )}
-
-       
       </div>
     </div>
   );

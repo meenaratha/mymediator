@@ -264,9 +264,9 @@ const ConstructionStatusSection = ({
       </div>
 
       <div
-        className={`transition-all duration-300 ease-in-out overflow-hidden ${
-          !toggleSection || expandedSections?.constructionStatus 
-            ? "max-h-96 py-2" 
+        className={`transition-all duration-300 ease-in-out overflow-y-auto ${
+          !toggleSection || expandedSections?.constructionStatus
+            ? "max-h-96 py-2"
             : "max-h-0"
         }`}
       >
@@ -288,13 +288,13 @@ const ConstructionStatusSection = ({
         )}
 
         {constructionStatuses.length > 0 ? (
-          <div 
+          <div
             className="py-2 overflow-auto custom-scrollbar"
             style={{ maxHeight: "200px" }}
           >
             {constructionStatuses.map((status) => {
               const isSelected = selectedStatuses.includes(status.id);
-              
+
               return (
                 <div
                   key={status.id}
@@ -306,11 +306,13 @@ const ConstructionStatusSection = ({
                   onClick={() => handleStatusSelect(status)}
                 >
                   {/* Custom checkbox */}
-                  <div className={`w-4 h-4 mr-3 border-2 rounded flex items-center justify-center ${
-                    isSelected 
-                      ? "border-indigo-500 bg-indigo-500" 
-                      : "border-gray-300"
-                  }`}>
+                  <div
+                    className={`w-4 h-4 mr-3 border-2 rounded flex items-center justify-center ${
+                      isSelected
+                        ? "border-indigo-500 bg-indigo-500"
+                        : "border-gray-300"
+                    }`}
+                  >
                     {isSelected && (
                       <svg
                         className="w-3 h-3 text-white"
@@ -325,13 +327,21 @@ const ConstructionStatusSection = ({
                       </svg>
                     )}
                   </div>
-                  
+
                   <div className="flex items-center flex-1">
-                    <div className={`mr-2 ${isSelected ? 'text-indigo-600' : 'text-gray-400'}`}>
+                    <div
+                      className={`mr-2 ${
+                        isSelected ? "text-indigo-600" : "text-gray-400"
+                      }`}
+                    >
                       {getStatusIcon(status.name)}
                     </div>
-                    <label 
-                      className={`text-sm cursor-pointer ${isSelected ? 'text-indigo-800 font-medium' : 'text-gray-700'}`}
+                    <label
+                      className={`text-sm cursor-pointer ${
+                        isSelected
+                          ? "text-indigo-800 font-medium"
+                          : "text-gray-700"
+                      }`}
                     >
                       {status.name}
                     </label>
@@ -342,8 +352,12 @@ const ConstructionStatusSection = ({
           </div>
         ) : (
           <div className="text-center py-4">
-            <p className="text-gray-500 text-sm">No construction statuses available</p>
-            <p className="text-gray-400 text-xs mt-1">Check console for details</p>
+            <p className="text-gray-500 text-sm">
+              No construction statuses available
+            </p>
+            <p className="text-gray-400 text-xs mt-1">
+              Check console for details
+            </p>
             <button
               onClick={fetchConstructionStatuses}
               className="mt-2 text-blue-600 text-sm hover:underline"
@@ -366,22 +380,24 @@ const ConstructionStatusSection = ({
               <button
                 onClick={() => {
                   // Select all construction statuses
-                  const allIds = constructionStatuses.map(s => s.id);
+                  const allIds = constructionStatuses.map((s) => s.id);
                   setSelectedStatuses(allIds);
-                  setFilters(prev => ({
+                  setFilters((prev) => ({
                     ...prev,
-                    construction_status_id: allIds.length === 1 ? allIds[0] : allIds
+                    construction_status_id:
+                      allIds.length === 1 ? allIds[0] : allIds,
                   }));
                 }}
                 className="flex-1 text-sm text-indigo-600 hover:text-indigo-800 py-2 hover:bg-indigo-50 rounded transition-colors border border-indigo-200"
-                disabled={selectedStatuses.length === constructionStatuses.length}
+                disabled={
+                  selectedStatuses.length === constructionStatuses.length
+                }
               >
                 Select All
               </button>
             </div>
           </div>
         )}
-
       </div>
     </div>
   );

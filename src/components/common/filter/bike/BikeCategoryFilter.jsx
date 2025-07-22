@@ -176,9 +176,9 @@ const BikeCategoryFilter = ({
               />
             </svg>
           </div>
-    
+
           <div
-            className={`transition-all duration-300 ease-in-out overflow-hidden custom-scrollbar ${
+            className={`transition-all duration-300 ease-in-out overflow-y-auto custom-scrollbar ${
               expandedSections.categories ? "max-h-96 py-2" : "max-h-0"
             }`}
           >
@@ -186,7 +186,7 @@ const BikeCategoryFilter = ({
             {/* <div className="font-medium text-sm text-green-600 py-2 border-b border-green-100 mb-3">
               Property sale & Rent in Chennai
             </div> */}
-    
+
             {/* Selection Summary */}
             {selectedCategories.length > 0 && (
               <div className="mb-3 p-2 bg-green-50 border border-green-200 rounded text-sm">
@@ -203,12 +203,14 @@ const BikeCategoryFilter = ({
                 </div>
               </div>
             )}
-    
+
             {categories.length > 0 ? (
               <div className="space-y-2">
                 {categories.map((category) => {
-                  const isSelected = selectedCategories.includes(category.value);
-                  
+                  const isSelected = selectedCategories.includes(
+                    category.value
+                  );
+
                   return (
                     <div
                       key={category.id}
@@ -222,11 +224,11 @@ const BikeCategoryFilter = ({
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
                           {/* Checkbox style indicator */}
-                          <div className={`w-4 h-4 mr-3 rounded-full flex items-center justify-center ${
-                            isSelected 
-                              ? "bg-green-500" 
-                              : "bg-gray-400"
-                          }`}>
+                          <div
+                            className={`w-4 h-4 mr-3 rounded-full flex items-center justify-center ${
+                              isSelected ? "bg-green-500" : "bg-gray-400"
+                            }`}
+                          >
                             {isSelected && (
                               <svg
                                 className="w-1 h-1 text-white"
@@ -242,13 +244,15 @@ const BikeCategoryFilter = ({
                             )}
                           </div>
                           <div>
-                            <span className={`font-medium ${isSelected ? 'text-green-800' : ''}`}>
+                            <span
+                              className={`font-medium ${
+                                isSelected ? "text-green-800" : ""
+                              }`}
+                            >
                               {category.label}
                             </span>
-                            
                           </div>
                         </div>
-                       
                       </div>
                     </div>
                   );
@@ -265,7 +269,7 @@ const BikeCategoryFilter = ({
                 </button>
               </div>
             )}
-    
+
             {/* Action Buttons */}
             {selectedCategories.length > 0 && (
               <div className="mt-3 pt-2 border-t space-y-2">
@@ -279,11 +283,12 @@ const BikeCategoryFilter = ({
                   <button
                     onClick={() => {
                       // Select all categories
-                      const allValues = categories.map(c => c.value);
+                      const allValues = categories.map((c) => c.value);
                       setSelectedCategories(allValues);
-                      setFilters(prev => ({
+                      setFilters((prev) => ({
                         ...prev,
-                        subcategory_id: allValues.length === 1 ? allValues[0] : allValues
+                        subcategory_id:
+                          allValues.length === 1 ? allValues[0] : allValues,
                       }));
                     }}
                     className="flex-1 text-sm text-green-600 hover:text-green-800 py-2 hover:bg-green-50 rounded transition-colors border border-green-200"
@@ -295,7 +300,7 @@ const BikeCategoryFilter = ({
               </div>
             )}
           </div>
-          </div>
+        </div>
       );
 };
 

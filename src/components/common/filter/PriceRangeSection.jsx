@@ -348,7 +348,7 @@ const PriceRangeSection = ({
       </div>
 
       <div
-        className={`transition-all duration-300 ease-in-out overflow-hidden custom-scrollbar ${
+        className={`transition-all duration-300 ease-in-out overflow-y-auto custom-scrollbar ${
           expandedSections.priceRange ? "max-h-96 py-2" : "max-h-0"
         }`}
       >
@@ -373,7 +373,7 @@ const PriceRangeSection = ({
           <div className="grid grid-cols-1 gap-2 mb-2">
             {priceRanges.map((range, index) => {
               const isSelected = selectedPriceRanges.includes(range.value);
-              
+
               return (
                 <div
                   key={range.value || index}
@@ -386,11 +386,13 @@ const PriceRangeSection = ({
                 >
                   <div className="flex items-center">
                     {/* Checkbox style indicator */}
-                    <div className={`w-4 h-4 mr-3 border-2 rounded flex items-center justify-center ${
-                      isSelected 
-                        ? "border-purple-500 bg-purple-500" 
-                        : "border-gray-300"
-                    }`}>
+                    <div
+                      className={`w-4 h-4 mr-3 border-2 rounded flex items-center justify-center ${
+                        isSelected
+                          ? "border-purple-500 bg-purple-500"
+                          : "border-gray-300"
+                      }`}
+                    >
                       {isSelected && (
                         <svg
                           className="w-3 h-3 text-white"
@@ -405,13 +407,19 @@ const PriceRangeSection = ({
                         </svg>
                       )}
                     </div>
-                    <span className={`font-medium ${isSelected ? 'text-purple-800' : ''}`}>
+                    <span
+                      className={`font-medium ${
+                        isSelected ? "text-purple-800" : ""
+                      }`}
+                    >
                       {range.label}
                     </span>
                   </div>
-                  <div className={`text-xs flex items-center ${
-                    isSelected ? 'text-purple-600' : 'text-gray-500'
-                  }`}>
+                  <div
+                    className={`text-xs flex items-center ${
+                      isSelected ? "text-purple-600" : "text-gray-500"
+                    }`}
+                  >
                     {range.count ? formatCount(range.count) : "0 items"}
                   </div>
                 </div>
@@ -443,11 +451,12 @@ const PriceRangeSection = ({
               <button
                 onClick={() => {
                   // Select all price ranges
-                  const allValues = priceRanges.map(r => r.value);
+                  const allValues = priceRanges.map((r) => r.value);
                   setSelectedPriceRanges(allValues);
-                  setFilters(prev => ({
+                  setFilters((prev) => ({
                     ...prev,
-                    price_range: allValues.length === 1 ? allValues[0] : allValues
+                    price_range:
+                      allValues.length === 1 ? allValues[0] : allValues,
                   }));
                 }}
                 className="flex-1 text-sm text-purple-600 hover:text-purple-800 py-2 hover:bg-purple-50 rounded transition-colors border border-purple-200"
@@ -458,8 +467,6 @@ const PriceRangeSection = ({
             </div>
           </div>
         )}
-
-        
       </div>
     </div>
   );

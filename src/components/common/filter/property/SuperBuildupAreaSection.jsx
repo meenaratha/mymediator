@@ -145,7 +145,7 @@ const SuperBuildupAreaSection = ({
 
       {/* Section Content */}
       <div
-        className={`transition-all duration-300 ease-in-out overflow-hidden ${
+        className={`transition-all duration-300 ease-in-out overflow-y-auto ${
           expandedSections.superBuildupArea ? "max-h-96 py-4" : "max-h-0"
         }`}
       >
@@ -156,12 +156,12 @@ const SuperBuildupAreaSection = ({
             <input
               type="number"
               value={value[0]}
-              onChange={(e) => handleInputChange('min', e.target.value)}
+              onChange={(e) => handleInputChange("min", e.target.value)}
               onBlur={(e) => {
                 // Ensure valid range on blur
                 const val = parseInt(e.target.value) || 0;
                 if (val >= value[1]) {
-                  handleInputChange('min', value[1] - MIN_DISTANCE);
+                  handleInputChange("min", value[1] - MIN_DISTANCE);
                 }
               }}
               className="text-sm font-medium text-gray-800 w-16 border-b border-gray-300 focus:border-blue-500 outline-none bg-transparent transition-colors"
@@ -176,12 +176,12 @@ const SuperBuildupAreaSection = ({
             <input
               type="number"
               value={value[1]}
-              onChange={(e) => handleInputChange('max', e.target.value)}
+              onChange={(e) => handleInputChange("max", e.target.value)}
               onBlur={(e) => {
                 // Ensure valid range on blur
                 const val = parseInt(e.target.value) || MAX_RANGE;
                 if (val <= value[0]) {
-                  handleInputChange('max', value[0] + MIN_DISTANCE);
+                  handleInputChange("max", value[0] + MIN_DISTANCE);
                 }
               }}
               className="text-sm font-medium text-gray-800 w-20 border-b border-gray-300 focus:border-blue-500 outline-none bg-transparent text-right transition-colors"
@@ -195,7 +195,7 @@ const SuperBuildupAreaSection = ({
         {/* Material-UI Range Slider */}
         <Box sx={{ px: 1, mb: 3 }}>
           <Slider
-            getAriaLabel={() => 'Super Buildup Area range'}
+            getAriaLabel={() => "Super Buildup Area range"}
             value={value}
             onChange={handleSliderChange}
             valueLabelDisplay="auto"
@@ -206,35 +206,35 @@ const SuperBuildupAreaSection = ({
             max={MAX_RANGE}
             step={STEP}
             sx={{
-              color: '#0a4fbeff', // Blue color
-              '& .MuiSlider-thumb': {
+              color: "#0a4fbeff", // Blue color
+              "& .MuiSlider-thumb": {
                 width: 20,
                 height: 20,
-                backgroundColor: '#fff',
-                border: '2px solid #043a90ff',
-                '&:hover, &.Mui-focusVisible': {
-                  boxShadow: '0px 0px 0px 8px rgba(104, 155, 237, 0.16)',
+                backgroundColor: "#fff",
+                border: "2px solid #043a90ff",
+                "&:hover, &.Mui-focusVisible": {
+                  boxShadow: "0px 0px 0px 8px rgba(104, 155, 237, 0.16)",
                 },
-                '&.Mui-active': {
-                  boxShadow: '0px 0px 0px 14px rgba(59, 130, 246, 0.16)',
+                "&.Mui-active": {
+                  boxShadow: "0px 0px 0px 14px rgba(59, 130, 246, 0.16)",
                 },
               },
-              '& .MuiSlider-track': {
+              "& .MuiSlider-track": {
                 height: 4,
                 borderRadius: 2,
               },
-              '& .MuiSlider-rail': {
+              "& .MuiSlider-rail": {
                 height: 4,
                 borderRadius: 2,
-                backgroundColor: '#e5e7eb',
+                backgroundColor: "#e5e7eb",
               },
-              '& .MuiSlider-valueLabel': {
-                backgroundColor: '#374151',
-                color: '#fff',
+              "& .MuiSlider-valueLabel": {
+                backgroundColor: "#374151",
+                color: "#fff",
                 fontWeight: 500,
-                fontSize: '0.75rem',
-                '&:before': {
-                  color: '#374151',
+                fontSize: "0.75rem",
+                "&:before": {
+                  color: "#374151",
                 },
               },
             }}
@@ -259,17 +259,17 @@ const SuperBuildupAreaSection = ({
           <div className="text-xs text-gray-600 mb-2">Quick Select:</div>
           <div className="flex flex-wrap gap-2">
             {[
-              { label: '0-500K', min: 0, max: 500000 },
-              { label: '500K-1M', min: 500000, max: 1000000 },
-              { label: '1M+', min: 1000000, max: MAX_RANGE },
+              { label: "0-500K", min: 0, max: 500000 },
+              { label: "500K-1M", min: 500000, max: 1000000 },
+              { label: "1M+", min: 1000000, max: MAX_RANGE },
             ].map((option) => (
               <button
                 key={option.label}
                 onClick={() => handleQuickSelect(option.min, option.max)}
                 className={`px-3 py-1 text-xs rounded-full border transition-colors ${
                   value[0] === option.min && value[1] === option.max
-                    ? 'bg-blue-900 text-white border-blue-900'
-                    : 'bg-white text-gray-600 border-gray-300 hover:border-blue-300'
+                    ? "bg-blue-900 text-white border-blue-900"
+                    : "bg-white text-gray-600 border-gray-300 hover:border-blue-300"
                 }`}
               >
                 {option.label}
@@ -277,8 +277,6 @@ const SuperBuildupAreaSection = ({
             ))}
           </div>
         </div>
-
-        
       </div>
     </div>
   );

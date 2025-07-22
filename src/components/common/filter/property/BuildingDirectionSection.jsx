@@ -292,9 +292,9 @@ const BuildingDirectionSection = ({
       </div>
 
       <div
-        className={`transition-all duration-300 ease-in-out overflow-hidden ${
-          !toggleSection || expandedSections?.buildingDirection 
-            ? "max-h-96 py-2" 
+        className={`transition-all duration-300 ease-in-out overflow-y-auto ${
+          !toggleSection || expandedSections?.buildingDirection
+            ? "max-h-96 py-2"
             : "max-h-0"
         }`}
       >
@@ -319,7 +319,7 @@ const BuildingDirectionSection = ({
           <div className="grid grid-cols-2 gap-2 py-2">
             {buildingDirections.map((direction) => {
               const isSelected = selectedDirections.includes(direction.id);
-              
+
               return (
                 <div
                   key={direction.id}
@@ -332,23 +332,31 @@ const BuildingDirectionSection = ({
                 >
                   <div className="flex flex-col items-center space-y-2">
                     {/* Direction icon */}
-                    <div className={`${isSelected ? 'text-cyan-600' : 'text-gray-400'}`}>
+                    <div
+                      className={`${
+                        isSelected ? "text-cyan-600" : "text-gray-400"
+                      }`}
+                    >
                       {getDirectionIcon(direction.name)}
                     </div>
-                    
+
                     {/* Direction name */}
-                    <span className={`text-xs font-medium text-center ${
-                      isSelected ? 'text-cyan-800' : 'text-gray-700'
-                    }`}>
+                    <span
+                      className={`text-xs font-medium text-center ${
+                        isSelected ? "text-cyan-800" : "text-gray-700"
+                      }`}
+                    >
                       {direction.name}
                     </span>
-                    
+
                     {/* Checkbox indicator */}
-                    <div className={`w-3 h-3 border rounded-full flex items-center justify-center ${
-                      isSelected 
-                        ? "border-cyan-500 bg-cyan-500" 
-                        : "border-gray-300"
-                    }`}>
+                    <div
+                      className={`w-3 h-3 border rounded-full flex items-center justify-center ${
+                        isSelected
+                          ? "border-cyan-500 bg-cyan-500"
+                          : "border-gray-300"
+                      }`}
+                    >
                       {isSelected && (
                         <svg
                           className="w-2 h-2 text-white"
@@ -370,8 +378,12 @@ const BuildingDirectionSection = ({
           </div>
         ) : (
           <div className="text-center py-4">
-            <p className="text-gray-500 text-sm">No building directions available</p>
-            <p className="text-gray-400 text-xs mt-1">Check console for details</p>
+            <p className="text-gray-500 text-sm">
+              No building directions available
+            </p>
+            <p className="text-gray-400 text-xs mt-1">
+              Check console for details
+            </p>
             <button
               onClick={fetchBuildingDirections}
               className="mt-2 text-blue-600 text-sm hover:underline"
@@ -394,23 +406,24 @@ const BuildingDirectionSection = ({
               <button
                 onClick={() => {
                   // Select all building directions
-                  const allIds = buildingDirections.map(d => d.id);
+                  const allIds = buildingDirections.map((d) => d.id);
                   setSelectedDirections(allIds);
-                  setFilters(prev => ({
+                  setFilters((prev) => ({
                     ...prev,
-                    building_direction_id: allIds.length === 1 ? allIds[0] : allIds
+                    building_direction_id:
+                      allIds.length === 1 ? allIds[0] : allIds,
                   }));
                 }}
                 className="flex-1 text-sm text-cyan-600 hover:text-cyan-800 py-2 hover:bg-cyan-50 rounded transition-colors border border-cyan-200"
-                disabled={selectedDirections.length === buildingDirections.length}
+                disabled={
+                  selectedDirections.length === buildingDirections.length
+                }
               >
                 Select All
               </button>
             </div>
           </div>
         )}
-
-        
       </div>
     </div>
   );

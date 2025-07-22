@@ -260,9 +260,9 @@ const FurnishingSection = ({
       </div>
 
       <div
-        className={`transition-all duration-300 ease-in-out overflow-hidden custom-scrollbar ${
-          !toggleSection || expandedSections?.furnishing 
-            ? "max-h-96 py-2" 
+        className={`transition-all duration-300 ease-in-out overflow-y-auto custom-scrollbar ${
+          !toggleSection || expandedSections?.furnishing
+            ? "max-h-96 py-2"
             : "max-h-0"
         }`}
       >
@@ -287,7 +287,7 @@ const FurnishingSection = ({
           <div className="grid grid-cols-1 gap-2">
             {furnishingTypes.map((furnishing) => {
               const isSelected = selectedFurnishing.includes(furnishing.id);
-              
+
               return (
                 <div
                   key={furnishing.id}
@@ -300,11 +300,13 @@ const FurnishingSection = ({
                 >
                   <div className="flex items-center">
                     {/* Checkbox style indicator */}
-                    <div className={`w-4 h-4 mr-3 border-2 rounded flex items-center justify-center ${
-                      isSelected 
-                        ? "border-orange-500 bg-orange-500" 
-                        : "border-gray-300"
-                    }`}>
+                    <div
+                      className={`w-4 h-4 mr-3 border-2 rounded flex items-center justify-center ${
+                        isSelected
+                          ? "border-orange-500 bg-orange-500"
+                          : "border-gray-300"
+                      }`}
+                    >
                       {isSelected && (
                         <svg
                           className="w-3 h-3 text-white"
@@ -319,13 +321,21 @@ const FurnishingSection = ({
                         </svg>
                       )}
                     </div>
-                    <span className={`font-medium ${isSelected ? 'text-orange-800' : ''}`}>
+                    <span
+                      className={`font-medium ${
+                        isSelected ? "text-orange-800" : ""
+                      }`}
+                    >
                       {furnishing.name}
                     </span>
                   </div>
-                  
+
                   {/* Furnishing type icon */}
-                  <div className={`${isSelected ? 'text-orange-600' : 'text-gray-400'}`}>
+                  <div
+                    className={`${
+                      isSelected ? "text-orange-600" : "text-gray-400"
+                    }`}
+                  >
                     {getFurnishingIcon(furnishing.name)}
                   </div>
                 </div>
@@ -334,8 +344,12 @@ const FurnishingSection = ({
           </div>
         ) : (
           <div className="text-center py-4">
-            <p className="text-gray-500 text-sm">No furnishing types available</p>
-            <p className="text-gray-400 text-xs mt-1">Check console for details</p>
+            <p className="text-gray-500 text-sm">
+              No furnishing types available
+            </p>
+            <p className="text-gray-400 text-xs mt-1">
+              Check console for details
+            </p>
             <button
               onClick={fetchFurnishingTypes}
               className="mt-2 text-blue-600 text-sm hover:underline"
@@ -358,11 +372,11 @@ const FurnishingSection = ({
               <button
                 onClick={() => {
                   // Select all furnishing types
-                  const allIds = furnishingTypes.map(f => f.id);
+                  const allIds = furnishingTypes.map((f) => f.id);
                   setSelectedFurnishing(allIds);
-                  setFilters(prev => ({
+                  setFilters((prev) => ({
                     ...prev,
-                    furnished_id: allIds.length === 1 ? allIds[0] : allIds
+                    furnished_id: allIds.length === 1 ? allIds[0] : allIds,
                   }));
                 }}
                 className="flex-1 text-sm text-orange-600 hover:text-orange-800 py-2 hover:bg-orange-50 rounded transition-colors border border-orange-200"

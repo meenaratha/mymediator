@@ -264,9 +264,9 @@ const ListedBySection = ({
       </div>
 
       <div
-        className={`transition-all duration-300 ease-in-out overflow-hidden ${
-          !toggleSection || expandedSections?.listedBy 
-            ? "max-h-96 py-2" 
+        className={`transition-all duration-300 ease-in-out overflow-y-auto ${
+          !toggleSection || expandedSections?.listedBy
+            ? "max-h-96 py-2"
             : "max-h-0"
         }`}
       >
@@ -288,13 +288,13 @@ const ListedBySection = ({
         )}
 
         {listedByOptions.length > 0 ? (
-          <div 
+          <div
             className="py-2 overflow-auto custom-scrollbar"
             style={{ maxHeight: "150px" }}
           >
             {listedByOptions.map((option) => {
               const isSelected = selectedListedBy.includes(option.id);
-              
+
               return (
                 <div
                   key={option.id}
@@ -306,11 +306,13 @@ const ListedBySection = ({
                   onClick={() => handleListedBySelect(option)}
                 >
                   {/* Custom checkbox */}
-                  <div className={`w-4 h-4 mr-3 border-2 rounded flex items-center justify-center ${
-                    isSelected 
-                      ? "border-emerald-500 bg-emerald-500" 
-                      : "border-gray-300"
-                  }`}>
+                  <div
+                    className={`w-4 h-4 mr-3 border-2 rounded flex items-center justify-center ${
+                      isSelected
+                        ? "border-emerald-500 bg-emerald-500"
+                        : "border-gray-300"
+                    }`}
+                  >
                     {isSelected && (
                       <svg
                         className="w-3 h-3 text-white"
@@ -325,14 +327,22 @@ const ListedBySection = ({
                       </svg>
                     )}
                   </div>
-                  
+
                   <div className="flex items-center flex-1">
-                    <div className={`mr-2 ${isSelected ? 'text-emerald-600' : 'text-gray-400'}`}>
+                    <div
+                      className={`mr-2 ${
+                        isSelected ? "text-emerald-600" : "text-gray-400"
+                      }`}
+                    >
                       {getListedByIcon(option.name)}
                     </div>
-                    <label 
+                    <label
                       htmlFor={`listed-by-${option.id}`}
-                      className={`text-sm cursor-pointer ${isSelected ? 'text-emerald-800 font-medium' : 'text-gray-700'}`}
+                      className={`text-sm cursor-pointer ${
+                        isSelected
+                          ? "text-emerald-800 font-medium"
+                          : "text-gray-700"
+                      }`}
                     >
                       {option.name}
                     </label>
@@ -343,8 +353,12 @@ const ListedBySection = ({
           </div>
         ) : (
           <div className="text-center py-4">
-            <p className="text-gray-500 text-sm">No listed by options available</p>
-            <p className="text-gray-400 text-xs mt-1">Check console for details</p>
+            <p className="text-gray-500 text-sm">
+              No listed by options available
+            </p>
+            <p className="text-gray-400 text-xs mt-1">
+              Check console for details
+            </p>
             <button
               onClick={fetchListedByOptions}
               className="mt-2 text-blue-600 text-sm hover:underline"
@@ -367,11 +381,11 @@ const ListedBySection = ({
               <button
                 onClick={() => {
                   // Select all listed by options
-                  const allIds = listedByOptions.map(o => o.id);
+                  const allIds = listedByOptions.map((o) => o.id);
                   setSelectedListedBy(allIds);
-                  setFilters(prev => ({
+                  setFilters((prev) => ({
                     ...prev,
-                    listed_by_id: allIds.length === 1 ? allIds[0] : allIds
+                    listed_by_id: allIds.length === 1 ? allIds[0] : allIds,
                   }));
                 }}
                 className="flex-1 text-sm text-emerald-600 hover:text-emerald-800 py-2 hover:bg-emerald-50 rounded transition-colors border border-emerald-200"
@@ -382,8 +396,6 @@ const ListedBySection = ({
             </div>
           </div>
         )}
-
-        
       </div>
     </div>
   );

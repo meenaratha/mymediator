@@ -55,7 +55,7 @@ const ElectronicsCard = ({ item }) => {
             e.target.src = IMAGES.placeholderimg;
           }}
         />
-        
+
         {/* Category badge */}
         {item.subcategory && (
           <div className="absolute top-2 left-2 bg-blue-900 text-white px-2 py-1 rounded text-xs font-semibold">
@@ -65,37 +65,36 @@ const ElectronicsCard = ({ item }) => {
       </div>
 
       <CardContent className="p-3">
-        <h3 className="font-bold text-lg line-clamp-2 mb-2">
-          {item.title}
-        </h3>
+        <h3 className="font-bold text-lg line-clamp-2 mb-2">{item.title}</h3>
 
         <div className="flex items-center text-sm text-gray-500 mt-1 mb-2">
-          <LocationOnIcon sx={{ color: red[500], fontSize: 16 }} className="mr-1" />
-          <span className="line-clamp-1">
-            {getLocation()}
-          </span>
+          <LocationOnIcon
+            sx={{ color: red[500], fontSize: 16 }}
+            className="mr-1"
+          />
+          <span className="line-clamp-1">{getLocation()}</span>
         </div>
 
         {/* Brand and Model */}
         {(item.brand || item.model) && (
           <div className="mb-2">
             <span className="text-sm text-gray-600">
-              {item.brand && item.model 
+              {item.brand && item.model
                 ? `${item.brand} ${item.model}`
-                : item.brand || item.model
-              }
+                : item.brand || item.model}
             </span>
           </div>
         )}
-
-       
 
         <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">
           <span className="text-sm text-gray-500">
             {item.post_year || "2025"}
           </span>
-          <span className="font-bold text-lg text-black">
+          {/* <span className="font-bold text-lg text-black">
             {formatPrice(item.price)}
+          </span> */}
+          <span className="font-bold text-lg text-black">
+            {item.price}
           </span>
         </div>
       </CardContent>

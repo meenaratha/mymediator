@@ -368,9 +368,9 @@ const BedroomsSection = ({
       </div>
 
       <div
-        className={`transition-all duration-300 ease-in-out overflow-hidden ${
-          !toggleSection || expandedSections?.bedrooms 
-            ? "max-h-96 py-2" 
+        className={`transition-all duration-300 ease-in-out overflow-y-auto ${
+          !toggleSection || expandedSections?.bedrooms
+            ? "max-h-96 py-2"
             : "max-h-0"
         }`}
       >
@@ -395,7 +395,7 @@ const BedroomsSection = ({
           <div className="grid grid-cols-1 gap-2 py-2">
             {bedrooms.map((bedroom, index) => {
               const isSelected = selectedBedrooms.includes(bedroom.value);
-              
+
               return (
                 <div
                   key={bedroom.value || index}
@@ -408,11 +408,13 @@ const BedroomsSection = ({
                 >
                   <div className="flex items-center">
                     {/* Checkbox style indicator */}
-                    <div className={`w-4 h-4 mr-3 border-2 rounded flex items-center justify-center ${
-                      isSelected 
-                        ? "border-blue-500 bg-blue-500" 
-                        : "border-gray-300"
-                    }`}>
+                    <div
+                      className={`w-4 h-4 mr-3 border-2 rounded flex items-center justify-center ${
+                        isSelected
+                          ? "border-blue-500 bg-blue-500"
+                          : "border-gray-300"
+                      }`}
+                    >
                       {isSelected && (
                         <svg
                           className="w-3 h-3 text-white"
@@ -427,22 +429,28 @@ const BedroomsSection = ({
                         </svg>
                       )}
                     </div>
-                    <span className={`font-medium ${isSelected ? 'text-blue-800' : ''}`}>
+                    <span
+                      className={`font-medium ${
+                        isSelected ? "text-blue-800" : ""
+                      }`}
+                    >
                       {formatLabel(bedroom)}
                     </span>
                   </div>
-                  
+
                   {/* Bedroom icon */}
-                  <svg 
-                    className={`w-4 h-4 ${isSelected ? 'text-blue-600' : 'text-gray-400'}`}
-                    fill="none" 
-                    stroke="currentColor" 
+                  <svg
+                    className={`w-4 h-4 ${
+                      isSelected ? "text-blue-600" : "text-gray-400"
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
-                    <path 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
-                      strokeWidth="2" 
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
                       d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
                     />
                   </svg>
@@ -452,7 +460,9 @@ const BedroomsSection = ({
           </div>
         ) : (
           <div className="text-center py-4">
-            <p className="text-gray-500 text-sm">No bedroom options available</p>
+            <p className="text-gray-500 text-sm">
+              No bedroom options available
+            </p>
             <button
               onClick={fetchBedrooms}
               className="mt-2 text-blue-600 text-sm hover:underline"
@@ -475,11 +485,12 @@ const BedroomsSection = ({
               <button
                 onClick={() => {
                   // Select all bedrooms
-                  const allValues = bedrooms.map(b => b.value);
+                  const allValues = bedrooms.map((b) => b.value);
                   setSelectedBedrooms(allValues);
-                  setFilters(prev => ({
+                  setFilters((prev) => ({
                     ...prev,
-                    bedroom_min: allValues.length === 1 ? allValues[0] : allValues
+                    bedroom_min:
+                      allValues.length === 1 ? allValues[0] : allValues,
                   }));
                 }}
                 className="flex-1 text-sm text-blue-600 hover:text-blue-800 py-2 hover:bg-blue-50 rounded transition-colors border border-blue-200"
@@ -490,8 +501,6 @@ const BedroomsSection = ({
             </div>
           </div>
         )}
-
-       
       </div>
     </div>
   );

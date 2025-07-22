@@ -581,14 +581,14 @@ const Header = () => {
 
               {/* notification box */}
               <div className="flex gap-8 items-center">
-               {isAuthenticated && (
-  <Tooltip title="View Wishlist" arrow>
-    <FavoriteIcon
-      className="w-[30px] h-[30px] text-red-600 cursor-pointer"
-      onClick={() => navigate("/wishlist")}
-    />
-  </Tooltip>
-)}
+                {isAuthenticated && (
+                  <Tooltip title="View Wishlist" arrow>
+                    <FavoriteIcon
+                      className="w-[30px] h-[30px] text-red-600 cursor-pointer"
+                      onClick={() => navigate("/wishlist")}
+                    />
+                  </Tooltip>
+                )}
                 <motion.div
                   animate={
                     isNotificationShaking
@@ -755,8 +755,6 @@ const Header = () => {
                 >
                   Sell
                 </motion.button>
-
-               
               </div>
             </div>
           </div>
@@ -885,147 +883,6 @@ const Header = () => {
                       onClick={() => setIsLocationOpen(!isLocationOpen)}
                     />
                   </motion.div>
-
-                  <AnimatePresence>
-                    {isLocationOpen && (
-                      <>
-                        {/* Popup */}
-                        <motion.div
-                          initial={{ opacity: 0, y: 20, height: 0 }}
-                          animate={{ opacity: 1, y: 0, height: "auto" }}
-                          exit={{ opacity: 0, y: 20, height: 0 }}
-                          transition={{ duration: 0.3, ease: "easeOut" }}
-                          // className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[350px] bg-white rounded-lg shadow-lg z-50"
-                          className="absolute top-full right-0 mt-2 w-[350px] bg-white rounded-lg shadow-lg z-50"
-                        >
-                          <div
-                            ref={locationDropdownRef}
-                            className="p-3 max-h-[400px] overflow-y-auto custom-scrollbar"
-                          >
-                            {/* Google Autocomplete */}
-                            <div className="mb-3">
-                              <Autocomplete
-                                onLoad={(autocomplete) => {
-                                  autocompleteRef.current = autocomplete;
-                                }}
-                                onPlaceChanged={() => {
-                                  const place =
-                                    autocompleteRef.current.getPlace();
-                                  if (!place.address_components) return;
-
-                                  const components = place.address_components;
-
-                                  const getComponent = (type) =>
-                                    components.find((c) =>
-                                      c.types.includes(type)
-                                    )?.long_name || "";
-
-                                  const address = place.formatted_address;
-                                  const city =
-                                    getComponent("locality") ||
-                                    getComponent("sublocality") ||
-                                    getComponent("administrative_area_level_2");
-                                  const state = getComponent(
-                                    "administrative_area_level_1"
-                                  );
-                                  const country = getComponent("country");
-
-                                  const lat = place.geometry?.location?.lat();
-                                  const lng = place.geometry?.location?.lng();
-
-                                  const newLocation = {
-                                    address,
-                                    city,
-                                    state,
-                                    country,
-                                    latitude: lat,
-                                    longitude: lng,
-                                  };
-
-                                  handleLocationSelect(newLocation);
-                                }}
-                              >
-                                <div className="relative">
-                                  <SearchIcon className="absolute left-3 top-3 text-gray-400" />
-                                  <input
-                                    type="text"
-                                    placeholder="Search for area, street name..."
-                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                  />
-                                </div>
-                              </Autocomplete>
-                            </div>
-
-                            {/* Use Current Location */}
-                            <motion.div
-                              initial={{ opacity: 0, x: -20 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ duration: 0.2 }}
-                              className="flex items-center gap-3 py-2 px-3 hover:bg-gray-50 rounded-md cursor-pointer mb-3 border-b border-gray-200 pb-3"
-                              onClick={handleCurrentLocation}
-                            >
-                              {isLoading ? (
-                                <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                              ) : (
-                                <GpsFixedIcon className="w-5 h-5 text-blue-500" />
-                              )}
-                              <span className="text-blue-500 font-medium">
-                                {isLoading
-                                  ? "Getting location..."
-                                  : "Use Current Location"}
-                              </span>
-                            </motion.div>
-
-                            {/* Recent Locations */}
-                            {recentLocations.length > 0 && (
-                              <div className="mb-3 border-b border-gray-200 pb-3">
-                                <h3 className="text-sm text-gray-500 mb-2">
-                                  Recent Locations
-                                </h3>
-                                {recentLocations.map((location, index) => (
-                                  <motion.div
-                                    key={index}
-                                    className="flex items-center gap-3 py-2 px-3 hover:bg-gray-50 rounded-md cursor-pointer"
-                                    onClick={() =>
-                                      handleLocationSelect({
-                                        address: location,
-                                      })
-                                    }
-                                  >
-                                    <LocationOnIcon className="w-5 h-5 text-gray-600" />
-                                    <span className="text-gray-700">
-                                      {location}
-                                    </span>
-                                  </motion.div>
-                                ))}
-                              </div>
-                            )}
-
-                            {/* Popular Locations */}
-                            <div>
-                              <h3 className="text-sm text-gray-500 mb-2">
-                                Popular Locations
-                              </h3>
-                              {popularLocations.map((location, index) => (
-                                <motion.div
-                                  key={index}
-                                  className="flex items-center gap-3 py-2 px-3 hover:bg-gray-50 rounded-md cursor-pointer"
-                                  onClick={() =>
-                                    handleLocationSelect({ address: location })
-                                  }
-                                >
-                                  <LocationOnIcon className="w-5 h-5 text-gray-600" />
-                                  <span className="text-gray-700">
-                                    {location}
-                                  </span>
-                                </motion.div>
-                              ))}
-                            </div>
-                          </div>
-                        </motion.div>
-                      </>
-                    )}
-                  </AnimatePresence>
                 </motion.div>
               </motion.nav>
             </div>
@@ -1033,17 +890,142 @@ const Header = () => {
         </div>
       </section>
 
-      {isLocationOpen && (
-        <>
-          {/* Overlay */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.5 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black z-40"
-          />
-        </>
-      )}
+      <AnimatePresence>
+        {isLocationOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.5 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black z-999"
+              ref={locationDropdownRef}
+            />
+            {/* Popup */}
+            <motion.div
+              initial={{ opacity: 0, y: 20, height: 0 }}
+              animate={{ opacity: 1, y: 0, height: "auto" }}
+              exit={{ opacity: 0, y: 20, height: 0 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[350px] bg-white rounded-lg shadow-lg z-[1001]"
+            >
+              <div
+                ref={locationDropdownRef}
+                className="p-3 max-h-[400px] overflow-y-auto custom-scrollbar"
+              >
+                {/* Google Autocomplete */}
+                <div className="mb-3">
+                  <Autocomplete
+                    onLoad={(autocomplete) => {
+                      autocompleteRef.current = autocomplete;
+                    }}
+                    onPlaceChanged={() => {
+                      const place = autocompleteRef.current.getPlace();
+                      if (!place.address_components) return;
+
+                      const components = place.address_components;
+
+                      const getComponent = (type) =>
+                        components.find((c) => c.types.includes(type))
+                          ?.long_name || "";
+
+                      const address = place.formatted_address;
+                      const city =
+                        getComponent("locality") ||
+                        getComponent("sublocality") ||
+                        getComponent("administrative_area_level_2");
+                      const state = getComponent("administrative_area_level_1");
+                      const country = getComponent("country");
+
+                      const lat = place.geometry?.location?.lat();
+                      const lng = place.geometry?.location?.lng();
+
+                      const newLocation = {
+                        address,
+                        city,
+                        state,
+                        country,
+                        latitude: lat,
+                        longitude: lng,
+                      };
+
+                      handleLocationSelect(newLocation);
+                    }}
+                  >
+                    <div className="relative">
+                      <SearchIcon className="absolute left-3 top-3 text-gray-400" />
+                      <input
+                        type="text"
+                        placeholder="Search for area, street name..."
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  </Autocomplete>
+                </div>
+
+                {/* Use Current Location */}
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex items-center gap-3 py-2 px-3 hover:bg-gray-50 rounded-md cursor-pointer mb-3 border-b border-gray-200 pb-3"
+                  onClick={handleCurrentLocation}
+                >
+                  {isLoading ? (
+                    <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <GpsFixedIcon className="w-5 h-5 text-blue-500" />
+                  )}
+                  <span className="text-blue-500 font-medium">
+                    {isLoading ? "Getting location..." : "Use Current Location"}
+                  </span>
+                </motion.div>
+
+                {/* Recent Locations */}
+                {recentLocations.length > 0 && (
+                  <div className="mb-3 border-b border-gray-200 pb-3">
+                    <h3 className="text-sm text-gray-500 mb-2">
+                      Recent Locations
+                    </h3>
+                    {recentLocations.map((location, index) => (
+                      <motion.div
+                        key={index}
+                        className="flex items-center gap-3 py-2 px-3 hover:bg-gray-50 rounded-md cursor-pointer"
+                        onClick={() =>
+                          handleLocationSelect({
+                            address: location,
+                          })
+                        }
+                      >
+                        <LocationOnIcon className="w-5 h-5 text-gray-600" />
+                        <span className="text-gray-700">{location}</span>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Popular Locations */}
+                <div>
+                  <h3 className="text-sm text-gray-500 mb-2">
+                    Popular Locations
+                  </h3>
+                  {popularLocations.map((location, index) => (
+                    <motion.div
+                      key={index}
+                      className="flex items-center gap-3 py-2 px-3 hover:bg-gray-50 rounded-md cursor-pointer"
+                      onClick={() =>
+                        handleLocationSelect({ address: location })
+                      }
+                    >
+                      <LocationOnIcon className="w-5 h-5 text-gray-600" />
+                      <span className="text-gray-700">{location}</span>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {loginFormModel && (
         <LoginFormModel
