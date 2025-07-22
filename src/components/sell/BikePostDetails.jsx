@@ -613,7 +613,7 @@ const BikePostDetails = () => {
                   kilometers={bike.kilometers}
                   engineCC={bike.engine_cc}
                   price={bike.price}
-                  status={bike.status_label || "available"}
+                  status={bike.status || "available"}
                   isPublished={bike.is_published || 0}
                   subcategory={bike.subcategory}
                   onStatusChange={handleStatusChange}

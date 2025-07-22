@@ -630,7 +630,7 @@ const ElectronicsPostDetails = () => {
                   price={
                     item.price 
                   }
-                  status={item.status_label || "available"}
+                  status={item.status || "available"}
                   isPublished={item.is_published || 0}
                   subcategory={item.subcategory}
                   onStatusChange={handleStatusChange}

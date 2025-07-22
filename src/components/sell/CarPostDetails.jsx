@@ -611,7 +611,7 @@ const CarPostDetails = () => {
                   fuelType={car.fuel_type_name || car.fuel_type}
                   transmission={car.transmission_name || car.transmission}
                   price={car.price }
-                  status={car.status_label || "available"}
+                  status={car.status || "available"}
                   isPublished={car.is_published || 0}
                   onStatusChange={handleStatusChange}
                   onDelete={handleDeleteCar}

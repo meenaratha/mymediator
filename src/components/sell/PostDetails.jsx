@@ -650,7 +650,7 @@ const PropertyPostDetails = () => {
                   }
                   bedroom={property.bedrooms}
                   price={property.amount}
-                  status={property.status_label || "available"}
+                  status={property.status || "available"}
                   isPublished={property.is_published || 0}
                   onStatusChange={handleStatusChange}
                   onDelete={handleDeleteProperty}

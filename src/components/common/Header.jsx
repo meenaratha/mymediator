@@ -713,7 +713,7 @@ const Header = () => {
                               }
                             >
                               <SettingsIcon className="w-5 h-5" />
-                              Subscribtion
+                              Subscription
                             </motion.button>
                           </div>
 
