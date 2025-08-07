@@ -30,6 +30,7 @@ import { Heart, } from 'lucide-react';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import IMAGES from "../../utils/images";
 import { Tooltip } from "@mui/material";
+import AddressAutocomplete from "./AddressAutocomplete";
 const GOOGLE_MAP_LIBRARIES = ["places"];
 const Header = () => {
   const navigate = useNavigate();
@@ -74,7 +75,6 @@ const Header = () => {
     }
     console.log("isAuthenticated:", isAuthenticated);
 
-
     try {
       setProfileLoading(true);
       setProfileError(null);
@@ -89,7 +89,6 @@ const Header = () => {
       } else {
         throw new Error("User profile data is missing or invalid");
       }
-      
     } catch (error) {
       console.error("Error fetching user profile:", error);
       setProfileError(error.message);
@@ -145,7 +144,8 @@ const Header = () => {
 
   const getUserDisplayName = () => userProfile?.name || "User";
 
-  const getUserAvatar = () => userProfile?.image_url || IMAGES.placeholderprofile;
+  const getUserAvatar = () =>
+    userProfile?.image_url || IMAGES.placeholderprofile;
 
   const getUserPhone = () => userProfile?.mobile_number || "";
 
@@ -161,7 +161,7 @@ const Header = () => {
     }
     return name.charAt(0).toUpperCase();
   };
-  
+
   // Add scroll event listener to check scroll position
   useEffect(() => {
     const handleScroll = () => {
@@ -271,58 +271,165 @@ const Header = () => {
     }
   }, []);
 
+  // useEffect(() => {
+  //   setIsLoading(true);
+  //   navigator.geolocation.getCurrentPosition(
+  //     async (position) => {
+  //       const { latitude, longitude } = position.coords;
+  //       try {
+  //         const res = await fetch(
+  //           `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${
+  //             import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+  //           }`
+  //         );
+  //         const data = await res.json();
+  //         const result = data.results[0];
+  //         const address = result?.formatted_address || "";
+  //         const components = result?.address_components || [];
+
+  //         const getComponent = (type) =>
+  //           components.find((c) => c.types.includes(type))?.long_name || "";
+
+  //         const city =
+  //           getComponent("locality") ||
+  //           getComponent("sublocality") ||
+  //           getComponent("administrative_area_level_2");
+
+  //         const state = getComponent("administrative_area_level_1");
+  //         const country = getComponent("country");
+
+  //         const locationData = {
+  //           address,
+  //           city,
+  //           state,
+  //           country,
+  //           latitude,
+  //           longitude,
+  //         };
+
+  //         localStorage.setItem(
+  //           "selectedLocation",
+  //           JSON.stringify(locationData)
+  //         );
+  //         setSelectedLocation(address || `${city}, ${state}`);
+  //       } catch (err) {
+  //         console.error("Geocode error:", err);
+  //       }
+  //       setIsLoading(false);
+  //     },
+  //     (err) => {
+  //       console.error("Geolocation error:", err);
+  //       setIsLoading(false);
+  //     }
+  //   );
+  // }, []);
+
+  // Get current location on component mount
   useEffect(() => {
-    setIsLoading(true);
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-        try {
-          const res = await fetch(
-            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${
-              import.meta.env.VITE_GOOGLE_MAPS_API_KEY
-            }`
-          );
-          const data = await res.json();
-          const result = data.results[0];
-          const address = result?.formatted_address || "";
-          const components = result?.address_components || [];
+    const getInitialLocation = async () => {
+      // Don't fetch if location is already saved
+      const savedLocation = localStorage.getItem("selectedLocation");
+      if (savedLocation) return;
 
-          const getComponent = (type) =>
-            components.find((c) => c.types.includes(type))?.long_name || "";
+      setIsLoading(true);
 
-          const city =
-            getComponent("locality") ||
-            getComponent("sublocality") ||
-            getComponent("administrative_area_level_2");
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const { latitude, longitude } = position.coords;
+            try {
+              const res = await fetch(
+                `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${
+                  import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+                }`
+              );
+              const data = await res.json();
+              const result = data.results[0];
 
-          const state = getComponent("administrative_area_level_1");
-          const country = getComponent("country");
+              if (result) {
+                const address = result.formatted_address || "";
+                const components = result.address_components || [];
 
-          const locationData = {
-            address,
-            city,
-            state,
-            country,
-            latitude,
-            longitude,
-          };
+                const getComponent = (type) =>
+                  components.find((c) => c.types.includes(type))?.long_name ||
+                  "";
 
-          localStorage.setItem(
-            "selectedLocation",
-            JSON.stringify(locationData)
-          );
-          setSelectedLocation(address || `${city}, ${state}`);
-        } catch (err) {
-          console.error("Geocode error:", err);
-        }
-        setIsLoading(false);
-      },
-      (err) => {
-        console.error("Geolocation error:", err);
+                const city =
+                  getComponent("locality") ||
+                  getComponent("sublocality") ||
+                  getComponent("administrative_area_level_2");
+
+                const state = getComponent("administrative_area_level_1");
+                const country = getComponent("country");
+
+                const locationData = {
+                  address,
+                  city,
+                  state,
+                  country,
+                  latitude,
+                  longitude,
+                };
+
+                // Update state and localStorage
+                handleLocationSelect(locationData);
+              }
+            } catch (err) {
+              console.error("Geocode error:", err);
+            }
+            setIsLoading(false);
+          },
+          (err) => {
+            console.error("Geolocation error:", err);
+            setIsLoading(false);
+          }
+        );
+      } else {
         setIsLoading(false);
       }
-    );
+    };
+
+    getInitialLocation();
   }, []);
+
+  // const handleCurrentLocation = () => {
+  //   setIsLoading(true);
+  //   if (navigator.geolocation) {
+  //     navigator.geolocation.getCurrentPosition(
+  //       async (position) => {
+  //         const lat = position.coords.latitude;
+  //         const lng = position.coords.longitude;
+
+  //         try {
+  //           const res = await fetch(
+  //             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
+  //           );
+  //           const data = await res.json();
+
+  //           const newLocation = {
+  //             address: data.display_name,
+  //             city:
+  //               data.address.city || data.address.town || data.address.village,
+  //             state: data.address.state,
+  //             country: data.address.country,
+  //             latitude: lat,
+  //             longitude: lng,
+  //           };
+
+  //           handleLocationSelect(newLocation);
+  //         } catch (err) {
+  //           console.error("Location fetch error", err);
+  //         } finally {
+  //           setIsLoading(false);
+  //         }
+  //       },
+  //       () => setIsLoading(false)
+  //     );
+  //   } else {
+  //     setIsLoading(false);
+  //     alert("Geolocation not supported");
+  //   }
+  // };
 
   const handleCurrentLocation = () => {
     setIsLoading(true);
@@ -333,63 +440,117 @@ const Header = () => {
           const lng = position.coords.longitude;
 
           try {
+            // Using Google Geocoding API instead of Nominatim for consistency
             const res = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
+              `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${
+                import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+              }`
             );
             const data = await res.json();
+            const result = data.results[0];
 
-            const newLocation = {
-              address: data.display_name,
-              city:
-                data.address.city || data.address.town || data.address.village,
-              state: data.address.state,
-              country: data.address.country,
-              latitude: lat,
-              longitude: lng,
-            };
+            if (result) {
+              const components = result.address_components;
+              const getComponent = (type) =>
+                components.find((c) => c.types.includes(type))?.long_name || "";
 
-            handleLocationSelect(newLocation);
+              const newLocation = {
+                address: result.formatted_address,
+                city:
+                  getComponent("locality") ||
+                  getComponent("sublocality") ||
+                  getComponent("administrative_area_level_2"),
+                state: getComponent("administrative_area_level_1"),
+                country: getComponent("country"),
+                latitude: lat,
+                longitude: lng,
+              };
+
+              handleLocationSelect(newLocation);
+            }
           } catch (err) {
             console.error("Location fetch error", err);
           } finally {
             setIsLoading(false);
           }
         },
-        () => setIsLoading(false)
+        (error) => {
+          console.error("Geolocation error:", error);
+          setIsLoading(false);
+          alert("Unable to get current location. Please select manually.");
+        }
       );
     } else {
       setIsLoading(false);
-      alert("Geolocation not supported");
+      alert("Geolocation not supported by this browser");
     }
   };
 
+  // Load recent locations when popup opens
   useEffect(() => {
     if (isLocationOpen) {
       const saved = JSON.parse(localStorage.getItem("recentLocations")) || [];
       setRecentLocations(saved);
     }
     document.body.style.overflow = isLocationOpen ? "hidden" : "";
+
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [isLocationOpen]);
 
   const handleLocationSelect = (location) => {
-    const address = location.address || `${location.city}, ${location.state}`;
+    try {
+      const address =
+        location.address ||
+        `${location.city || ""}, ${location.state || ""}`.trim();
 
-    // Save selected location
-    localStorage.setItem("selectedLocation", JSON.stringify(location));
-    setSelectedLocation(address);
-    setIsLocationOpen(false);
+      // Ensure we have a valid address
+      if (!address || address === ", ") {
+        console.error("Invalid location data:", location);
+        return;
+      }
 
-    // Update recent locations
-    const saved = JSON.parse(localStorage.getItem("recentLocations")) || [];
-    const updated = [address, ...saved.filter((loc) => loc !== address)].slice(
-      0,
-      5
-    );
-    localStorage.setItem("recentLocations", JSON.stringify(updated));
-    setRecentLocations(updated);
+      // Create complete location object
+      const completeLocation = {
+        address: address,
+        city: location.city || "",
+        state: location.state || "",
+        country: location.country || "",
+        latitude: location.latitude || null,
+        longitude: location.longitude || null,
+      };
 
-    // Send to backend
-    axios.post("/location", location).catch(console.error);
+      // Update state
+      setSelectedLocation(address);
+      setIsLocationOpen(false);
+
+      // Save to localStorage
+      localStorage.setItem(
+        "selectedLocation",
+        JSON.stringify(completeLocation)
+      );
+
+      // Update recent locations
+      const saved = JSON.parse(localStorage.getItem("recentLocations")) || [];
+      const updated = [
+        address,
+        ...saved.filter((loc) => loc !== address),
+      ].slice(0, 5);
+      localStorage.setItem("recentLocations", JSON.stringify(updated));
+      setRecentLocations(updated);
+
+      // Send to backend (optional)
+      if (api) {
+        api.post("/location", completeLocation).catch((err) => {
+          console.error("Error sending location to backend:", err);
+        });
+      }
+
+      console.log("Location updated:", completeLocation);
+    } catch (error) {
+      console.error("Error in handleLocationSelect:", error);
+    }
   };
 
   useEffect(() => {
@@ -913,7 +1074,7 @@ const Header = () => {
                 className="p-3 max-h-[400px] overflow-y-auto custom-scrollbar"
               >
                 {/* Google Autocomplete */}
-                <div className="mb-3">
+                {/* <div className="mb-3">
                   <Autocomplete
                     onLoad={(autocomplete) => {
                       autocompleteRef.current = autocomplete;
@@ -960,7 +1121,9 @@ const Header = () => {
                       />
                     </div>
                   </Autocomplete>
-                </div>
+                </div> */}
+
+                <AddressAutocomplete/>
 
                 {/* Use Current Location */}
                 <motion.div
