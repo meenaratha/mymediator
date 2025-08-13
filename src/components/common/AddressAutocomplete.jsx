@@ -4,7 +4,6 @@ import { useLoadScript, Autocomplete } from "@react-google-maps/api";
 const GOOGLE_MAP_LIBRARIES = ["places"];
 
 const AddressAutocomplete = () => {
-  const autocompleteRef = useRef(null);
   const [address, setAddress] = useState("");
   const [autocomplete, setAutocomplete] = useState(null);
 
@@ -13,20 +12,15 @@ const AddressAutocomplete = () => {
     libraries: GOOGLE_MAP_LIBRARIES,
   });
 
-   const onLoad = (autocomplete) => {
-     setAutocomplete(autocomplete);
-     autocomplete.setFields([
-       "address_components",
-       "geometry",
-       "formatted_address",
-     ]);
-   };
+  const onLoad = (auto) => {
+    setAutocomplete(auto); // store the autocomplete instance
+  };
 
 
   const onPlaceChanged = () => {
-    if (!autocompleteRef.current) return;
+    if (!autocomplete) return;
 
-    const place = autocompleteRef.current.getPlace();
+    const place = autocomplete.getPlace();
     if (!place || !place.geometry || !place.formatted_address) {
       console.log("Invalid place data");
       return;
@@ -54,11 +48,11 @@ const AddressAutocomplete = () => {
 
   return (
     <div className="mb-3">
-      <div className="relative z-[9999]">
+      <div className="relative">
         <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
           <input
             type="text"
-            className="w-full relative z-[9999] pl-4 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full relative  pl-4 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Search for area, street name..."
             value={address}
             onChange={(e) => setAddress(e.target.value)}

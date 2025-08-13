@@ -57,6 +57,8 @@ const Header = () => {
     "Mumbai, Maharashtra",
     "Delhi, India",
   ]);
+    const [address, setAddress] = useState([]);;
+ const [autocomplete, setAutocomplete] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const autocompleteRef = useRef(null);
 
@@ -333,60 +335,60 @@ const Header = () => {
 
       setIsLoading(true);
 
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          async (position) => {
-            const { latitude, longitude } = position.coords;
-            try {
-              const res = await fetch(
-                `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${
-                  import.meta.env.VITE_GOOGLE_MAPS_API_KEY
-                }`
-              );
-              const data = await res.json();
-              const result = data.results[0];
+      // if (navigator.geolocation) {
+      //   navigator.geolocation.getCurrentPosition(
+      //     async (position) => {
+      //       const { latitude, longitude } = position.coords;
+      //       try {
+      //         const res = await fetch(
+      //           `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${
+      //             import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+      //           }`
+      //         );
+      //         const data = await res.json();
+      //         const result = data.results[0];
 
-              if (result) {
-                const address = result.formatted_address || "";
-                const components = result.address_components || [];
+      //         if (result) {
+      //           const address = result.formatted_address || "";
+      //           const components = result.address_components || [];
 
-                const getComponent = (type) =>
-                  components.find((c) => c.types.includes(type))?.long_name ||
-                  "";
+      //           const getComponent = (type) =>
+      //             components.find((c) => c.types.includes(type))?.long_name ||
+      //             "";
 
-                const city =
-                  getComponent("locality") ||
-                  getComponent("sublocality") ||
-                  getComponent("administrative_area_level_2");
+      //           const city =
+      //             getComponent("locality") ||
+      //             getComponent("sublocality") ||
+      //             getComponent("administrative_area_level_2");
 
-                const state = getComponent("administrative_area_level_1");
-                const country = getComponent("country");
+      //           const state = getComponent("administrative_area_level_1");
+      //           const country = getComponent("country");
 
-                const locationData = {
-                  address,
-                  city,
-                  state,
-                  country,
-                  latitude,
-                  longitude,
-                };
+      //           const locationData = {
+      //             address,
+      //             city,
+      //             state,
+      //             country,
+      //             latitude,
+      //             longitude,
+      //           };
 
-                // Update state and localStorage
-                handleLocationSelect(locationData);
-              }
-            } catch (err) {
-              console.error("Geocode error:", err);
-            }
-            setIsLoading(false);
-          },
-          (err) => {
-            console.error("Geolocation error:", err);
-            setIsLoading(false);
-          }
-        );
-      } else {
-        setIsLoading(false);
-      }
+      //           // Update state and localStorage
+      //           handleLocationSelect(locationData);
+      //         }
+      //       } catch (err) {
+      //         console.error("Geocode error:", err);
+      //       }
+      //       setIsLoading(false);
+      //     },
+      //     (err) => {
+      //       console.error("Geolocation error:", err);
+      //       setIsLoading(false);
+      //     }
+      //   );
+      // } else {
+      //   setIsLoading(false);
+      // }
     };
 
     getInitialLocation();
@@ -537,16 +539,10 @@ const Header = () => {
         address,
         ...saved.filter((loc) => loc !== address),
       ].slice(0, 5);
-      localStorage.setItem("recentLocations", JSON.stringify(updated));
-      setRecentLocations(updated);
+      localStorage.setItem("recentLocations", JSON.stringify(completeLocation));
+      setRecentLocations(completeLocation);
 
-      // Send to backend (optional)
-      if (api) {
-        api.post("/location", completeLocation).catch((err) => {
-          console.error("Error sending location to backend:", err);
-        });
-      }
-
+     
       console.log("Location updated:", completeLocation);
     } catch (error) {
       console.error("Error in handleLocationSelect:", error);
@@ -1067,14 +1063,14 @@ const Header = () => {
               animate={{ opacity: 1, y: 0, height: "auto" }}
               exit={{ opacity: 0, y: 20, height: 0 }}
               transition={{ duration: 0.3, ease: "easeOut" }}
-              className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[350px] bg-white rounded-lg shadow-lg z-[1001]"
+              className="z-1000 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[350px] bg-white rounded-lg shadow-lg "
             >
               <div
                 ref={locationDropdownRef}
                 className="p-3 max-h-[400px] overflow-y-auto custom-scrollbar"
               >
                 {/* Google Autocomplete */}
-                {/* <div className="mb-3">
+                <div className="mb-3">
                   <Autocomplete
                     onLoad={(autocomplete) => {
                       autocompleteRef.current = autocomplete;
@@ -1118,12 +1114,14 @@ const Header = () => {
                         type="text"
                         placeholder="Search for area, street name..."
                         className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
                       />
                     </div>
                   </Autocomplete>
-                </div> */}
+                </div>
 
-                <AddressAutocomplete/>
+                {/* <AddressAutocomplete /> */}
 
                 {/* Use Current Location */}
                 <motion.div

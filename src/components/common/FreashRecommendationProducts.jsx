@@ -209,46 +209,82 @@ const FreashRecommendationProducts = () => {
   const [hasMoreData, setHasMoreData] = useState(false);
   const [error, setError] = useState(null);
 
+  // ✅ Helper function
+  const getLocationFromStorage = () => {
+    try {
+      const selectedLocationStr = localStorage.getItem("selectedLocation");
+
+      if (!selectedLocationStr) {
+        return null;
+      }
+
+      const selectedLocation = JSON.parse(selectedLocationStr);
+
+      if (!selectedLocation.latitude || !selectedLocation.longitude) {
+        return null;
+      }
+
+      return {
+        latitude: parseFloat(selectedLocation.latitude),
+        longitude: parseFloat(selectedLocation.longitude),
+      };
+    } catch (error) {
+      console.error("Error reading selectedLocation from localStorage:", error);
+      return null;
+    }
+  };
+
   // Fetch listings from API
   const fetchListings = async (page = 1, loadMore = false) => {
     if (loadMore) setLoadingMore(true);
     else setLoading(true);
-    
+
     setError(null);
 
     try {
-      const response = await api.get(`/all-listings?page=${page}`);
+      // Get location from localStorage
+      const location = getLocationFromStorage();
+      // Build query params
+      const params = { page };
+      if (location) {
+        params.latitude = location.latitude;
+        params.longitude = location.longitude;
+      }
+      // const response = await api.get(`/all-listings?page=${page}`);
+        const response = await api.get("/all-listings", { params });
       const result = response.data?.data;
 
       if (result) {
         const newListings = result.data || [];
-        
-        setListings(prev => 
+
+        setListings((prev) =>
           page === 1 ? newListings : [...prev, ...newListings]
         );
-        
+
         setCurrentPage(result.current_page || page);
         setLastPage(result.last_page || 1);
         setTotal(result.total || 0);
         setHasMoreData(
           result.next_page_url !== null &&
-          result.current_page < result.last_page &&
-          newListings.length > 0
+            result.current_page < result.last_page &&
+            newListings.length > 0
         );
 
-        console.log(`✅ Loaded ${newListings.length} listings from page ${page}`);
+        console.log(
+          `✅ Loaded ${newListings.length} listings from page ${page}`
+        );
       } else {
         throw new Error("Invalid response format");
       }
     } catch (err) {
       console.error("❌ Failed to fetch listings:", err);
       setError(err.message || "Failed to load listings");
-      
+
       if (page === 1) {
         setListings([]);
       }
       setHasMoreData(false);
-      
+
       if (page === 1 || !err.response) {
         toast.error("Failed to load fresh recommendations");
       }
@@ -304,9 +340,9 @@ const FreashRecommendationProducts = () => {
         <div className="text-center py-12">
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
             <h3 className="text-lg font-medium text-red-800 mb-2">
-              Failed to Load Recommendations
+              Please Select your Location  
             </h3>
-            <p className="text-red-600 mb-4">{error}</p>
+            {/* <p className="text-red-600 mb-4">{error}</p> */}
             <button
               onClick={handleRetry}
               className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
@@ -317,7 +353,9 @@ const FreashRecommendationProducts = () => {
         </div>
       ) : listings.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">No listings available at the moment.</p>
+          <p className="text-gray-500 text-lg">
+            No listings available at the moment.
+          </p>
         </div>
       ) : (
         <>

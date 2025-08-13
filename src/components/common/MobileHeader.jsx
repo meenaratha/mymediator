@@ -35,13 +35,14 @@ const MobileHeader = ({ isFixed }) => {
   const [isLocationOpen, setIsLocationOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [locationQuery, setLocationQuery] = useState("");
-  const [selectedLocation, setSelectedLocation] = useState(
-    "Chennai, Tamil Nadu"
-  );
+  const [selectedLocation, setSelectedLocation] = useState("Select Location");
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [activeCategory, setActiveCategory] = useState(null);
   const mobileLocationRef = useRef(null);
   const mobileAutocompleteRef = useRef(null);
+  const autocompleteRef = useRef(null);
+  const [recentLocations, setRecentLocations] = useState([]);
+
   const [locationLoading, setLocationLoading] = useState(false);
 
   // Dynamic data states
@@ -128,9 +129,9 @@ const MobileHeader = ({ isFixed }) => {
       alert("Maps not loaded yet. Please try again.");
       return;
     }
-    
+
     setLocationLoading(true);
-    
+
     try {
       // Check if geolocation is supported
       if (!navigator.geolocation) {
@@ -139,7 +140,7 @@ const MobileHeader = ({ isFixed }) => {
 
       const position = await new Promise((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(
-          resolve, 
+          resolve,
           reject,
           {
             enableHighAccuracy: true,
@@ -155,20 +156,20 @@ const MobileHeader = ({ isFixed }) => {
       const response = await fetch(
         `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`
       );
-      
+
       if (!response.ok) {
         throw new Error("Failed to fetch location data");
       }
 
       const data = await response.json();
-      
+
       if (data.status !== "OK" || !data.results || data.results.length === 0) {
         throw new Error("No location data found");
       }
 
       const result = data.results[0];
       const components = result.address_components;
-      
+
       const getComponent = (type) =>
         components.find((c) => c.types.includes(type))?.long_name || "";
 
@@ -176,10 +177,23 @@ const MobileHeader = ({ isFixed }) => {
         getComponent("locality") ||
         getComponent("sublocality") ||
         getComponent("administrative_area_level_2");
-      
+
       const state = getComponent("administrative_area_level_1");
       const country = getComponent("country");
       
+ const newLocation = {
+   address: result.formatted_address,
+   city:
+     getComponent("locality") ||
+     getComponent("sublocality") ||
+     getComponent("administrative_area_level_2"),
+   state: getComponent("administrative_area_level_1"),
+   country: getComponent("country"),
+   //  latitude: lat,
+   //  longitude: lng,
+   latitude, // ✅ correct
+   longitude, // ✅ correct
+ };
       // Create location object
       const locationData = {
         address: result.formatted_address,
@@ -194,25 +208,17 @@ const MobileHeader = ({ isFixed }) => {
       const displayLocation = result.formatted_address || `${city}, ${state}`;
       setSelectedLocation(displayLocation);
       setLocationQuery(displayLocation);
+      localStorage.setItem("user_location", JSON.stringify(locationData));
       localStorage.setItem("selectedLocation", JSON.stringify(locationData));
-      localStorage.setItem("user_location", displayLocation);
-      
+
       // Close location modal
       setIsLocationOpen(false);
-      
-      // Optional: Send to backend
-      try {
-        await api.post("/location", locationData);
-      } catch (apiError) {
-        console.error("Error sending location to backend:", apiError);
-        // Don't show error to user as location was set successfully
-      }
 
     } catch (error) {
       console.error("Geolocation error:", error);
-      
+
       let errorMessage = "Unable to get your location. ";
-      
+
       if (error.code === 1) {
         errorMessage += "Please enable location access in your browser settings.";
       } else if (error.code === 2) {
@@ -222,23 +228,22 @@ const MobileHeader = ({ isFixed }) => {
       } else {
         errorMessage += "Please try again or select location manually.";
       }
-      
+
       alert(errorMessage);
     } finally {
       setLocationLoading(false);
     }
   };
 
+
+
   useEffect(() => {
-    if (isLoaded && window.innerWidth <= 768) {
-      const savedLocation = localStorage.getItem("user_location");
-      if (savedLocation) {
-        setSelectedLocation(savedLocation);
-      } else {
-        fetchAndSetCurrentLocation();
-      }
+    const saved = localStorage.getItem("selectedLocation");
+    if (saved) {
+      const loc = JSON.parse(saved);
+      setSelectedLocation(loc.address || `${loc.city}, ${loc.state}`);
     }
-  }, [isLoaded]);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -255,10 +260,50 @@ const MobileHeader = ({ isFixed }) => {
   }, [isLocationOpen]);
 
   const handleLocationSelect = (location) => {
-    setSelectedLocation(location);
-    setIsLocationOpen(false);
-    setIsMenuOpen(false);
-    localStorage.setItem("user_location", location);
+    try {
+      const address =
+        location.address ||
+        `${location.city || ""}, ${location.state || ""}`.trim();
+
+      // Ensure we have a valid address
+      if (!address || address === ", ") {
+        console.error("Invalid location data:", location);
+        return;
+      }
+
+      // Create complete location object
+      const completeLocation = {
+        address: address,
+        city: location.city || "",
+        state: location.state || "",
+        country: location.country || "",
+        latitude: location.latitude || null,
+        longitude: location.longitude || null,
+      };
+
+      // Update state
+      setSelectedLocation(address);
+      setIsLocationOpen(false);
+
+      // Save to localStorage
+      localStorage.setItem(
+        "selectedLocation",
+        JSON.stringify(completeLocation)
+      );
+
+      // Update recent locations
+      const saved = JSON.parse(localStorage.getItem("recentLocations")) || [];
+      const updated = [
+        address,
+        ...saved.filter((loc) => loc !== address),
+      ].slice(0, 5);
+      localStorage.setItem("recentLocations", JSON.stringify(updated));
+      setRecentLocations(updated);
+
+      console.log("Location updated:", completeLocation);
+    } catch (error) {
+      console.error("Error in handleLocationSelect:", error);
+    }
   };
 
   const handleCategoryClick = (categoryName) => {
@@ -505,26 +550,39 @@ const MobileHeader = ({ isFixed }) => {
                 {isLocationOpen && isLoaded && (
                   <Autocomplete
                     onLoad={(autocomplete) => {
-                      mobileAutocompleteRef.current = autocomplete;
+                      autocompleteRef.current = autocomplete;
                     }}
                     onPlaceChanged={() => {
-                      const place = mobileAutocompleteRef.current.getPlace();
-                      if (!place?.address_components) return;
+                      const place = autocompleteRef.current.getPlace();
+                      if (!place.address_components) return;
+
                       const components = place.address_components;
+
                       const getComponent = (type) =>
                         components.find((c) => c.types.includes(type))
                           ?.long_name || "";
+
+                      const address = place.formatted_address;
                       const city =
                         getComponent("locality") ||
+                        getComponent("sublocality") ||
                         getComponent("administrative_area_level_2");
                       const state = getComponent("administrative_area_level_1");
-                      const address = place.formatted_address;
-                      const location =
-                        city && state ? address : `${city}, ${state}`;
-                      setSelectedLocation(location);
-                      setLocationQuery(location);
-                      localStorage.setItem("user_location", location);
-                      setIsLocationOpen(false);
+                      const country = getComponent("country");
+
+                      const lat = place.geometry?.location?.lat();
+                      const lng = place.geometry?.location?.lng();
+
+                      const newLocation = {
+                        address,
+                        city,
+                        state,
+                        country,
+                        latitude: lat,
+                        longitude: lng,
+                      };
+
+                      handleLocationSelect(newLocation);
                     }}
                   >
                     <input
@@ -540,7 +598,7 @@ const MobileHeader = ({ isFixed }) => {
 
               {/* Use Current Location */}
               <div className="px-4 pb-4 border-b">
-                <div 
+                <div
                   className="flex items-center gap-3 text-blue-600 cursor-pointer hover:bg-blue-50 p-3 rounded-lg"
                   onClick={fetchAndSetCurrentLocation}
                 >
@@ -551,13 +609,14 @@ const MobileHeader = ({ isFixed }) => {
                   )}
                   <div>
                     <div className="font-medium">
-                      {locationLoading ? "Getting location..." : "Use current location"}
+                      {locationLoading
+                        ? "Getting location..."
+                        : "Use current location"}
                     </div>
                     <div className="text-sm text-gray-500">
-                      {locationLoading 
-                        ? "Please wait..." 
-                        : "Get your current location automatically"
-                      }
+                      {locationLoading
+                        ? "Please wait..."
+                        : "Get your current location automatically"}
                     </div>
                   </div>
                 </div>
@@ -711,39 +770,38 @@ const MobileHeader = ({ isFixed }) => {
                     />
                   </Link>
 
- {/*   Categories */}
+                  {/*   Categories */}
                   <div className="text-sm text-gray-500 mb-2 px-3">
-                     CATEGORIES
+                    CATEGORIES
                   </div>
 
                   <div className="space-y-1">
+                    <Link
+                      to="/property"
+                      className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer"
+                    >
+                      <span className="text-gray-700">Property List</span>
+                    </Link>
 
-                     <Link to="/property"
-                              className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
-                                 <span className="text-gray-700">
-                               Property List
-                              </span>
-                              </Link>
+                    <Link
+                      to="/electronics"
+                      className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer"
+                    >
+                      <span className="text-gray-700">Electronic List</span>
+                    </Link>
 
-                               <Link to="/electronics"
-                              className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
-                                 <span className="text-gray-700">
-                               Electronic List
-                              </span>
-                              </Link>
-
-                               <Link to="/car"
-                              className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
-                                 <span className="text-gray-700">
-                               Car List
-                              </span>
-                              </Link>
-                               <Link to="/bike"
-                              className="flex mb-4 items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
-                                 <span className="text-gray-700">
-                               Bike List
-                              </span>
-                              </Link>
+                    <Link
+                      to="/car"
+                      className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer"
+                    >
+                      <span className="text-gray-700">Car List</span>
+                    </Link>
+                    <Link
+                      to="/bike"
+                      className="flex mb-4 items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer"
+                    >
+                      <span className="text-gray-700">Bike List</span>
+                    </Link>
                   </div>
 
                   {/* Dynamic Sub Categories */}
