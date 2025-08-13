@@ -532,6 +532,20 @@ const Header = () => {
         "selectedLocation",
         JSON.stringify(completeLocation)
       );
+      window.location.reload();
+
+    // const oldLocation = JSON.parse(
+    //   localStorage.getItem("selectedLocation") || "{}"
+    // );
+
+    // if (JSON.stringify(oldLocation) !== JSON.stringify(completeLocation)) {
+    //   localStorage.setItem(
+    //     "selectedLocation",
+    //     JSON.stringify(completeLocation)
+    //   );
+    //   window.location.reload();
+    // }
+
 
       // Update recent locations
       const saved = JSON.parse(localStorage.getItem("recentLocations")) || [];
@@ -542,7 +556,6 @@ const Header = () => {
       localStorage.setItem("recentLocations", JSON.stringify(completeLocation));
       setRecentLocations(completeLocation);
 
-     
       console.log("Location updated:", completeLocation);
     } catch (error) {
       console.error("Error in handleLocationSelect:", error);

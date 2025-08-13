@@ -290,6 +290,7 @@ const MobileHeader = ({ isFixed }) => {
         "selectedLocation",
         JSON.stringify(completeLocation)
       );
+      window.location.reload();
 
       // Update recent locations
       const saved = JSON.parse(localStorage.getItem("recentLocations")) || [];
