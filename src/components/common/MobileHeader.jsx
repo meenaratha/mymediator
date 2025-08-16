@@ -122,7 +122,7 @@ const MobileHeader = ({ isFixed }) => {
     fetchCategoriesAndSubcategories();
   }, []);
 
-  const popularLocations = ["Kerala", "Tamil Nadu", "Punjab", "Maharashtra"];
+  const popularLocations = ["Chennai, Tamil Nadu, India"];
 
   const fetchAndSetCurrentLocation = async () => {
     if (!window.google || !isLoaded) {
@@ -277,8 +277,8 @@ const MobileHeader = ({ isFixed }) => {
         city: location.city || "",
         state: location.state || "",
         country: location.country || "",
-        latitude: location.latitude || null,
-        longitude: location.longitude || null,
+        latitude: location.latitude || "13.0827",
+        longitude: location.longitude || "80.2707",
       };
 
       // Update state
@@ -624,7 +624,7 @@ const MobileHeader = ({ isFixed }) => {
               </div>
 
               {/* Popular Locations */}
-              <div className="flex-1 overflow-auto">
+              {/* <div className="flex-1 overflow-auto">
                 <div className="p-4">
                   <h3 className="text-sm text-gray-500 mb-3">
                     POPULAR LOCATIONS
@@ -642,7 +642,7 @@ const MobileHeader = ({ isFixed }) => {
                     ))}
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
           </motion.div>
         )}

@@ -51,14 +51,19 @@ const Header = () => {
 
   const [isLocationOpen, setIsLocationOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState("Select location");
+  // const [selectedLocation, setSelectedLocation] = useState({
+  //   address: "Chennai, Tamil Nadu, India",
+  //   latitude: 13.0827,
+  //   longitude: 80.2707,
+  // });
   const [recentLocations, setRecentLocations] = useState([]);
   const [popularLocations] = useState([
     "Chennai, Tamil Nadu",
     "Mumbai, Maharashtra",
     "Delhi, India",
   ]);
-    const [address, setAddress] = useState([]);;
- const [autocomplete, setAutocomplete] = useState([]);
+  const [address, setAddress] = useState([]);
+  const [autocomplete, setAutocomplete] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const autocompleteRef = useRef(null);
 
@@ -501,6 +506,20 @@ const Header = () => {
     };
   }, [isLocationOpen]);
 
+  // Run when popup opens
+  // useEffect(() => {
+  //   if (isLocationOpen) {
+  //     handleCurrentLocation();
+  //   }
+  // }, [isLocationOpen]);
+
+  // Only run current location on initial load, not every time popup opens
+  useEffect(() => {
+    if (isLocationOpen && !localStorage.getItem("selectedLocation")) {
+      handleCurrentLocation();
+    }
+  }, [isLocationOpen]);
+
   const handleLocationSelect = (location) => {
     try {
       const address =
@@ -519,8 +538,8 @@ const Header = () => {
         city: location.city || "",
         state: location.state || "",
         country: location.country || "",
-        latitude: location.latitude || null,
-        longitude: location.longitude || null,
+        latitude: location.latitude || "13.0827",
+        longitude: location.longitude || "80.2707",
       };
 
       // Update state
@@ -534,18 +553,17 @@ const Header = () => {
       );
       window.location.reload();
 
-    // const oldLocation = JSON.parse(
-    //   localStorage.getItem("selectedLocation") || "{}"
-    // );
+      // const oldLocation = JSON.parse(
+      //   localStorage.getItem("selectedLocation") || "{}"
+      // );
 
-    // if (JSON.stringify(oldLocation) !== JSON.stringify(completeLocation)) {
-    //   localStorage.setItem(
-    //     "selectedLocation",
-    //     JSON.stringify(completeLocation)
-    //   );
-    //   window.location.reload();
-    // }
-
+      // if (JSON.stringify(oldLocation) !== JSON.stringify(completeLocation)) {
+      //   localStorage.setItem(
+      //     "selectedLocation",
+      //     JSON.stringify(completeLocation)
+      //   );
+      //   window.location.reload();
+      // }
 
       // Update recent locations
       const saved = JSON.parse(localStorage.getItem("recentLocations")) || [];
@@ -648,13 +666,25 @@ const Header = () => {
     </div>
   );
   const locationDropdownRef = useRef(null);
+  // const [isLocationAllowed, setIsLocationAllowed] = useState(false);
+  const isLocationAllowed = () => {
+    const savedLocation = localStorage.getItem("selectedLocation");
+    return savedLocation !== null;
+  };
+  const [shake, setShake] = useState(false);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
         locationDropdownRef.current &&
         !locationDropdownRef.current.contains(event.target)
       ) {
-        setIsLocationOpen(false);
+        if (isLocationAllowed()) {
+          setIsLocationOpen(false); // ✅ allowed → close popup
+        } else {
+          setShake(true); // ❌ denied → shake + glow
+          setTimeout(() => setShake(false), 600); // reset after animation
+        }
       }
     };
 
@@ -667,7 +697,17 @@ const Header = () => {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isLocationOpen]);
+  }, [isLocationOpen, isLocationAllowed]);
+
+  const handleTogglePopup = () => {
+    if (isLocationAllowed()) {
+      setIsLocationOpen((prev) => !prev); // ✅ allow opening/closing normally
+    } else {
+      // ❌ if location not allowed → just shake
+      setShake(true);
+      setTimeout(() => setShake(false), 600);
+    }
+  };
 
   if (loadError) return <div>Google Maps failed to load.</div>;
   if (!isLoaded) {
@@ -1039,6 +1079,7 @@ const Header = () => {
                   whileHover={{ scale: 1.02 }}
                   transition={{ duration: 0.2 }}
                   className="flex items-center gap-1 ml-6 cursor-pointer border border-gray-300 rounded-full px-3 py-1.5 relative"
+                  onClick={() => setIsLocationOpen(!isLocationOpen)}
                 >
                   <LocationOnIcon className="w-5 h-5 text-red-500" />
                   <span className="text-gray-700 max-w-[160px] ellipse  line-clamp-2 break-words">
@@ -1048,10 +1089,7 @@ const Header = () => {
                     animate={{ rotate: isLocationOpen ? 180 : 0 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <KeyboardArrowDownIcon
-                      className="w-5 h-5 text-gray-700"
-                      onClick={() => setIsLocationOpen(!isLocationOpen)}
-                    />
+                    <KeyboardArrowDownIcon className="w-5 h-5 text-gray-700" />
                   </motion.div>
                 </motion.div>
               </motion.nav>
@@ -1067,15 +1105,32 @@ const Header = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.5 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black z-999"
-              ref={locationDropdownRef}
+              className={`${
+                isLoading ? "" : "cursor-pointer"
+              } fixed inset-0 bg-black z-999`}
+              // ref={locationDropdownRef}
             />
             {/* Popup */}
             <motion.div
               initial={{ opacity: 0, y: 20, height: 0 }}
-              animate={{ opacity: 1, y: 0, height: "auto" }}
+              animate={{
+                opacity: 1,
+                y: 0,
+                height: "auto",
+                x: shake ? [0, -10, 10, -10, 10, 0] : 0, // 👈 shake effect
+                boxShadow: shake
+                  ? "0 0 20px rgba(239,68,68,0.7)" // red glow during shake
+                  : "0 0 0 rgba(0,0,0,0)", // fade out smoothly
+                borderColor: shake ? "rgb(239,68,68)" : "transparent", // red border
+              }}
               exit={{ opacity: 0, y: 20, height: 0 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
+              transition={{
+                duration: 0.6,
+                ease: "easeOut",
+                x: { duration: 0.4 }, // faster shake
+                boxShadow: { duration: 0.8, ease: "easeOut" }, // smooth glow fade
+                borderColor: { duration: 0.8, ease: "easeOut" },
+              }}
               className="z-1000 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[350px] bg-white rounded-lg shadow-lg "
             >
               <div
