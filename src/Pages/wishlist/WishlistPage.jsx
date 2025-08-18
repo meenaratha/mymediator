@@ -248,22 +248,32 @@ const WishlistPage = () => {
       
         
         return {
-          title: item.property_name || 'Property',
-          price: formatPrice(item.amount),
+          title: item.property_name || "Property",
+          // price: formatPrice(item.amount),
+          price: item.amount,
+
           location: getLocation(item),
-          details: propertyDetails.length > 0 ? propertyDetails.join(' • ') : item.subcategory || 'Property details',
+          details:
+            propertyDetails.length > 0
+              ? propertyDetails.join(" • ")
+              : item.subcategory || "Property details",
           image: item.image_url,
-          year: item.post_year
+          year: item.post_year,
         };
       
       case 'electronic':
         return {
-          title: item.title || item.property_name || 'Electronic Item',
-          price: formatPrice(item.amount || item.price),
+          title: item.title || item.property_name || "Electronic Item",
+          // price: formatPrice(item.amount || item.price),
+          price: item.amount || item.price,
+
           location: getLocation(item),
-          details: `${item.brand_name || 'Electronics'} ${item.model_name || ''}`.trim() || 'Electronic device',
+          details:
+            `${item.brand_name || "Electronics"} ${
+              item.model_name || ""
+            }`.trim() || "Electronic device",
           image: item.image_url,
-          year: item.post_year
+          year: item.post_year,
         };
       
       case 'car':
@@ -273,12 +283,15 @@ const WishlistPage = () => {
         if (item.brand) carDetails.push(item.brand);
         
         return {
-          title: item.title || item.property_name || 'Car',
-          price: formatPrice(item.price),
+          title: item.title || item.property_name || "Car",
+          // price: formatPrice(item.price),
+          price: item.price,
+
           location: getLocation(item),
-          details: carDetails.length > 0 ? carDetails.join(' • ') : 'Car details',
+          details:
+            carDetails.length > 0 ? carDetails.join(" • ") : "Car details",
           image: item.image_url,
-          year: item.post_year
+          year: item.post_year,
         };
       
       case 'bike':
@@ -288,22 +301,26 @@ const WishlistPage = () => {
         if (item.brand) bikeDetails.push(item.brand);
         
         return {
-          title: item.title || item.property_name || 'Bike',
-          price: formatPrice(item.price),
+          title: item.title || item.property_name || "Bike",
+          // price: formatPrice(item.price),
+          price: item.price,
           location: getLocation(item),
-          details: bikeDetails.length > 0 ? bikeDetails.join(' • ') : 'Bike details',
+          details:
+            bikeDetails.length > 0 ? bikeDetails.join(" • ") : "Bike details",
           image: item.image_url,
-          year: item.post_year
+          year: item.post_year,
         };
       
       default:
         return {
-          title: item.property_name || item.title || item.name || 'Item',
-          price: formatPrice(item.amount || item.price),
+          title: item.property_name || item.title || item.name || "Item",
+          // price: formatPrice(item.amount || item.price),
+          price: item.amount || item.price,
+
           location: getLocation(item),
-          details: item.description || 'Item details',
+          details: item.description || "Item details",
           image: item.image_url,
-          year: item.post_year
+          year: item.post_year,
         };
     }
   };

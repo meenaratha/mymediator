@@ -165,7 +165,7 @@ const VendorElectronicPost = () => {
                       </div>
                     )}
                     <span className="font-bold text-lg">
-                      {formatPrice(electronic.price || electronic.amount)}
+                      {electronic.price || electronic.amount}
                     </span>
                   </div>
                 </div>

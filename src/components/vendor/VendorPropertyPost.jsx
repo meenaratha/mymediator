@@ -79,15 +79,17 @@ const VendorPropertyPost = () => {
     image: property.image_url,
     beds: property.bedrooms,
     baths: property.bathroom,
-    sqft: property.super_builtup_area || property.carpet_area || 'N/A',
-    price: (property.amount / 100000).toFixed(1), // Convert to lakhs
+    sqft: property.super_builtup_area || property.carpet_area || "N/A",
+    // price: (property.amount / 100000).toFixed(1), // Convert to lakhs
+    price: property.amount , 
+
     slug: property.action_slug,
     bhk: property.bhk,
     city: property.city,
     district: property.district,
     state: property.state,
     furnished: property.furnished,
-    description: property.description
+    description: property.description,
   });
 
   if (loading) {

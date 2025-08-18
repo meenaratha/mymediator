@@ -231,7 +231,7 @@ const BikeDescription = () => {
                     </Marker>
                   </MapContainer>
                   {/* Overlay with Google Maps icon */}
-                  <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  {/* <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                     <div className="text-white text-center">
                       <svg
                         className="w-8 h-8 mx-auto mb-1"
@@ -242,7 +242,7 @@ const BikeDescription = () => {
                       </svg>
                       <span className="text-xs">Open in Google Maps</span>
                     </div>
-                  </div>
+                  </div> */}
 
                   <div className="flex items-center space-x-2">
                     <LocationOnOutlined className="text-gray-500" />

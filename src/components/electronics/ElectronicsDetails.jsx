@@ -472,7 +472,7 @@ const ElectronicsDetails = ({ electronics }) => {
                       </MapContainer>
 
                       {/* Overlay with Google Maps icon - appears on hover */}
-                      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      {/* <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                         <div className="text-white text-center">
                           <svg
                             className="w-8 h-8 mx-auto mb-1"
@@ -483,7 +483,7 @@ const ElectronicsDetails = ({ electronics }) => {
                           </svg>
                           <span className="text-xs">Open in Google Maps</span>
                         </div>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
                 </div>
@@ -512,7 +512,7 @@ const ElectronicsDetails = ({ electronics }) => {
                   {electronics.brand !== null
                     ? electronics.brand
                     : electronics.brand_name}
-                 - {electronics.post_year}
+                  - {electronics.post_year}
                 </p>
                 {electronics.total_ratings !== null ? (
                   <div className="flex items-center">
@@ -535,9 +535,10 @@ const ElectronicsDetails = ({ electronics }) => {
               <div className="mt-1 md:mt-0">
                 <h3 className="md:text-2xl text-[20px] font-bold md:text-center">
                   ₹{" "}
-                  {electronics.price
+                  {/* {electronics.price
                     ? parseFloat(electronics.price).toLocaleString()
-                    : "N/A"}
+                    : "N/A"} */}
+                  {electronics.price}
                 </h3>
                 <div className="flex mt-4 space-x-4 justify-center">
                   <button

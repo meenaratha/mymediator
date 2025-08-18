@@ -511,7 +511,7 @@ const CarDetails = ({ car }) => {
             <div className="w-full md:w-1/2 flex flex-col md:items-center md:mt-[10px]">
               <div className="mt-1 md:mt-0">
                 <h3 className="md:text-2xl text-[20px] font-bold md:text-center text-black">
-                  ₹ {car.price ? parseFloat(car.price).toLocaleString() : "N/A"}
+                  ₹ {car.price}
                 </h3>
                 <div className="flex mt-4 space-x-4 justify-center">
                   <button

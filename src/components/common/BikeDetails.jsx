@@ -467,7 +467,7 @@ const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
                       </MapContainer>
 
                       {/* Overlay with Google Maps icon */}
-                      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      {/* <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                         <div className="text-white text-center">
                           <svg
                             className="w-8 h-8 mx-auto mb-1"
@@ -478,7 +478,7 @@ const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
                           </svg>
                           <span className="text-xs">Open in Google Maps</span>
                         </div>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
                 </div>
@@ -528,7 +528,7 @@ const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
               <div className="mt-1 md:mt-0">
                 <h3 className="md:text-2xl text-[20px] font-bold md:text-center text-black">
                   ₹{" "}
-                  {bike.price ? parseFloat(bike.price).toLocaleString() : "N/A"}
+                  {bike.price }
                 </h3>
                 <div className="flex mt-4 space-x-4 justify-center">
                   <button
