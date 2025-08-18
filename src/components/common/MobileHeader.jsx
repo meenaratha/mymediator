@@ -780,6 +780,7 @@ const MobileHeader = ({ isFixed }) => {
                     <Link
                       to="/property"
                       className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer"
+                      onClick={() => setIsMenuOpen(false)}
                     >
                       <span className="text-gray-700">Property List</span>
                     </Link>
@@ -787,6 +788,7 @@ const MobileHeader = ({ isFixed }) => {
                     <Link
                       to="/electronics"
                       className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer"
+                      onClick={() => setIsMenuOpen(false)}
                     >
                       <span className="text-gray-700">Electronic List</span>
                     </Link>
@@ -794,12 +796,14 @@ const MobileHeader = ({ isFixed }) => {
                     <Link
                       to="/car"
                       className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer"
+                      onClick={() => setIsMenuOpen(false)}
                     >
                       <span className="text-gray-700">Car List</span>
                     </Link>
                     <Link
                       to="/bike"
                       className="flex mb-4 items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer"
+                      onClick={() => setIsMenuOpen(false)}
                     >
                       <span className="text-gray-700">Bike List</span>
                     </Link>
