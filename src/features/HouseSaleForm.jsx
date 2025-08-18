@@ -108,9 +108,23 @@ const HouseSaleForm = () => {
       console.log("❌ Validation errors:", err.inner);
       
       const formattedErrors = {};
-      err.inner.forEach((e) => {
-        formattedErrors[e.path] = e.message;
-      });
+      
+      // err.inner.forEach((e) => {
+      //   formattedErrors[e.path] = e.message;
+      // });
+
+       err.inner.forEach((e) => {
+         if (formattedErrors[e.path]) {
+           // Already has error(s) → push to array
+           formattedErrors[e.path] = Array.isArray(formattedErrors[e.path])
+             ? [...formattedErrors[e.path], e.message]
+             : [formattedErrors[e.path], e.message];
+         } else {
+           // First error for this field
+           formattedErrors[e.path] = [e.message];
+         }
+       }); 
+      
       dispatch(setErrors(formattedErrors));
 
       // Autofocus first field with error

@@ -59,8 +59,7 @@ const Header = () => {
   const [recentLocations, setRecentLocations] = useState([]);
   const [popularLocations] = useState([
     "Chennai, Tamil Nadu",
-    "Mumbai, Maharashtra",
-    "Delhi, India",
+   
   ]);
   const [address, setAddress] = useState([]);
   const [autocomplete, setAutocomplete] = useState([]);
@@ -709,6 +708,26 @@ const Header = () => {
     }
   };
 
+  const allcategorymenuRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        allcategorymenuRef.current &&
+        !allcategorymenuRef.current.contains(event.target)
+      ) {
+        setIsMegaMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+
+
   if (loadError) return <div>Google Maps failed to load.</div>;
   if (!isLoaded) {
     return (
@@ -986,6 +1005,7 @@ const Header = () => {
                   whileHover={{ scale: 1.02 }}
                   transition={{ duration: 0.2 }}
                   className="flex items-center gap-1 cursor-pointer relative"
+                  ref={allcategorymenuRef}
                   onClick={() => setIsMegaMenuOpen(!isMegaMenuOpen)}
                 >
                   <span className="text-gray-700">All Categories</span>

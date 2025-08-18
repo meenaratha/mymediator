@@ -291,7 +291,7 @@ const Sell = () => {
                     <img
                       src={getCategoryImage(category)}
                       alt={category.name}
-                      className={`w-25 h-25 object-contain transition-all duration-300 ${
+                      className={` w-20 h-20 md:w-25 md:h-25 object-contain transition-all duration-300 ${
                         isActive ? "" : ""
                       }`}
                       onError={(e) => {
@@ -302,7 +302,7 @@ const Sell = () => {
                       }}
                     />
                     <span
-                      className={`text-sm font-medium text-center pt-8 transition-colors duration-300 ${
+                      className={`text-sm font-medium text-center pt-0 transition-colors duration-300 ${
                         isActive ? "text-white" : "text-black"
                       } relative z-[10]`}
                     >

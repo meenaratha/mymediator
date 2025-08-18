@@ -952,27 +952,67 @@ const PropertyForm = () => {
           );
         }
 
-        if (
-          result.validationErrors &&
-          Object.keys(result.validationErrors).length > 0
-        ) {
-          dispatch(setErrors(result.validationErrors));
+        // if (
+        //   result.validationErrors &&
+        //   Object.keys(result.validationErrors).length > 0
+        // ) {
+        //   dispatch(setErrors(result.validationErrors));
 
-          const firstErrorField = Object.keys(result.validationErrors)[0];
-          if (firstErrorField) {
-            dispatch(setFocusedField(firstErrorField));
-            setTimeout(() => {
-              const errorElement = document.getElementById(firstErrorField);
-              if (errorElement) {
-                errorElement.scrollIntoView({
-                  behavior: "smooth",
-                  block: "center",
-                });
-                errorElement.focus();
-              }
-            }, 100);
-          }
-        }
+        //   const firstErrorField = Object.keys(result.validationErrors)[0];
+        //   if (firstErrorField) {
+        //     dispatch(setFocusedField(firstErrorField));
+        //     setTimeout(() => {
+        //       const errorElement = document.getElementById(firstErrorField);
+        //       if (errorElement) {
+        //         errorElement.scrollIntoView({
+        //           behavior: "smooth",
+        //           block: "center",
+        //         });
+        //         errorElement.focus();
+        //       }
+        //     }, 100);
+        //   }
+        // }
+
+
+if (
+  result.validationErrors &&
+  Object.keys(result.validationErrors).length > 0
+) {
+  const formattedErrors = {};
+
+  Object.entries(result.validationErrors).forEach(([field, messages]) => {
+    // Flatten image.* errors into "images"
+    if (field.startsWith("images")) {
+      if (!formattedErrors["images"]) {
+        formattedErrors["images"] = [];
+      }
+      formattedErrors["images"].push(...messages);
+    } else {
+      formattedErrors[field] = Array.isArray(messages) ? messages : [messages];
+    }
+  });
+
+  dispatch(setErrors(formattedErrors));
+
+  // Focus first error field
+  const firstErrorField = Object.keys(formattedErrors)[0];
+  if (firstErrorField) {
+    dispatch(setFocusedField(firstErrorField));
+    setTimeout(() => {
+      const errorElement = document.getElementById(firstErrorField);
+      if (errorElement) {
+        errorElement.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+        errorElement.focus();
+      }
+    }, 100);
+  }
+}
+
+
       }
     } catch (err) {
       // Handle validation errors
@@ -2043,11 +2083,11 @@ const PropertyForm = () => {
                     </li>
                   ))}
                 </ul>
-                {touched.images && errors.images && (
+                {/* {touched.images && errors.images && (
                   <p className="text-red-500 text-xs mt-2 px-4">
                     {errors.images}
                   </p>
-                )}
+                )} */}
               </div>
             )}
           </div>

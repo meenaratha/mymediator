@@ -912,9 +912,26 @@ const loadCities = useCallback(
         result.validationErrors &&
         Object.keys(result.validationErrors).length > 0
       ) {
-        dispatch(setErrors(result.validationErrors));
+const formattedErrors = {};
 
-        const firstErrorField = Object.keys(result.validationErrors)[0];
+          Object.entries(result.validationErrors).forEach(
+            ([field, messages]) => {
+              // Flatten image.* errors into "images"
+              if (field.startsWith("images")) {
+                if (!formattedErrors["images"]) {
+                  formattedErrors["images"] = [];
+                }
+                formattedErrors["images"].push(...messages);
+              } else {
+                formattedErrors[field] = Array.isArray(messages)
+                  ? messages
+                  : [messages];
+              }
+            }
+          );
+        dispatch(setErrors(formattedErrors));
+
+        const firstErrorField = Object.keys(formattedErrors)[0];
         if (firstErrorField) {
           dispatch(setFocusedField(firstErrorField));
           setTimeout(() => {
@@ -1894,11 +1911,11 @@ if (isEditMode && isLoading && !formData.title) {
                       </li>
                     ))}
                   </ul>
-                  {touched.images && errors.images && (
+                  {/* {touched.images && errors.images && (
                     <p className="text-red-500 text-xs mt-2 px-4">
                       {errors.images}
                     </p>
-                  )}
+                  )} */}
                 </div>
               )}
             </div>

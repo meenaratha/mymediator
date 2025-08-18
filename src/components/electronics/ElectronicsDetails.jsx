@@ -81,6 +81,7 @@ const ElectronicsDetails = ({ electronics }) => {
     lng: electronics.longitude || defaultLocation.lng,
   };
 
+  const wishType = electronics.form_type ;
   // Wishlist functionality
   const handleWishlistClick = async (e) => {
     e.stopPropagation();
@@ -91,7 +92,8 @@ const ElectronicsDetails = ({ electronics }) => {
         // Remove from wishlist
         await api.delete('/wishlist', {
           data: {
-            wishable_type: "electronic",
+            // wishable_type: "electronics",
+            wishable_type: wishType,
             wishable_id: electronics.id.toString()
           }
         });
@@ -99,9 +101,10 @@ const ElectronicsDetails = ({ electronics }) => {
         setSnackbar({ open: true, message: 'Removed from wishlist', severity: 'info' });
       } else {
         // Add to wishlist
-        await api.post('/wishlist', {
-          wishable_type: "electronic",
-          wishable_id: electronics.id
+        await api.post("/wishlist", {
+          // wishable_type: "electronics",
+          wishable_type: wishType,
+          wishable_id: electronics.id,
         });
         setIsFavorite(true);
         setSnackbar({ open: true, message: 'Added to wishlist', severity: 'success' });

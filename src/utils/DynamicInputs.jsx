@@ -78,15 +78,31 @@ const DynamicInputs = ({
             onChange={handleFileChange}
             accept={accept || "image/*"}
           />
-          <label htmlFor={id} className="cursor-pointer flex items-center justify-center">
+          <label
+            htmlFor={id}
+            className="cursor-pointer flex items-center justify-center"
+          >
             <FileUploadIcon className="text-gray-700 mr-2" />
             <span className="text-gray-700">Upload Images</span>
           </label>
           <ImageIcon className="text-gray-700" />
         </div>
-        {touched && error && !isDragging && (
+       {touched && error && !isDragging && (
           <p className="text-red-500 text-xs mt-2 px-4">{error}</p>
-        )}
+        )} 
+
+        {/* {touched &&
+          error &&
+          !isDragging &&
+          (Array.isArray(error) ? (
+            <ul className="text-red-500 text-xs mt-2 px-4 space-y-1">
+              {error.map((errMsg, index) => (
+                <li key={index}>• {errMsg}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-red-500 text-xs mt-2 px-4">{error}</p>
+          ))} */}
       </>
     );
   }
