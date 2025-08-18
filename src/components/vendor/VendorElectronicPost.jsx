@@ -107,7 +107,7 @@ const VendorElectronicPost = () => {
                 onClick={() => handleElectronicClick(electronic)}
                 className="cursor-pointer bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
               >
-                <div className="relative h-32 overflow-hidden">
+                <div className="relative h-[170px] overflow-hidden">
                   <img
                     src={electronic.image_url || IMAGES.placeholderimg}
                     alt={electronic.title || electronic.brand}

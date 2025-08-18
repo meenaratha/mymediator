@@ -484,7 +484,7 @@ const WishlistPage = () => {
                           e.target.src = IMAGES.placeholderimg;
                         }}
                       />
-                      
+
                       {/* Remove button */}
                       <button
                         onClick={(e) => {
@@ -500,8 +500,6 @@ const WishlistPage = () => {
                           <Heart className="w-5 h-5 text-red-500 fill-current" />
                         )}
                       </button>
-
-                     
                     </div>
 
                     {/* Content */}
@@ -509,22 +507,20 @@ const WishlistPage = () => {
                       <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
                         {itemDetails.title}
                       </h3>
-                      
+
                       <div className="flex items-center text-gray-600 text-sm mb-2">
                         <MapPin className="w-4 h-4 mr-1" />
                         {itemDetails.location}
                       </div>
-                      
-                    
+
                       <div className="flex items-center justify-between">
-                         <div className="flex items-center text-gray-500 text-xs">
+                        <div className="flex items-center text-gray-500 text-xs">
                           <Calendar className="w-3 h-3 mr-1" />
                           {itemDetails.year || "2025"}
                         </div>
                         <span className="text-lg font-bold text-black">
-                          {itemDetails.price}
+                          ₹ {itemDetails.price}
                         </span>
-                       
                       </div>
                     </div>
                   </div>

@@ -91,7 +91,7 @@ const VendorBike = () => {
                 onClick={() => handleBikeClick(bike)}
                 className="cursor-pointer bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
               >
-                <div className="relative h-32 overflow-hidden">
+                <div className="relative h-[170px] overflow-hidden">
                   <img
                     src={bike.image_url}
                     alt={bike.title || bike.brand}
@@ -133,13 +133,8 @@ const VendorBike = () => {
                       <span className="ml-1">{bike.post_year}</span>
                     </div>
 
-                    <span className="font-bold text-lg">
-                    
-                      ₹ {bike.price } 
-                    </span>
+                    <span className="font-bold text-lg">₹ {bike.price}</span>
                   </div>
-
-                 
                 </div>
               </div>
             ))

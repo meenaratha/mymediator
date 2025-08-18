@@ -249,7 +249,7 @@ const PropertyFilter = ({
         }  bg-white rounded-lg shadow-sm  ${
           isMobile
             ? "w-[330px] transform transition-transform duration-300 ease-in-out z-40 overflow-y-auto p-4 h-[90vh]"
-            : "h-[600px] overflow-y-auto sticky top-[150px]"
+            : "h-[500px] overflow-y-auto sticky top-[150px]"
         } ${
           isFilterOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         } `}

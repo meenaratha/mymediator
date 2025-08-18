@@ -109,7 +109,7 @@ const VendorCarPost = () => {
                 onClick={() => handleCarClick(car)}
                 className="cursor-pointer bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
               >
-                <div className="relative h-32 overflow-hidden">
+                <div className="relative h-[170px] overflow-hidden">
                   <img
                     src={car.image_url || IMAGES.placeholderimg}
                     alt={car.title || car.brand}
@@ -139,19 +139,14 @@ const VendorCarPost = () => {
                   </div>
 
                   {/* Car details row 1 - Brand and Model Year */}
-                
 
                   <div className="flex items-center mt-2 space-x-4 text-sm text-gray-600 flex-wrap gap-2">
                     {car.brand !== null ? (
-                      <span className="font-medium">
-                        {car.brand} 
-                      </span>
+                      <span className="font-medium">{car.brand}</span>
                     ) : (
-                      <span className="font-medium">
-                      {car.brand_name}
-                      </span>
+                      <span className="font-medium">{car.brand_name}</span>
                     )}
-                  
+
                     {car.kilometers && (
                       <div className="flex items-center">
                         <SpeedIcon style={{ fontSize: 14 }} />
