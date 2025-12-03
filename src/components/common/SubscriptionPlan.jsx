@@ -2,7 +2,8 @@ import { useMediaQuery } from "react-responsive"; // For detecting mobile device
 import IMAGES from "@/utils/images.js";
 import { api } from "../../api/axios";
 import { useEffect, useState } from "react";
-
+import Swal from "sweetalert2";
+import Razorpay from "razorpay"; // Add this import
 const SubscriptionPlan = () => {
   // JSON data for pricing plans
   const pricingData = [
@@ -69,7 +70,8 @@ const SubscriptionPlan = () => {
 
   const [plans, setPlans] = useState([]);
   const [subscription, setSubscription] = useState(null);
-
+  const [loading, setLoading] = useState(false); // ← ADD THIS
+  const [loadingPlanId, setLoadingPlanId] = useState(null);
    // Fetch subscription plans
   const fetchPlans = async () => {
     try {
@@ -112,11 +114,98 @@ const SubscriptionPlan = () => {
     return map[name] || map["Silver"];
   };
 
-  // Handle Subscribe
-  const handleSubscribe = (planId) => {
-    console.log("Subscribe clicked for plan:", planId);
-    // Call your payment/razorpay flow here
+
+ // ✅ RAZORPAY INTEGRATION
+  const handleRazorpayPayment = (orderData) => {
+    const options = {
+      key: orderData.razorpay_key, // Your Razorpay key
+      amount: orderData.amount || "50000", // Amount in paise (500 * 100)
+      currency: orderData.currency || "INR",
+      name: orderData.name || "Creative Developer",
+      description: `Subscription to ${orderData.plan_name}`,
+      order_id: orderData.razorpay_order_id,
+      handler: async function (response) {
+        try {
+          // Verify payment on backend
+          const verifyResponse = await api.post("verify-payment", {
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_signature: response.razorpay_signature,
+          });
+
+          if (verifyResponse.data.success) {
+            await fetchPlans(); // Refresh subscription data
+            Swal.fire({
+              icon: 'success',
+              title: 'Payment Successful!',
+              text: 'Subscription activated successfully!',
+              confirmButtonColor: '#10B981',
+              timer: 3000,
+            });
+          }
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Payment Verification Failed!',
+            text: 'Please contact support.',
+            confirmButtonColor: '#EF4444'
+          });
+        }
+      },
+      prefill: {
+        name: orderData.name,
+        email: orderData.email || "",
+        contact: orderData.phone || "",
+      },
+      theme: {
+        color: "#10B981",
+      },
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.open();
   };
+
+  // UPDATED handleSubscribe with Razorpay
+  const handleSubscribe = async (planId) => {
+   setLoadingPlanId(planId);
+    try {
+      const payload = { plan_id: planId };
+      const response = await api.post("subscribe", payload);
+      
+      console.log("Subscribe response:", response.data);
+
+      if (response.data.success) {
+      //   const currentPlan = plans.find(p => p.id === planId);
+      // handleRazorpayPayment({
+      //   ...response.data,
+      //   plan_id: planId,
+      //   plan_name: currentPlan?.name || "plan",
+      //   amount: (currentPlan?.price || 500) * 100,
+      // });
+
+         await fetchPlans(); // Refresh subscription data
+            Swal.fire({
+              icon: 'success',
+              title: 'Payment Successful!',
+              text: 'Subscription activated successfully!',
+              confirmButtonColor: '#10B981',
+              timer: 3000,
+            });
+      }
+    } catch (error) {
+      console.error("Subscription error:", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Subscription Failed!',
+        text: error.response?.data?.message || 'Something went wrong.',
+        confirmButtonColor: '#EF4444'
+      });
+    } finally {
+       setLoadingPlanId(null);
+    }
+  };
+
 
 
   return (
@@ -129,7 +218,8 @@ const SubscriptionPlan = () => {
           <div className=" grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {plans.map((plan) => {
             const colors = getColorClasses(plan.name);
-              
+               const isActivePlan =
+    subscription?.active && subscription.plan && subscription.plan.id === plan.id;
               return (
                 <>
                 
@@ -172,14 +262,31 @@ const SubscriptionPlan = () => {
                   
                   </ul>
                   
-                  <button  onClick={() => handleSubscribe(plan.id)}  className={`${colors.bg}
-                  text-white py-2 px-4 rounded-full ${colors.hover}
-                   transition-colors w-full text-sm font-medium`}>
-                    Subscribe
+                  <button  
+                   disabled={loadingPlanId === plan.id || isActivePlan}
+                    onClick={() => handleSubscribe(plan.id)} 
+                   className={`py-2 px-4 rounded-full transition-colors w-full text-sm font-medium flex items-center justify-center ${
+                      isActivePlan
+                        ? 'bg-green-500 cursor-not-allowed text-white'
+                        : `${colors.bg} ${colors.hover} text-white`
+                    }`}>
+                   {loadingPlanId === plan.id ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Subscribing...
+                      </>
+                    ) : isActivePlan ? (
+                      '✅ Active'
+                    ) : (
+                      'Subscribe'
+                    )}
                   </button>
 
 
-{subscription?.active && subscription.plan && (
+{/* {subscription?.active && subscription.plan && (
                 <div className="absolute top-[-22%] left-[25%]  ">
  <div className="flex justify-center mb-10">
     <div className="bg-green-100 border border-green-300 rounded-xl px-6 py-4 text-center shadow-md w-full max-w-md">
@@ -199,7 +306,28 @@ const SubscriptionPlan = () => {
     </div>
   </div>
                 </div>
-              )}
+              )} */}
+
+
+                {isActivePlan && (
+        <div className="absolute top-[-22%] left-[20%]">
+          <div className="bg-green-100 border border-green-300 rounded-xl px-6 py-4 text-center shadow-md w-full max-w-md">
+            <h2 className="text-xl font-bold text-green-700 mb-2">
+              Active Plan: {subscription.plan.name}
+            </h2>
+
+            <p className="text-gray-700 text-sm">
+              <span className="font-medium">Start Date:</span>{" "}
+              {new Date(subscription.starts_at).toLocaleDateString("en-IN")}
+            </p>
+
+            <p className="text-gray-700 text-sm">
+              <span className="font-medium">End Date:</span>{" "}
+              {new Date(subscription.ends_at).toLocaleDateString("en-IN") || "N/A"}
+            </p>
+          </div>
+        </div>
+      )}
 
 
 

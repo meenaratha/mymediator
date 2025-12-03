@@ -29,6 +29,7 @@
     "libphonenumber-js": "^1.12.6",
     "lucide-react": "^0.525.0",
     "path": "^0.12.7",
+    "razorpay": "^2.9.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.58.0",

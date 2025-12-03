@@ -1,86 +1,90 @@
 import IMAGES from "@/utils/images.js";
 import { api } from "../../api/axios";
 import { Delete } from "@mui/icons-material";
+import { useEffect, useState } from "react";
 
 const ChatInterface = () => {
  
-  const messages = [
-    {
-      id: 1,
-      sender: "Dinesh",
-      profileImg: IMAGES.profile,
-      text: "Lorem ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been",
-      isNew: true,
-    },
-    {
-      id: 2,
-      sender: "Dinesh",
-      profileImg: IMAGES.profile,
-      text: "Lorem ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been",
-      isNew: true,
-    },
-    {
-      id: 3,
-      sender: "Dinesh",
-      profileImg: IMAGES.profile,
-      text: "Lorem ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been",
-      isNew: false,
-    },
-  ];
+  // const messages = [
+  //   {
+  //     id: 1,
+  //     sender: "Dinesh",
+  //     profileImg: IMAGES.profile,
+  //     text: "Lorem ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been",
+  //     isNew: true,
+  //   },
+  //   {
+  //     id: 2,
+  //     sender: "Dinesh",
+  //     profileImg: IMAGES.profile,
+  //     text: "Lorem ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been",
+  //     isNew: true,
+  //   },
+  //   {
+  //     id: 3,
+  //     sender: "Dinesh",
+  //     profileImg: IMAGES.profile,
+  //     text: "Lorem ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been",
+  //     isNew: false,
+  //   },
+  // ];
 
-  //  const [messages, setMessages] = useState([]);
+   const [messages, setMessages] = useState([]);
      // ==========================
   //   FETCH NOTIFICATIONS
   // ==========================
-  // const fetchNotifications = async () => {
-  //   try {
-  //     const response = await api.get("notifications");
-  //     setMessages(response.data); // Make sure backend returns array
-  //   } catch (error) {
-  //     console.error("Error fetching notifications:", error);
-  //   }
-  // };
+  
+  
+  
+  const fetchNotifications = async () => {
+    try {
+      const response = await api.get("notifications");
+      setMessages(response.data?.data); // Make sure backend returns array
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    }
+  };
 
-  // useEffect(() => {
-  //   fetchNotifications();
-  // }, []);
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
 
 
   // ==========================
   //   MARK AS READ
   // ==========================
-  // const handleRead = async (id) => {
-  //   try {
-  //     await api.get(`notification/read/${id}`);
+  const handleRead = async (id) => {
+    try {
+      await api.post(`notification/read/${id}`);
 
-  //     // Update UI → isNew = false
-  //     setMessages((prev) =>
-  //       prev.map((msg) =>
-  //         msg.id === id ? { ...msg, isNew: false } : msg
-  //       )
-  //     );
-  //   } catch (error) {
-  //     console.error("Error marking as read:", error);
-  //   }
-  // };
+      // Update UI → isNew = false
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === id ? { ...msg, isNew: false } : msg
+        )
+      );
+    } catch (error) {
+      console.error("Error marking as read:", error);
+    }
+  };
 
    // ==========================
   //    DELETE NOTIFICATION
   // ==========================
-  // const handleDelete = async (id) => {
-  //   try {
-  //     await api.delete(`/notifications/${id}`);
+  const handleDelete = async (id) => {
+    try {
+      await api.delete(`/notifications/${id}`);
 
-  //     // Remove deleted item from UI
-  //     setMessages((prev) => prev.filter((msg) => msg.id !== id));
+      // Remove deleted item from UI
+      setMessages((prev) => prev.filter((msg) => msg.id !== id));
 
-  //     // Optional toast
-  //     // toast.success("Notification deleted");
-  //   } catch (error) {
-  //     console.error("Delete failed:", error);
-  //     // toast.error("Failed to delete");
-  //   }
-  // };
+      // Optional toast
+      // toast.success("Notification deleted");
+    } catch (error) {
+      console.error("Delete failed:", error);
+      // toast.error("Failed to delete");
+    }
+  };
 
 
   return (
@@ -104,16 +108,16 @@ const ChatInterface = () => {
 
               <div className="flex-grow">
                 <div className="flex items-center mb-1">
-                  <h3 className="font-medium mr-2">{message.sender}</h3>
+                  <h3 className="font-medium mr-2">{message.title}</h3>
 
-                  {message.isNew && (
+                  {message.status && (
                     <span className="bg-blue-500 text-white text-xs px-2 py-0.5 rounded">
-                      new
+                     {message.status}
                     </span>
                   )}
                 </div>
 
-                <p className="text-gray-700 text-sm">{message.text}</p>
+                <p className="text-gray-700 text-sm">{message.message}</p>
               </div>
             </div>
 
