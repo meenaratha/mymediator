@@ -115,97 +115,141 @@ const SubscriptionPlan = () => {
   };
 
 
- // ✅ RAZORPAY INTEGRATION
-  const handleRazorpayPayment = (orderData) => {
+ // Dynamically load Razorpay script
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  // Razorpay payment integration with dynamic script loading
+  const handleRazorpayPayment = async (orderData, planName) => {
+    console.log("🧾 Opening Razorpay with:", orderData);
+
+    const isScriptLoaded = await loadRazorpayScript();
+    if (!isScriptLoaded) {
+      Swal.fire({
+        icon: "error",
+        title: "Payment Error!",
+        text: "Payment gateway not available. Please try again later.",
+        confirmButtonColor: "#EF4444",
+      });
+      return;
+    }
+
     const options = {
-      key: orderData.razorpay_key, // Your Razorpay key
-      amount: orderData.amount || "50000", // Amount in paise (500 * 100)
-      currency: orderData.currency || "INR",
-      name: orderData.name || "Creative Developer",
-      description: `Subscription to ${orderData.plan_name}`,
+      key: orderData.razorpay_key,
+      amount: orderData.amount.toString(), // amount in paise as string
+      currency: orderData.currency,
+      name: orderData.name,
+      description: `Subscription to ${planName}`,
       order_id: orderData.razorpay_order_id,
       handler: async function (response) {
+        console.log("✅ Payment Success:", response);
         try {
-          // Verify payment on backend
-          const verifyResponse = await api.post("verify-payment", {
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_order_id: response.razorpay_order_id,
-            razorpay_signature: response.razorpay_signature,
-          });
-
-          if (verifyResponse.data.success) {
-            await fetchPlans(); // Refresh subscription data
-            Swal.fire({
-              icon: 'success',
-              title: 'Payment Successful!',
-              text: 'Subscription activated successfully!',
-              confirmButtonColor: '#10B981',
-              timer: 3000,
-            });
-          }
-        } catch (error) {
+          await fetchPlans();
           Swal.fire({
-            icon: 'error',
-            title: 'Payment Verification Failed!',
-            text: 'Please contact support.',
-            confirmButtonColor: '#EF4444'
+            icon: "success",
+            title: "Payment Successful!",
+            text: "Subscription activated successfully!",
+            confirmButtonColor: "#10B981",
+            timer: 3000,
           });
+        } catch (error) {
+          console.error("Refresh error:", error);
         }
       },
       prefill: {
         name: orderData.name,
         email: orderData.email || "",
-        contact: orderData.phone || "",
+        contact: orderData.phone,
       },
       theme: {
         color: "#10B981",
       },
     };
 
-    const rzp = new Razorpay(options);
-    rzp.open();
-  };
-
-  // UPDATED handleSubscribe with Razorpay
-  const handleSubscribe = async (planId) => {
-   setLoadingPlanId(planId);
     try {
-      const payload = { plan_id: planId };
-      const response = await api.post("subscribe", payload);
-      
-      console.log("Subscribe response:", response.data);
-
-      if (response.data.success) {
-      //   const currentPlan = plans.find(p => p.id === planId);
-      // handleRazorpayPayment({
-      //   ...response.data,
-      //   plan_id: planId,
-      //   plan_name: currentPlan?.name || "plan",
-      //   amount: (currentPlan?.price || 500) * 100,
-      // });
-
-         await fetchPlans(); // Refresh subscription data
-            Swal.fire({
-              icon: 'success',
-              title: 'Payment Successful!',
-              text: 'Subscription activated successfully!',
-              confirmButtonColor: '#10B981',
-              timer: 3000,
-            });
-      }
-    } catch (error) {
-      console.error("Subscription error:", error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Subscription Failed!',
-        text: error.response?.data?.message || 'Something went wrong.',
-        confirmButtonColor: '#EF4444'
+      const rzp = new window.Razorpay(options);
+      rzp.on("payment.failed", function (response) {
+        console.error("❌ Payment Failed:", response.error);
+        Swal.fire({
+          icon: "error",
+          title: "Payment Failed!",
+          text: response.error.description || "Payment failed. Please try again.",
+          confirmButtonColor: "#EF4444",
+        });
       });
-    } finally {
-       setLoadingPlanId(null);
+      rzp.open();
+    } catch (error) {
+      console.error("Razorpay init error:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Payment Error!",
+        text: "Unable to initialize payment. Please try again.",
+        confirmButtonColor: "#EF4444",
+      });
     }
   };
 
+  // Handle subscription request
+  const handleSubscribe = async (planId) => {
+    setLoadingPlanId(planId);
+    try {
+      const payload = { plan_id: planId };
+      const response = await api.post("subscribe", payload);
+
+      console.log("📡 Subscribe API Response:", response.data);
+
+      if (response.data.success) {
+        const currentPlan = plans.find((p) => p.id === planId);
+
+        await handleRazorpayPayment(
+          {
+            razorpay_key: response.data.razorpay_key,
+            amount: response.data.amount,
+            currency: response.data.currency,
+            name: response.data.name,
+            email: response.data.email,
+            phone: response.data.phone,
+            razorpay_order_id: response.data.razorpay_order_id,
+          },
+          currentPlan?.name || "Premium Plan"
+        );
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Subscription Failed!",
+          text: response.data.message || "Subscription creation failed.",
+          confirmButtonColor: "#EF4444",
+        });
+      }
+    } catch (error) {
+      console.error("❌ Subscription error:", error);
+      let errorMessage = "Something went wrong. Please try again.";
+
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response) {
+        errorMessage = error.response.statusText || "Server error.";
+      } else if (error.request) {
+        errorMessage = "Network error. Please check your connection.";
+      }
+
+      Swal.fire({
+        icon: "error",
+        title: "Subscription Failed!",
+        text: errorMessage,
+        confirmButtonColor: "#EF4444",
+      });
+    } finally {
+      setLoadingPlanId(null);
+    }
+  };
 
 
   return (
@@ -240,36 +284,53 @@ const SubscriptionPlan = () => {
                   
                   <ul className="flex-grow space-y-4 mb-8">
                   
-                      <li className="flex items-center">
+                  {plan.limit && (
+<li className="flex items-center">
                         <div className={`w-5 h-5 rounded-full ${colors.bg} flex items-center justify-center mr-3`}>
                           <span className="text-white text-xs">✓</span>
                         </div>
                         <span className="text-sm text-gray-600">Limit: {plan.limit} Profiles </span>
                       </li>
-
-                       <li className="flex items-center">
+                  )}
+                      
+{plan.duration && (
+ <li className="flex items-center">
                         <div className={`w-5 h-5 rounded-full ${colors.bg} flex items-center justify-center mr-3`}>
                           <span className="text-white text-xs">✓</span>
                         </div>
                         <span className="text-sm text-gray-600"> Duration: {plan.duration}  Days</span>
                       </li>
-                      <li className="flex items-center">
+)}
+                      
+                      {plan.billing_cycle && (
+ <li className="flex items-center">
                         <div className={`w-5 h-5 rounded-full ${colors.bg} flex items-center justify-center mr-3`}>
                           <span className="text-white text-xs">✓</span>
                         </div>
                         <span className="text-sm text-gray-600">Billing: {plan.billing_cycle}</span>
                       </li>
+                      )}
+                     
                   
                   </ul>
                   
                   <button  
-                   disabled={loadingPlanId === plan.id || isActivePlan}
+                  //  disabled={loadingPlanId === plan.id || isActivePlan}
+                  disabled={plan.current === false}
                     onClick={() => handleSubscribe(plan.id)} 
-                   className={`py-2 px-4 rounded-full transition-colors w-full text-sm font-medium flex items-center justify-center ${
+                   className={`py-2 px-4 rounded-full transition-colors w-full text-sm font-medium 
+                    flex items-center justify-center
+                     ${
                       isActivePlan
                         ? 'bg-green-500 cursor-not-allowed text-white'
                         : `${colors.bg} ${colors.hover} text-white`
-                    }`}>
+                    }
+                    
+                    
+                    ${plan.current === false ? 'cursor-not-allowed opacity-[0.5]':'cursor-pointer'}
+                    
+                    
+                    `}>
                    {loadingPlanId === plan.id ? (
                       <>
                         <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">

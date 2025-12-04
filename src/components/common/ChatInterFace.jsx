@@ -122,7 +122,7 @@ const ChatInterface = () => {
             </div>
 
             {/* DELETE BUTTON */}
-            <button
+            {/* <button
               // onClick={(e) => {
               //   e.stopPropagation(); // 👈 Prevent read API on delete click
               //   handleDelete(message.id);
@@ -130,7 +130,7 @@ const ChatInterface = () => {
               className="flex  items-center gap-2 cursor-pointer text-red-500 hover:text-red-700 text-sm font-medium bg-gray-200 p-2 rounded-[10px] h-[fit-content] "
             >
               <Delete />Delete
-            </button>
+            </button> */}
           </div>
         ))}
 
