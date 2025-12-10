@@ -9,7 +9,7 @@ import IMAGES from "@/utils/images.js";
 import "../../styles/Login.css";
 import { useAuth } from "../../auth/AuthContext";
 import { api } from "../../api/axios";
-
+import { requestFirebaseToken } from "../../firebase";
 const LoginFormModel = ({
   setSignupFormModel,
   setLoginFormModel,
@@ -203,13 +203,18 @@ const LoginFormModel = ({
     setErrors({}); // Clear any previous errors
 
     try {
+
+       // 2️⃣ Get Firebase token
+      const fcmToken = await requestFirebaseToken();
       // Option 1: Use the existing auth context login method
       const result = await login({
         phone: formData.mobileNumber,
         password: formData.password,
+         fcm_token: fcmToken,
       });
 
       if (result.success) {
+        
         // Reset form
         setFormData({
           mobileNumber: "",

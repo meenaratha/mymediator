@@ -23,6 +23,7 @@
     "@reduxjs/toolkit": "^2.6.0",
     "@tailwindcss/vite": "^4.0.8",
     "axios": "^1.10.0",
+    "firebase": "^12.6.0",
     "formik": "^2.4.6",
     "framer-motion": "^12.4.7",
     "leaflet": "^1.9.4",

@@ -2,6 +2,8 @@ import IMAGES from "@/utils/images.js";
 import { api } from "../../api/axios";
 import { Delete } from "@mui/icons-material";
 import { useEffect, useState } from "react";
+import { messaging } from "../../firebase";
+import { onMessage } from "firebase/messaging";
 
 const ChatInterface = () => {
  
@@ -30,6 +32,7 @@ const ChatInterface = () => {
   // ];
 
    const [messages, setMessages] = useState([]);
+    const [loading, setLoading] = useState(true);
      // ==========================
   //   FETCH NOTIFICATIONS
   // ==========================
@@ -87,9 +90,57 @@ const ChatInterface = () => {
   };
 
 
+//   const testNotification = () => {
+//   if (Notification.permission === "granted") {
+//     new Notification("Dummy Notification", {
+//       body: "This is a test message from frontend!",
+//       icon: "/favicon.ico",
+//     });
+//   } else {
+//     Notification.requestPermission().then((permission) => {
+//       if (permission === "granted") {
+//         new Notification("Dummy Notification", {
+//           body: "Permission granted! Test message.",
+//           icon: "/favicon.ico",
+//         });
+//       }
+//     });
+//   }
+// };
+
+
+// const testFirebaseForeground = () => {
+//   const payload = {
+//     notification: {
+//       title: "Firebase Dummy Notification",
+//       body: "This is a frontend-only test",
+//     },
+//   };
+
+//   console.log("Simulated Firebase Foreground Message:", payload);
+
+//   // Simulate onMessage
+//   onMessage(messaging, () => payload);
+
+//   new Notification(payload.notification.title, {
+//     body: payload.notification.body,
+//   });
+// };
+
+
   return (
    <div className="w-full">
       <div className="max-w-4xl mx-auto py-8">
+
+        {/* <button onClick={testNotification} className="bg-blue-200 p-2 rounded-2  cursor-pointer mb-4">
+  Test Frontend Notification
+</button> */}
+
+{/* <button onClick={testFirebaseForeground}>
+  Test Firebase Foreground Notification
+</button> */}
+
+
         {messages.map((message) => (
           <div
             key={message.id}
