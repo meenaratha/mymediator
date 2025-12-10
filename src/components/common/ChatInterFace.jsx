@@ -48,9 +48,29 @@ const ChatInterface = () => {
     }
   };
 
+
   useEffect(() => {
+  // Initial load
+  fetchNotifications();
+
+  // Firebase foreground listener
+  const unsubscribe = onMessage(messaging, (payload) => {
+    console.log("🔥 Foreground FCM:", payload);
+
+    // AUTO REFRESH API
     fetchNotifications();
-  }, []);
+  });
+
+  // Refresh when user returns to tab
+  const handleFocus = () => fetchNotifications();
+  window.addEventListener("focus", handleFocus);
+
+  return () => {
+    unsubscribe();
+    window.removeEventListener("focus", handleFocus);
+  };
+}, []);
+
 
 
   // ==========================
@@ -109,23 +129,23 @@ const ChatInterface = () => {
 // };
 
 
-// const testFirebaseForeground = () => {
-//   const payload = {
-//     notification: {
-//       title: "Firebase Dummy Notification",
-//       body: "This is a frontend-only test",
-//     },
-//   };
+const testFirebaseForeground = () => {
+  const payload = {
+    notification: {
+      title: "Firebase Dummy Notification",
+      body: "This is a frontend-only test",
+    },
+  };
 
-//   console.log("Simulated Firebase Foreground Message:", payload);
+  console.log("Simulated Firebase Foreground Message:", payload);
 
-//   // Simulate onMessage
-//   onMessage(messaging, () => payload);
+  // Simulate onMessage
+  onMessage(messaging, () => payload);
 
-//   new Notification(payload.notification.title, {
-//     body: payload.notification.body,
-//   });
-// };
+  new Notification(payload.notification.title, {
+    body: payload.notification.body,
+  });
+};
 
 
   return (
