@@ -28,6 +28,10 @@ import { api } from "@/api/axios";
 import ShareModal from "../../components/common/ShareModal"; // Import reusable ShareModal
 import LoginFormModel from "../common/LoginFormModel.jsx";
 import SignupFormModel from "../common/SignupFormModel.jsx";
+import { useAuth } from "../../auth/AuthContext.jsx";
+import PasswordResetModel from "../common/PasswordResetModel.jsx";
+import OTPVerificationModal from "../common/OTPVerificationModal.jsx";
+import ForgotPassword from "../common/ForgotPassword.jsx";
 
 // Fix for default markers in React Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -38,6 +42,8 @@ L.Icon.Default.mergeOptions({
 });
 
 const ElectronicsDetails = ({ electronics }) => {
+     const { isAuthenticated, user, logout, loading } = useAuth(); // Get auth state
+  
   const isMobile = useMediaQuery({ maxWidth: 767 });
   const [isFavorite, setIsFavorite] = useState(electronics.wishlist || false);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
@@ -54,8 +60,10 @@ const ElectronicsDetails = ({ electronics }) => {
   const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
   const [showEnquiryPopup, setShowEnquiryPopup] = useState(false);
   const [loginFormModel, setLoginFormModel] = useState(false);
-  const [signupFormModel, setSignupFormModel] = useState(false);
-  const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
+   const [signupFormModel, setSignupFormModel] = useState(false);
+   const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
+    const [otpVerificationModal, setOtpVerificationModal] = useState(false);
+     const [passwordResetModel, setPasswordResetModel] = useState(false);
 
   // Default Chennai coordinates
   const defaultLocation = { lat: 13.0827, lng: 80.2707 };
@@ -240,6 +248,33 @@ const ElectronicsDetails = ({ electronics }) => {
           setForgotPasswordModal={setForgotPasswordModal}
         />
       )}
+
+      {forgotPasswordModal && (
+        <ForgotPassword
+          setForgotPasswordModal={setForgotPasswordModal}
+          setLoginFormModel={setLoginFormModel}
+          setOtpVerificationModal={setOtpVerificationModal}
+        />
+      )}
+
+      {otpVerificationModal && (
+        <OTPVerificationModal
+          setOtpVerificationModal={setOtpVerificationModal}
+          setForgotPasswordModal={setForgotPasswordModal}
+          setPasswordResetModel={setPasswordResetModel}
+        />
+      )}
+
+      {passwordResetModel && (
+        <PasswordResetModel
+          setOtpVerificationModal={setOtpVerificationModal}
+          setPasswordResetModel={setPasswordResetModel}
+          setLoginFormModel={setLoginFormModel}
+        />
+      )}
+
+
+
       {/* Enquiry Modal */}
       {showEnquiryPopup && (
         <EnquiryForm
@@ -424,12 +459,25 @@ const ElectronicsDetails = ({ electronics }) => {
                   </p>
                 </div>
                 <div className="ml-auto">
-                  <Link
+                  {/* <Link
                     to={`/seller-profile/${electronics.vendor_id}`}
                     className="text-blue-600 text-sm font-medium cursor-pointer"
                   >
                     See Profile
-                  </Link>
+                  </Link> */}
+
+                   <div
+                     onClick={() => {
+    if (!isAuthenticated) {
+      setLoginFormModel(true);
+    } else {
+      window.location.href = `/seller-profile/${electronics.vendor_id}`;
+    }
+  }}
+                    className="text-blue-600 text-sm font-medium cursor-pointer"
+                  >
+                    See Profile
+                  </div>
                 </div>
               </div>
 
@@ -542,7 +590,13 @@ const ElectronicsDetails = ({ electronics }) => {
                 </h3>
                 <div className="flex mt-4 space-x-4 justify-center">
                   <button
-                    onClick={() => setShowEnquiryPopup(true)}
+                    onClick={() => {
+    if (!isAuthenticated) {
+      setLoginFormModel(true);
+    } else {
+      setShowEnquiryPopup(true);
+    }
+  }}
                     className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] cursor-pointer flex items-center justify-center flex-1"
                   >
                     <QuestionAnswerIcon fontSize="small" className="mr-2" />
@@ -551,9 +605,14 @@ const ElectronicsDetails = ({ electronics }) => {
                   <button
                     className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] 
                   cursor-pointer flex items-center justify-center flex-1"
-                    onClick={() =>
-                      (window.location.href = `tel:${electronics.mobile_number}`)
-                    }
+                  
+                     onClick={() => {
+  if (!isAuthenticated) {
+    setLoginFormModel(true);
+  } else {
+    window.location.href = `tel:${electronics.mobile_number}`;
+  }
+}}
                   >
                     <CallIcon fontSize="small" className="mr-2" />
                     Call

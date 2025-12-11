@@ -106,52 +106,70 @@ const addErrorInterceptor = (instance) => {
   instance.interceptors.response.use(
     (response) => response,
     async (error) => {
-      const originalRequest = error.config;
+      // const originalRequest = error.config;
 
       // Handle token expiration with refresh
-      if (
-        error.response?.status === 401 &&
-        !originalRequest._retry &&
-        localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN)
-      ) {
-        originalRequest._retry = true;
+      // if (
+      //   error.response?.status === 401 &&
+      //   !originalRequest._retry &&
+      //   localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN)
+      // ) {
+      //   originalRequest._retry = true;
 
-        try {
-          await refreshAccessToken();
-          return instance(originalRequest);
-        } catch (refreshError) {
-          console.error("Token refresh failed:", refreshError);
-          return Promise.reject(error);
-        }
-      }
+      //   try {
+      //     await refreshAccessToken();
+      //     return instance(originalRequest);
+      //   } catch (refreshError) {
+      //     console.error("Token refresh failed:", refreshError);
+      //     return Promise.reject(error);
+      //   }
+      // }
 
       // Handle other error cases
       if (error.response) {
         const { status, data } = error.response;
 
         switch (status) {
+           // TOKEN EXPIRED → REMOVE TOKEN → REDIRECT
           case 401:
-            if (
-              data.message === "Unauthorized" &&
-              !isSessionExpiredDialogShown
-            ) {
-              console.log("Unauthorized request");
-              localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-              localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
-              setAccessToken(null);
-              window.location.href = "/";
-            }
+
+ console.log("401 Unauthenticated → Clearing token");
+
+            localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+            localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN); // if exists
+
+            setAccessToken(null);
+            // window.location.href = "/"; 
+
+
+            // if (
+            //   data.message === "Unauthenticated" &&
+            //   !isSessionExpiredDialogShown
+            // ) {
+            //   console.log("Unauthorized request");
+            //   localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+            //   localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+            //                 localStorage.removeItem("access_token");
+
+            //   setAccessToken(null);
+            //   window.location.href = "/";
+            // }
             break;
 
           case 440:
-            if (!isSessionExpiredDialogShown) {
-              isSessionExpiredDialogShown = true;
-              window.alert("Session Expired. Please login again.");
+            // if (!isSessionExpiredDialogShown) {
+            //   isSessionExpiredDialogShown = true;
+            //   window.alert("Session Expired. Please login again.");
+            //   localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+            //   localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+            //   setAccessToken(null);
+            //   window.location.href = "/";
+            // }
+             window.alert("Session Expired. Please login again.");
               localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
               localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
               setAccessToken(null);
-              window.location.href = "/";
-            }
+              // window.location.href = "/";
             break;
 
           case 403:

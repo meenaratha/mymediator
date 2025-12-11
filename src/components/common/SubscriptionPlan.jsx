@@ -126,8 +126,47 @@ const SubscriptionPlan = () => {
     });
   };
 
+
+  // -------------------------------
+  // VERIFY PAYMENT WITH BACKEND
+  // -------------------------------
+  const verifyPayment = async (paymentResponse, planId) => {
+    try {
+      const verifyPayload = {
+        razorpay_order_id: paymentResponse.razorpay_order_id,
+        razorpay_payment_id: paymentResponse.razorpay_payment_id,
+        razorpay_signature: paymentResponse.razorpay_signature,
+      };
+
+      const verifyRes = await api.post("/verify_payment", verifyPayload);
+
+      if (verifyRes.data.success) {
+        await fetchPlans(); // Refresh plans and subscription
+        Swal.fire({
+          icon: "success",
+          title: "Payment Verified!",
+          text: "Your subscription has been activated.",
+          confirmButtonColor: "#10B981",
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Verification Failed",
+          text: "Payment verification failed. Contact support.",
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      Swal.fire({
+        icon: "error",
+        title: "Verification Error",
+        text: "Server verification failed. Try again.",
+      });
+    }
+  };
+
   // Razorpay payment integration with dynamic script loading
-  const handleRazorpayPayment = async (orderData, planName) => {
+  const handleRazorpayPayment = async (orderData, planName,planId) => {
     console.log("🧾 Opening Razorpay with:", orderData);
 
     const isScriptLoaded = await loadRazorpayScript();
@@ -148,21 +187,17 @@ const SubscriptionPlan = () => {
       name: orderData.name,
       description: `Subscription to ${planName}`,
       order_id: orderData.razorpay_order_id,
+   
+   
       handler: async function (response) {
         console.log("✅ Payment Success:", response);
-        try {
-          await fetchPlans();
-          Swal.fire({
-            icon: "success",
-            title: "Payment Successful!",
-            text: "Subscription activated successfully!",
-            confirmButtonColor: "#10B981",
-            timer: 3000,
-          });
-        } catch (error) {
-          console.error("Refresh error:", error);
-        }
+        await verifyPayment(response, planId);
+      
       },
+
+
+
+
       prefill: {
         name: orderData.name,
         email: orderData.email || "",
@@ -196,17 +231,18 @@ const SubscriptionPlan = () => {
     }
   };
 
-  // Handle subscription request
+  // -------------------------------
+  // CREATE ORDER → OPEN PAYMENT
+  // -------------------------------
   const handleSubscribe = async (planId) => {
     setLoadingPlanId(planId);
+
     try {
       const payload = { plan_id: planId };
       const response = await api.post("subscribe", payload);
 
-      console.log("📡 Subscribe API Response:", response.data);
-
       if (response.data.success) {
-        const currentPlan = plans.find((p) => p.id === planId);
+        const selectedPlan = plans.find((p) => p.id === planId);
 
         await handleRazorpayPayment(
           {
@@ -218,33 +254,21 @@ const SubscriptionPlan = () => {
             phone: response.data.phone,
             razorpay_order_id: response.data.razorpay_order_id,
           },
-          currentPlan?.name || "Premium Plan"
+          selectedPlan?.name || "Subscription",
+          planId
         );
       } else {
         Swal.fire({
           icon: "error",
-          title: "Subscription Failed!",
-          text: response.data.message || "Subscription creation failed.",
-          confirmButtonColor: "#EF4444",
+          title: "Error",
+          text: response.data.message,
         });
       }
     } catch (error) {
-      console.error("❌ Subscription error:", error);
-      let errorMessage = "Something went wrong. Please try again.";
-
-      if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      } else if (error.response) {
-        errorMessage = error.response.statusText || "Server error.";
-      } else if (error.request) {
-        errorMessage = "Network error. Please check your connection.";
-      }
-
       Swal.fire({
         icon: "error",
-        title: "Subscription Failed!",
-        text: errorMessage,
-        confirmButtonColor: "#EF4444",
+        title: "Subscription Failed",
+        text: "Unable to start subscription.",
       });
     } finally {
       setLoadingPlanId(null);
@@ -284,21 +308,21 @@ const SubscriptionPlan = () => {
                   
                   <ul className="flex-grow space-y-4 mb-8">
                   
-                  {plan.limit && (
+                  {plan.upload_limit && (
 <li className="flex items-center">
                         <div className={`w-5 h-5 rounded-full ${colors.bg} flex items-center justify-center mr-3`}>
                           <span className="text-white text-xs">✓</span>
                         </div>
-                        <span className="text-sm text-gray-600">Limit: {plan.limit} Profiles </span>
+                        <span className="text-sm text-gray-600">Limit: {plan.upload_limit} Profiles </span>
                       </li>
                   )}
                       
-{plan.duration && (
+{plan.duration_days && (
  <li className="flex items-center">
                         <div className={`w-5 h-5 rounded-full ${colors.bg} flex items-center justify-center mr-3`}>
                           <span className="text-white text-xs">✓</span>
                         </div>
-                        <span className="text-sm text-gray-600"> Duration: {plan.duration}  Days</span>
+                        <span className="text-sm text-gray-600"> Duration: {plan.duration_days}  Days</span>
                       </li>
 )}
                       
@@ -311,12 +335,27 @@ const SubscriptionPlan = () => {
                       </li>
                       )}
                      
+                     {plan.description && (
+                      <>
+                       <div className={`flex gap-2 flex-wrap mr-3`}>
+                        
+                        
+                        <ul className="ml-2 list-disc text-sm text-gray-600">
+                            <span className="text-gray-800 font-semibold text-[14px] mb-2">Description : </span>
+      {plan.description.map((item, index) => (
+        <li key={index} style={{listStyle:"none"}}>{item}</li>
+      ))}
+    </ul>
+
+    </div>
+                      </>
+                     ) }
                   
                   </ul>
                   
                   <button  
                   //  disabled={loadingPlanId === plan.id || isActivePlan}
-                  disabled={plan.current === false}
+                  disabled={loadingPlanId === plan.id || isActivePlan || plan.current == true}
                     onClick={() => handleSubscribe(plan.id)} 
                    className={`py-2 px-4 rounded-full transition-colors w-full text-sm font-medium 
                     flex items-center justify-center
@@ -327,7 +366,7 @@ const SubscriptionPlan = () => {
                     }
                     
                     
-                    ${plan.current === false ? 'cursor-not-allowed opacity-[0.5]':'cursor-pointer'}
+                    ${plan.current === true ? 'cursor-not-allowed opacity-[0.5]':'cursor-pointer'}
                     
                     
                     `}>
@@ -347,27 +386,7 @@ const SubscriptionPlan = () => {
                   </button>
 
 
-{/* {subscription?.active && subscription.plan && (
-                <div className="absolute top-[-22%] left-[25%]  ">
- <div className="flex justify-center mb-10">
-    <div className="bg-green-100 border border-green-300 rounded-xl px-6 py-4 text-center shadow-md w-full max-w-md">
-      <h2 className="text-xl font-bold text-green-700 mb-2">
-        Active Plan: {subscription.plan.name}
-      </h2>
 
-      <p className="text-gray-700 text-sm">
-        <span className="font-medium">Start Date:</span>{" "}
-        {new Date(subscription.starts_at).toLocaleDateString("en-IN")}
-      </p>
-
-      <p className="text-gray-700 text-sm">
-        <span className="font-medium">End Date:</span>{" "}
-        {new Date(subscription.ends_at).toLocaleDateString("en-IN")}
-      </p>
-    </div>
-  </div>
-                </div>
-              )} */}
 
 
                 {isActivePlan && (

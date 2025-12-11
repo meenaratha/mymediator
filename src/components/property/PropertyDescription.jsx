@@ -9,7 +9,6 @@ import {
   Layers,
   CalendarToday,
 } from "@mui/icons-material";
-
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import CompassCalibrationOutlinedIcon from "@mui/icons-material/CompassCalibrationOutlined";
 import BedOutlinedIcon from "@mui/icons-material/BedOutlined";
@@ -25,6 +24,12 @@ import L from "leaflet";
 import ReportAdsModal from "../common/ReportAdsModal";
 import axios from "axios";
 import DescriptionSkeleton from "../common/DescriptionSkelton";
+import { useAuth } from "../../auth/AuthContext";
+import LoginFormModel from "../common/LoginFormModel";
+import SignupFormModel from "../common/SignupFormModel";
+import ForgotPassword from "../common/ForgotPassword";
+import OTPVerificationModal from "../common/OTPVerificationModal";
+import PasswordResetModel from "../common/PasswordResetModel";
 
 // Fix for default markers in React Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -40,7 +45,13 @@ const PropertyDescription = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
    const [showReportModal, setShowReportModal] = useState(false);
+ const { isAuthenticated, user, logout, loading } = useAuth(); // Get auth state
+ const [loginFormModel, setLoginFormModel] = useState(false);
+   const [signupFormModel, setSignupFormModel] = useState(false);
+  const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
 
+   const [otpVerificationModal, setOtpVerificationModal] = useState(false);
+    const [passwordResetModel, setPasswordResetModel] = useState(false);
    const handleReportClick = () => {
     setShowReportModal(true);
   };
@@ -96,7 +107,47 @@ const PropertyDescription = () => {
 
   return (
     <>
+ {loginFormModel && (
+        <LoginFormModel
+          setSignupFormModel={setSignupFormModel}
+          setLoginFormModel={setLoginFormModel}
+          setForgotPasswordModal={setForgotPasswordModal}
+        />
+      )}
 
+      {signupFormModel && (
+        <SignupFormModel
+          setSignupFormModel={setSignupFormModel}
+          setLoginFormModel={setLoginFormModel}
+          setForgotPasswordModal={setForgotPasswordModal}
+        />
+      )}
+
+
+
+       {forgotPasswordModal && (
+        <ForgotPassword
+          setForgotPasswordModal={setForgotPasswordModal}
+          setLoginFormModel={setLoginFormModel}
+          setOtpVerificationModal={setOtpVerificationModal}
+        />
+      )}
+
+      {otpVerificationModal && (
+        <OTPVerificationModal
+          setOtpVerificationModal={setOtpVerificationModal}
+          setForgotPasswordModal={setForgotPasswordModal}
+          setPasswordResetModel={setPasswordResetModel}
+        />
+      )}
+
+      {passwordResetModel && (
+        <PasswordResetModel
+          setOtpVerificationModal={setOtpVerificationModal}
+          setPasswordResetModel={setPasswordResetModel}
+          setLoginFormModel={setLoginFormModel}
+        />
+      )}
  {/* Report Ads Modal */}
       <ReportAdsModal
         isOpen={showReportModal}
@@ -201,12 +252,27 @@ const PropertyDescription = () => {
                     <p className="text-sm text-gray-500">{property.listed_by}</p>
                   </div>
                 </div>
-                <Link
+                {/* <Link
                    to= {`/seller-profile/${property.vendor_id}`}
                   className="text-blue-600 font-semibold text-sm"
                 >
                   See Profile
-                </Link>
+                </Link> */}
+
+
+                <div
+  onClick={() => {
+    if (!isAuthenticated) {
+      setLoginFormModel(true);
+    } else {
+      window.location.href = `/seller-profile/${property.vendor_id}`;
+    }
+  }}
+  className="text-blue-600 font-semibold text-sm cursor-pointer"
+>
+  See Profile
+</div>
+
               </div>
 
               {/* Location Section with Leaflet Map */}

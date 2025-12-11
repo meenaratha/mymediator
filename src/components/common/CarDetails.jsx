@@ -36,6 +36,10 @@ import ShareModal from "../../components/common/ShareModal";
 import IMAGES from "../../utils/images.js";
 import SignupFormModel from "./SignupFormModel.jsx";
 import LoginFormModel from "./LoginFormModel.jsx";
+import { useAuth } from "../../auth/AuthContext.jsx";
+import PasswordResetModel from "./PasswordResetModel.jsx";
+import OTPVerificationModal from "./OTPVerificationModal.jsx";
+import ForgotPassword from "./ForgotPassword.jsx";
 
 // Fix for default markers in React Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -44,6 +48,7 @@ L.Icon.Default.mergeOptions({
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
+
 
 const CarDetails = ({ car }) => {
   const isMobile = useMediaQuery({ maxWidth: 767 });
@@ -61,7 +66,10 @@ const CarDetails = ({ car }) => {
   const [showEnquiryPopup, setShowEnquiryPopup] = useState(false);
   const [loginFormModel, setLoginFormModel] = useState(false);
   const [signupFormModel, setSignupFormModel] = useState(false);
-  const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
+   const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
+     const [otpVerificationModal, setOtpVerificationModal] = useState(false);
+      const [passwordResetModel, setPasswordResetModel] = useState(false);
+   const { isAuthenticated, user, logout, loading } = useAuth(); // Get auth state
 
   // Default Chennai coordinates
   const defaultLocation = { lat: 13.0827, lng: 80.2707 };
@@ -220,13 +228,38 @@ const CarDetails = ({ car }) => {
   />
 )}
 
-{signupFormModel && (
-  <SignupFormModel
-   setSignupFormModel={setSignupFormModel}
-    setLoginFormModel={setLoginFormModel}
-    setForgotPasswordModal={setForgotPasswordModal}
-  />
-)}
+  {signupFormModel && (
+        <SignupFormModel
+          setSignupFormModel={setSignupFormModel}
+          setLoginFormModel={setLoginFormModel}
+          setForgotPasswordModal={setForgotPasswordModal}
+        />
+      )}
+
+ {forgotPasswordModal && (
+        <ForgotPassword
+          setForgotPasswordModal={setForgotPasswordModal}
+          setLoginFormModel={setLoginFormModel}
+          setOtpVerificationModal={setOtpVerificationModal}
+        />
+      )}
+
+      {otpVerificationModal && (
+        <OTPVerificationModal
+          setOtpVerificationModal={setOtpVerificationModal}
+          setForgotPasswordModal={setForgotPasswordModal}
+          setPasswordResetModel={setPasswordResetModel}
+        />
+      )}
+
+      {passwordResetModel && (
+        <PasswordResetModel
+          setOtpVerificationModal={setOtpVerificationModal}
+          setPasswordResetModel={setPasswordResetModel}
+          setLoginFormModel={setLoginFormModel}
+        />
+      )}
+
       {/* Enquiry Modal */}
       {showEnquiryPopup && (
         <EnquiryForm onClose={() => setShowEnquiryPopup(false)}
@@ -409,7 +442,15 @@ const CarDetails = ({ car }) => {
                 </div>
                 <div className="ml-auto">
                   <Link 
-                 to= {`/seller-profile/${car.vendor_id}`}
+                //  to= {`/seller-profile/${car.vendor_id}`}
+
+                onClick={() => {
+    if (!isAuthenticated) {
+      setLoginFormModel(true);
+    } else {
+      window.location.href = `/seller-profile/${car.vendor_id}`;
+    }
+  }}
                   className="text-blue-600 text-sm font-medium cursor-pointer">
                     See Profile
                   </Link>
@@ -515,7 +556,13 @@ const CarDetails = ({ car }) => {
                 </h3>
                 <div className="flex mt-4 space-x-4 justify-center">
                   <button
-                    onClick={() => setShowEnquiryPopup(true)}
+                      onClick={() => {
+    if (!isAuthenticated) {
+      setLoginFormModel(true);
+    } else {
+      setShowEnquiryPopup(true);
+    }
+  }}
                     className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] cursor-pointer flex items-center justify-center flex-1"
                   >
                     <QuestionAnswerIcon fontSize="small" className="mr-2" />
@@ -524,9 +571,15 @@ const CarDetails = ({ car }) => {
                   <button
                     className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] 
                   cursor-pointer flex items-center justify-center flex-1"
-                    onClick={() =>
-                      (window.location.href = `tel:${car.mobile_number}`)
-                    }
+                   
+
+                     onClick={() => {
+  if (!isAuthenticated) {
+    setLoginFormModel(true);
+  } else {
+    window.location.href = `tel:${car.mobile_number}`;
+  }
+}}
                   >
                     <CallIcon fontSize="small" className="mr-2" />
                     Call

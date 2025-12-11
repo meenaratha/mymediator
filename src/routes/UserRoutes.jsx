@@ -43,8 +43,10 @@ const UserRoutes = () => {
         <Route path="/car/:slug" element={<CarDetailPage />} />
         <Route path="/bike/:slug" element={<BikeDetailPage />} />
         <Route path="/electronics" element={<ElectronicsPage />} />
-        <Route path="/car" element={<CarsPage />} />
-        <Route path="/bike" element={<BikesPage />} />
+        {/* <Route path="/car" element={<CarsPage />} />
+        <Route path="/bike" element={<BikesPage />} /> */}
+         <Route path="/cars" element={<CarsPage />} />
+        <Route path="/bikes" element={<BikesPage />} />
         <Route path="/subscription-plan" element={<SubscriptionPlan />} />
         <Route
           path="/filter/property/:subcategory/:subcategoryId"
@@ -57,12 +59,12 @@ const UserRoutes = () => {
         />
 
         <Route
-          path="/filter/car/:subcategory/:subcategoryId"
+          path="/filter/cars/:subcategory/:subcategoryId"
           element={<CarsPage />}
         />
 
         <Route
-          path="/filter/bike/:subcategory/:subcategoryId"
+          path="/filter/bikes/:subcategory/:subcategoryId"
           element={<BikesPage />}
         />
 
@@ -286,14 +288,14 @@ const UserRoutes = () => {
           }
         /> */}
 
-        <Route
+        {/* <Route
           path="/subscription"
           element={
             <ProtectedRoute requireAuth={true}>
               <SubscriptionPlan />
             </ProtectedRoute>
           }
-        />
+        /> */}
       </Route>
     </>
   );

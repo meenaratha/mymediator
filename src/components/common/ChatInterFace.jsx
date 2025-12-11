@@ -1,215 +1,169 @@
-import IMAGES from "@/utils/images.js";
-import { api } from "../../api/axios";
-import { Delete } from "@mui/icons-material";
-import { useEffect, useState } from "react";
+// ============================================
+// 3. ChatInterface.jsx (Updated Component)
+// ============================================
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Delete, MailOutline, Drafts } from "@mui/icons-material";
 import { messaging } from "../../firebase";
 import { onMessage } from "firebase/messaging";
+import {
+  fetchNotifications,
+  markAsRead,
+  markAsUnread,
+  deleteNotification,
+  addNotification,
+} from "../../redux/notificationSlice";
 
 const ChatInterface = () => {
- 
-  // const messages = [
-  //   {
-  //     id: 1,
-  //     sender: "Dinesh",
-  //     profileImg: IMAGES.profile,
-  //     text: "Lorem ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been",
-  //     isNew: true,
-  //   },
-  //   {
-  //     id: 2,
-  //     sender: "Dinesh",
-  //     profileImg: IMAGES.profile,
-  //     text: "Lorem ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been",
-  //     isNew: true,
-  //   },
-  //   {
-  //     id: 3,
-  //     sender: "Dinesh",
-  //     profileImg: IMAGES.profile,
-  //     text: "Lorem ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been The Industry's Standard Dummy Text Ever Since/Lorem Ipsum Has Been",
-  //     isNew: false,
-  //   },
-  // ];
-
-   const [messages, setMessages] = useState([]);
-    const [loading, setLoading] = useState(true);
-     // ==========================
-  //   FETCH NOTIFICATIONS
-  // ==========================
+  const dispatch = useDispatch();
   
-  
-  
-  const fetchNotifications = async () => {
-    try {
-      const response = await api.get("notifications");
-      setMessages(response.data?.data); // Make sure backend returns array
-    } catch (error) {
-      console.error("Error fetching notifications:", error);
-    }
-  };
-
+  // Get state from Redux
+  const { messages, unreadCount, loading, error } = useSelector(
+    (state) => state.notifications
+  );
 
   useEffect(() => {
-  // Initial load
-  fetchNotifications();
+    // Initial load
+    dispatch(fetchNotifications());
 
-  // Firebase foreground listener
-  const unsubscribe = onMessage(messaging, (payload) => {
-    console.log("🔥 Foreground FCM:", payload);
+    // Firebase foreground listener
+    const unsubscribe = onMessage(messaging, (payload) => {
+      console.log("🔥 Foreground FCM:", payload);
 
-    // AUTO REFRESH API
-    fetchNotifications();
-  });
+      // AUTO REFRESH API
+      dispatch(fetchNotifications());
+      
+      // OR add notification directly to Redux without API call:
+      // const newNotification = {
+      //   id: Date.now(),
+      //   title: payload.notification.title,
+      //   message: payload.notification.body,
+      //   is_read: 0,
+      //   status: "new",
+      //   created_at: new Date().toISOString(),
+      // };
+      // dispatch(addNotification(newNotification));
+    });
 
-  // Refresh when user returns to tab
-  const handleFocus = () => fetchNotifications();
-  window.addEventListener("focus", handleFocus);
+    // Refresh when user returns to tab
+    const handleFocus = () => dispatch(fetchNotifications());
+    window.addEventListener("focus", handleFocus);
 
-  return () => {
-    unsubscribe();
-    window.removeEventListener("focus", handleFocus);
-  };
-}, []);
-
-
+    return () => {
+      unsubscribe();
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [dispatch]);
 
   // ==========================
-  //   MARK AS READ
+  //   TOGGLE READ/UNREAD
   // ==========================
-  const handleRead = async (id) => {
-    try {
-      await api.post(`notification/read/${id}`);
-
-      // Update UI → isNew = false
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === id ? { ...msg, isNew: false } : msg
-        )
-      );
-    } catch (error) {
-      console.error("Error marking as read:", error);
+  const toggleReadStatus = (id, currentStatus) => {
+    if (currentStatus === 1) {
+      dispatch(markAsUnread(id));
+    } else {
+      dispatch(markAsRead(id));
     }
   };
 
-   // ==========================
+  // ==========================
   //    DELETE NOTIFICATION
   // ==========================
-  const handleDelete = async (id) => {
-    try {
-      await api.delete(`/notifications/${id}`);
-
-      // Remove deleted item from UI
-      setMessages((prev) => prev.filter((msg) => msg.id !== id));
-
-      // Optional toast
-      // toast.success("Notification deleted");
-    } catch (error) {
-      console.error("Delete failed:", error);
-      // toast.error("Failed to delete");
-    }
+  const handleDelete = (id) => {
+    dispatch(deleteNotification(id));
   };
 
+  if (loading) {
+    return (
+      <div className="w-full flex items-center justify-center min-h-screen">
+        <p className="text-gray-500">Loading notifications...</p>
+      </div>
+    );
+  }
 
-//   const testNotification = () => {
-//   if (Notification.permission === "granted") {
-//     new Notification("Dummy Notification", {
-//       body: "This is a test message from frontend!",
-//       icon: "/favicon.ico",
-//     });
-//   } else {
-//     Notification.requestPermission().then((permission) => {
-//       if (permission === "granted") {
-//         new Notification("Dummy Notification", {
-//           body: "Permission granted! Test message.",
-//           icon: "/favicon.ico",
-//         });
-//       }
-//     });
-//   }
-// };
-
-
-const testFirebaseForeground = () => {
-  const payload = {
-    notification: {
-      title: "Firebase Dummy Notification",
-      body: "This is a frontend-only test",
-    },
-  };
-
-  console.log("Simulated Firebase Foreground Message:", payload);
-
-  // Simulate onMessage
-  onMessage(messaging, () => payload);
-
-  new Notification(payload.notification.title, {
-    body: payload.notification.body,
-  });
-};
-
+  if (error) {
+    return (
+      <div className="w-full flex items-center justify-center min-h-screen">
+        <p className="text-red-500">Error: {error}</p>
+      </div>
+    );
+  }
 
   return (
-   <div className="w-full">
-      <div className="max-w-4xl mx-auto py-8">
-
-        {/* <button onClick={testNotification} className="bg-blue-200 p-2 rounded-2  cursor-pointer mb-4">
-  Test Frontend Notification
-</button> */}
-
-{/* <button onClick={testFirebaseForeground}>
-  Test Firebase Foreground Notification
-</button> */}
-
+    <div className="w-full bg-gray-50 min-h-screen">
+      <div className="max-w-4xl mx-auto py-8 px-4">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Notifications</h1>
+          {unreadCount > 0 && (
+            <span className="bg-red-500 text-white text-sm px-3 py-1 rounded-full">
+              {unreadCount} Unread
+            </span>
+          )}
+        </div>
 
         {messages.map((message) => (
           <div
             key={message.id}
-             onClick={() => handleRead(message.id)}   // 👈 CLICK = READ API
-            className="p-4 border-b border-gray-100 flex justify-between flex-wrap md:flex-nowrap gap-2"
+            className={`p-4 mb-2 rounded-lg border flex justify-between items-start gap-4 transition-colors ${
+              message.is_read === 0
+                ? "bg-blue-50 border-blue-200"
+                : "bg-white border-gray-200"
+            }`}
           >
             {/* LEFT SIDE */}
-            <div className="flex">
-              <div className="flex-shrink-0 mr-4">
-                <img
-                  src={message.profileImg || IMAGES.profile}
-                  alt={message.sender}
-                  className="w-12 h-12 rounded-full object-cover"
-                />
+            <div className="flex-grow">
+              <div className="flex items-center mb-2">
+                <h3 className="font-semibold text-lg mr-2">{message.title}</h3>
+                {message.status === "new" && (
+                  <span className="bg-blue-500 text-white text-xs px-2 py-0.5 rounded">
+                    NEW
+                  </span>
+                )}
               </div>
-
-              <div className="flex-grow">
-                <div className="flex items-center mb-1">
-                  <h3 className="font-medium mr-2">{message.title}</h3>
-
-                  {message.status && (
-                    <span className="bg-blue-500 text-white text-xs px-2 py-0.5 rounded">
-                     {message.status}
-                    </span>
-                  )}
-                </div>
-
-                <p className="text-gray-700 text-sm">{message.message}</p>
-              </div>
+              <p className="text-gray-700 text-sm mb-2">{message.message}</p>
+              <p className="text-gray-400 text-xs">
+                {new Date(message.created_at).toLocaleString()}
+              </p>
             </div>
 
-            {/* DELETE BUTTON */}
-            {/* <button
-              // onClick={(e) => {
-              //   e.stopPropagation(); // 👈 Prevent read API on delete click
-              //   handleDelete(message.id);
-              // }}
-              className="flex  items-center gap-2 cursor-pointer text-red-500 hover:text-red-700 text-sm font-medium bg-gray-200 p-2 rounded-[10px] h-[fit-content] "
-            >
-              <Delete />Delete
-            </button> */}
+            {/* RIGHT SIDE - ACTION BUTTONS */}
+            <div className="flex gap-2 flex-shrink-0">
+              {/* READ/UNREAD TOGGLE */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleReadStatus(message.id, message.is_read);
+                }}
+                className="p-2 rounded-lg hover:bg-gray-200 transition-colors"
+                title={message.is_read === 0 ? "Mark as read" : "Mark as unread"}
+              >
+                {message.is_read === 0 ? (
+                  <MailOutline className="text-blue-600" />
+                ) : (
+                  <Drafts className="text-gray-600" />
+                )}
+              </button>
+
+              {/* DELETE BUTTON */}
+              {/* <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete(message.id);
+                }}
+                className="p-2 rounded-lg hover:bg-red-50 transition-colors"
+                title="Delete notification"
+              >
+                <Delete className="text-red-500" />
+              </button> */}
+            </div>
           </div>
         ))}
 
         {/* No Data */}
         {messages.length === 0 && (
-          <p className="text-center text-gray-500 mt-6">
-            No notifications found
-          </p>
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">No notifications found</p>
+          </div>
         )}
       </div>
     </div>

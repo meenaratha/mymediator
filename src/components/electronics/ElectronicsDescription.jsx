@@ -20,8 +20,15 @@ import {
 import { api } from "@/api/axios";
 import ElectronicsDetails from "./ElectronicsDetails";
 import ReportAdsModal from "../common/ReportAdsModal";
+
 import DescriptionSkeleton from "../common/DescriptionSkelton";
 import { ErrorMessage } from "formik";
+import { useAuth } from "../../auth/AuthContext";
+import PasswordResetModel from "../common/PasswordResetModel";
+import OTPVerificationModal from "../common/OTPVerificationModal";
+import ForgotPassword from "../common/ForgotPassword";
+import SignupFormModel from "../common/SignupFormModel";
+import LoginFormModel from "../common/LoginFormModel";
 
 // Fix for default markers in React Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -38,7 +45,13 @@ const ElectronicsDescription = () => {
   const [error, setError] = useState(null);
 
      const [showReportModal, setShowReportModal] = useState(false);
+   const { isAuthenticated, user, logout, loading } = useAuth(); // Get auth state
+   const [loginFormModel, setLoginFormModel] = useState(false);
+     const [signupFormModel, setSignupFormModel] = useState(false);
+    const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
   
+     const [otpVerificationModal, setOtpVerificationModal] = useState(false);
+      const [passwordResetModel, setPasswordResetModel] = useState(false);
    const handleReportClick = () => {
     setShowReportModal(true);
   };
@@ -106,6 +119,50 @@ const ElectronicsDescription = () => {
 
   return (
     <>
+
+{loginFormModel && (
+        <LoginFormModel
+          setSignupFormModel={setSignupFormModel}
+          setLoginFormModel={setLoginFormModel}
+          setForgotPasswordModal={setForgotPasswordModal}
+        />
+      )}
+
+      {signupFormModel && (
+        <SignupFormModel
+          setSignupFormModel={setSignupFormModel}
+          setLoginFormModel={setLoginFormModel}
+          setForgotPasswordModal={setForgotPasswordModal}
+        />
+      )}
+
+
+
+       {forgotPasswordModal && (
+        <ForgotPassword
+          setForgotPasswordModal={setForgotPasswordModal}
+          setLoginFormModel={setLoginFormModel}
+          setOtpVerificationModal={setOtpVerificationModal}
+        />
+      )}
+
+      {otpVerificationModal && (
+        <OTPVerificationModal
+          setOtpVerificationModal={setOtpVerificationModal}
+          setForgotPasswordModal={setForgotPasswordModal}
+          setPasswordResetModel={setPasswordResetModel}
+        />
+      )}
+
+      {passwordResetModel && (
+        <PasswordResetModel
+          setOtpVerificationModal={setOtpVerificationModal}
+          setPasswordResetModel={setPasswordResetModel}
+          setLoginFormModel={setLoginFormModel}
+        />
+      )}
+
+
       {/* Report Ads Modal */}
       <ReportAdsModal
         isOpen={showReportModal}
@@ -229,12 +286,18 @@ const ElectronicsDescription = () => {
                     <p className="text-sm text-gray-500">{electronics.listed_by}</p>
                   </div>
                 </div>
-                <Link
-                  to={`/seller-profile/${electronics.vendor_id}`}
-                  className="text-blue-600 font-semibold text-sm"
-                >
-                  See Profile
-                </Link>
+                <div
+                     onClick={() => {
+    if (!isAuthenticated) {
+      setLoginFormModel(true);
+    } else {
+      window.location.href = `/seller-profile/${electronics.vendor_id}`;
+    }
+  }}
+                    className="text-blue-600 text-sm font-medium cursor-pointer"
+                  >
+                    See Profile
+                  </div>
               </div>
 
               {/* Location Section with Clickable Map */}

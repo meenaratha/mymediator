@@ -30,10 +30,39 @@ messaging.onBackgroundMessage((payload) => {
   const notificationOptions = {
     body: payload.notification?.body || "You have a new message",
     icon: "/favicon.ico",
+     data: {
+      url: "/notification" // 👈 set target URL
+    }
   };
 
   return self.registration.showNotification(
     notificationTitle,
     notificationOptions
+  );
+});
+
+
+// 🔥 Handle Click on Notification → Navigate to /notification
+self.addEventListener("notificationclick", function (event) {
+  event.notification.close();
+
+  const targetUrl = event.notification.data?.url || "/notification";
+
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+
+      // If window already open → focus + navigate
+      for (const client of clientList) {
+        if ("focus" in client) {
+          client.navigate(targetUrl);
+          return client.focus();
+        }
+      }
+
+      // Otherwise open a new window/tab
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
+    })
   );
 });

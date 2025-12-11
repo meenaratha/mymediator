@@ -21,6 +21,12 @@ import { api } from "../../api/axios";
 import ReportAdsModal from "./ReportAdsModal";
 import DescriptionSkeleton from "./DescriptionSkelton";
 import NotFoundMessage from "./NotFoundMessage";
+import { useAuth } from "../../auth/AuthContext";
+import PasswordResetModel from "./PasswordResetModel";
+import OTPVerificationModal from "./OTPVerificationModal";
+import ForgotPassword from "./ForgotPassword";
+import SignupFormModel from "./SignupFormModel";
+import LoginFormModel from "./LoginFormModel";
 
 // Fix for default markers in React Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -37,7 +43,13 @@ const CarDescription = () => {
   const [error, setError] = useState(null);
 
    const [showReportModal, setShowReportModal] = useState(false);
+  const { isAuthenticated, user, logout, loading } = useAuth(); // Get auth state
+   const [loginFormModel, setLoginFormModel] = useState(false);
+     const [signupFormModel, setSignupFormModel] = useState(false);
+    const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
   
+     const [otpVerificationModal, setOtpVerificationModal] = useState(false);
+      const [passwordResetModel, setPasswordResetModel] = useState(false);
      const handleReportClick = () => {
       setShowReportModal(true);
     };
@@ -90,7 +102,50 @@ const CarDescription = () => {
   };
 
   return (
+    
     <>
+{loginFormModel && (
+        <LoginFormModel
+          setSignupFormModel={setSignupFormModel}
+          setLoginFormModel={setLoginFormModel}
+          setForgotPasswordModal={setForgotPasswordModal}
+        />
+      )}
+
+      {signupFormModel && (
+        <SignupFormModel
+          setSignupFormModel={setSignupFormModel}
+          setLoginFormModel={setLoginFormModel}
+          setForgotPasswordModal={setForgotPasswordModal}
+        />
+      )}
+
+
+
+       {forgotPasswordModal && (
+        <ForgotPassword
+          setForgotPasswordModal={setForgotPasswordModal}
+          setLoginFormModel={setLoginFormModel}
+          setOtpVerificationModal={setOtpVerificationModal}
+        />
+      )}
+
+      {otpVerificationModal && (
+        <OTPVerificationModal
+          setOtpVerificationModal={setOtpVerificationModal}
+          setForgotPasswordModal={setForgotPasswordModal}
+          setPasswordResetModel={setPasswordResetModel}
+        />
+      )}
+
+      {passwordResetModel && (
+        <PasswordResetModel
+          setOtpVerificationModal={setOtpVerificationModal}
+          setPasswordResetModel={setPasswordResetModel}
+          setLoginFormModel={setLoginFormModel}
+        />
+      )}
+
       {/* Report Ads Modal */}
       <ReportAdsModal
         isOpen={showReportModal}
@@ -181,12 +236,20 @@ const CarDescription = () => {
                     <p className="text-sm text-gray-500">{car.listed_by}</p>
                   </div>
                 </div>
-                <Link
-                  to={`/seller-profile/${car.vendor_id}`}
+                <div
+               
+
+                  onClick={() => {
+    if (!isAuthenticated) {
+      setLoginFormModel(true);
+    } else {
+      window.location.href = `/seller-profile/${car.vendor_id}`;
+    }
+  }}
                   className="text-blue-600 font-semibold text-sm"
                 >
                   See Profile
-                </Link>
+                </div>
               </div>
 
               {/* Location Section */}

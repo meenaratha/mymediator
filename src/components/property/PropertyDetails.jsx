@@ -28,8 +28,13 @@ import ShareModal from "../../components/common/ShareModal"; // Import reusable 
 import LoginFormModel from "../common/LoginFormModel.jsx";
 import SignupFormModel from "../common/SignupFormModel.jsx";
 import ForgotPassword from "../common/ForgotPassword.jsx";
+import { useAuth } from "../../auth/AuthContext.jsx";
+import OTPVerificationModal from "../common/OTPVerificationModal.jsx";
+import PasswordResetModel from "../common/PasswordResetModel.jsx";
 
 const PropertyDetails = ({ property }) => {
+   const { isAuthenticated, user, logout, loading } = useAuth(); // Get auth state
+  
   const isMobile = useMediaQuery({ maxWidth: 767 });
   const [isFavorite, setIsFavorite] = useState(property.wishlist || false);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
@@ -52,6 +57,8 @@ const PropertyDetails = ({ property }) => {
   const [loginFormModel, setLoginFormModel] = useState(false);
   const [signupFormModel, setSignupFormModel] = useState(false);
   const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
+   const [otpVerificationModal, setOtpVerificationModal] = useState(false);
+    const [passwordResetModel, setPasswordResetModel] = useState(false);
   // Default Chennai coordinates
   const defaultLocation = { lat: 13.0827, lng: 80.2707 };
 
@@ -490,6 +497,35 @@ const PropertyDetails = ({ property }) => {
           setForgotPasswordModal={setForgotPasswordModal}
         />
       )}
+
+ {forgotPasswordModal && (
+        <ForgotPassword
+          setForgotPasswordModal={setForgotPasswordModal}
+          setLoginFormModel={setLoginFormModel}
+          setOtpVerificationModal={setOtpVerificationModal}
+        />
+      )}
+
+      {otpVerificationModal && (
+        <OTPVerificationModal
+          setOtpVerificationModal={setOtpVerificationModal}
+          setForgotPasswordModal={setForgotPasswordModal}
+          setPasswordResetModel={setPasswordResetModel}
+        />
+      )}
+
+      {passwordResetModel && (
+        <PasswordResetModel
+          setOtpVerificationModal={setOtpVerificationModal}
+          setPasswordResetModel={setPasswordResetModel}
+          setLoginFormModel={setLoginFormModel}
+        />
+      )}
+
+
+
+
+
       {/* Enquiry Modal */}
       {showEnquiryPopup && (
         <EnquiryForm
@@ -672,12 +708,19 @@ const PropertyDetails = ({ property }) => {
                   <p className="text-sm text-gray-500">{property.listed_by}</p>
                 </div>
                 <div className="ml-auto">
-                  <Link
-                    to={`/seller-profile/${property.vendor_id}`}
+                  <div
+                    // to={`/seller-profile/${property.vendor_id}`}
+                     onClick={() => {
+    if (!isAuthenticated) {
+      setLoginFormModel(true);
+    } else {
+      window.location.href = `/seller-profile/${property.vendor_id}`;
+    }
+  }}
                     className="text-blue-600 text-sm font-medium cursor-pointer"
                   >
                     See Profile
-                  </Link>
+                  </div>
                 </div>
               </div>
 
@@ -758,19 +801,42 @@ const PropertyDetails = ({ property }) => {
                   ₹ {property.amount}
                 </h3>
                 <div className="flex mt-4 space-x-4 justify-center">
-                  <button
+                  {/* <button
                     onClick={() => setShowEnquiryPopup(true)}
                     className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] cursor-pointer flex items-center justify-center flex-1"
                   >
                     <QuestionAnswerIcon fontSize="small" className="mr-2" />
                     Enquiry
-                  </button>
+                  </button> */}
+
+
+<button
+  onClick={() => {
+    if (!isAuthenticated) {
+      setLoginFormModel(true);
+    } else {
+      setShowEnquiryPopup(true);
+    }
+  }}
+  className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] cursor-pointer flex items-center justify-center flex-1"
+>
+  <QuestionAnswerIcon fontSize="small" className="mr-2" />
+  Enquiry
+</button>
+
+
+
                   <button
                     className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] 
                   cursor-pointer flex items-center justify-center flex-1"
-                    onClick={() =>
-                      (window.location.href = `tel:${property.mobile_number}`)
-                    }
+                   onClick={() => {
+  if (!isAuthenticated) {
+    setLoginFormModel(true);
+  } else {
+    window.location.href = `tel:${property.mobile_number}`;
+  }
+}}
+
                   >
                     <CallIcon fontSize="small" className="mr-2" />
                     Call

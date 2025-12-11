@@ -36,6 +36,10 @@ import { HeroSection } from "@/components";
 import IMAGES from "../../utils/images.js";
 import LoginFormModel from "./LoginFormModel.jsx";
 import SignupFormModel from "./SignupFormModel.jsx";
+import { useAuth } from "../../auth/AuthContext.jsx";
+import PasswordResetModel from "./PasswordResetModel.jsx";
+import OTPVerificationModal from "./OTPVerificationModal.jsx";
+import ForgotPassword from "./ForgotPassword.jsx";
 
 // Fix for default markers in React Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -46,6 +50,8 @@ L.Icon.Default.mergeOptions({
 });
 
 const BikeDetails = ({ bike }) => {
+     const { isAuthenticated, user, logout, loading } = useAuth(); // Get auth state
+  
   const isMobile = useMediaQuery({ maxWidth: 767 });
   const [isFavorite, setIsFavorite] = useState(bike?.wishlist || false);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
@@ -61,7 +67,9 @@ const BikeDetails = ({ bike }) => {
   const [showEnquiryPopup, setShowEnquiryPopup] = useState(false);
 const [loginFormModel, setLoginFormModel] = useState(false);
 const [signupFormModel, setSignupFormModel] = useState(false);
-const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
+ const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
+   const [otpVerificationModal, setOtpVerificationModal] = useState(false);
+    const [passwordResetModel, setPasswordResetModel] = useState(false);
   // Default Chennai coordinates
   const defaultLocation = { lat: 13.0827, lng: 80.2707 };
 
@@ -233,13 +241,38 @@ const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
         />
       )}
 
-      {signupFormModel && (
+       {signupFormModel && (
         <SignupFormModel
           setSignupFormModel={setSignupFormModel}
           setLoginFormModel={setLoginFormModel}
           setForgotPasswordModal={setForgotPasswordModal}
         />
       )}
+
+ {forgotPasswordModal && (
+        <ForgotPassword
+          setForgotPasswordModal={setForgotPasswordModal}
+          setLoginFormModel={setLoginFormModel}
+          setOtpVerificationModal={setOtpVerificationModal}
+        />
+      )}
+
+      {otpVerificationModal && (
+        <OTPVerificationModal
+          setOtpVerificationModal={setOtpVerificationModal}
+          setForgotPasswordModal={setForgotPasswordModal}
+          setPasswordResetModel={setPasswordResetModel}
+        />
+      )}
+
+      {passwordResetModel && (
+        <PasswordResetModel
+          setOtpVerificationModal={setOtpVerificationModal}
+          setPasswordResetModel={setPasswordResetModel}
+          setLoginFormModel={setLoginFormModel}
+        />
+      )}
+
 
       <div className="">
         <div className="flex flex-col md:flex-row py-10">
@@ -421,12 +454,20 @@ const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
                   <p className="text-sm text-gray-500">{bike.listed_by}</p>
                 </div>
                 <div className="ml-auto">
-                  <Link
-                    to={`/seller-profile/${bike.vendor_id}`}
+                  <div
+                    // to={`/seller-profile/${bike.vendor_id}`}
+
+                     onClick={() => {
+    if (!isAuthenticated) {
+      setLoginFormModel(true);
+    } else {
+      window.location.href = `/seller-profile/${bike.vendor_id}`;
+    }
+  }}
                     className="text-blue-600 text-sm font-medium cursor-pointer"
                   >
                     See Profile
-                  </Link>
+                  </div>
                 </div>
               </div>
 
@@ -532,7 +573,14 @@ const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
                 </h3>
                 <div className="flex mt-4 space-x-4 justify-center">
                   <button
-                    onClick={() => setShowEnquiryPopup(true)}
+
+                     onClick={() => {
+    if (!isAuthenticated) {
+      setLoginFormModel(true);
+    } else {
+      setShowEnquiryPopup(true);
+    }
+  }}
                     className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] cursor-pointer flex items-center justify-center flex-1"
                     type="button" // Add explicit type
                   >
@@ -542,9 +590,15 @@ const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
                   <button
                     className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] 
                   cursor-pointer flex items-center justify-center flex-1"
-                    onClick={() =>
-                      (window.location.href = `tel:${bike.mobile_number}`)
-                    }
+                   
+
+                     onClick={() => {
+  if (!isAuthenticated) {
+    setLoginFormModel(true);
+  } else {
+    window.location.href = `tel:${bike.mobile_number}`;
+  }
+}}
                   >
                     <CallIcon fontSize="small" className="mr-2" />
                     Call

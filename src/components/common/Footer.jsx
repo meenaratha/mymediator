@@ -11,8 +11,11 @@ import "../../assets/css/footer.css";
 import EnquiryForm from "../../features/EnquiryForm";
 import { useState } from "react";
 import GeneralEnquiryForm from "../../features/GeneralEnquiryForm";
+import { useAuth } from "../../auth/AuthContext";
 
 const Footer = () => {
+    const { isAuthenticated, user, logout, loading } = useAuth(); // Get auth state
+  
   const [showEnquiryPopup, setShowEnquiryPopup] = useState(false);
   return (
     <>
@@ -74,15 +77,27 @@ const Footer = () => {
           <div className="footer-section">
             <h3 className="footer-heading">Quick Link</h3>
             <ul className="footer-links">
-              <li>
+              {/* <li>
                 <Link to="/">About Us</Link>
+              </li> */}
+              
+
+              {isAuthenticated ? (<>
+              <li>
+                <Link to="/privacy-policy">Privacy Policy</Link>
               </li>
+              <li>
+                <Link to="/terms-and-conditions">Terms & Conditions</Link>
+              </li>
+              </>):(
+                <>
               <li>
                 <Link to="/">Privacy Policy</Link>
               </li>
               <li>
                 <Link to="/">Terms & Conditions</Link>
               </li>
+              </>)}
               <li>
                 <Link to="/" onClick={() => setShowEnquiryPopup(true)}>Enquiry</Link>
               </li>

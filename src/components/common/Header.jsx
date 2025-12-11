@@ -32,7 +32,21 @@ import IMAGES from "../../utils/images";
 import { Tooltip } from "@mui/material";
 import AddressAutocomplete from "./AddressAutocomplete";
 const GOOGLE_MAP_LIBRARIES = ["places"];
+import {
+  fetchNotifications,
+  markAsRead,
+  markAsUnread,
+
+} from "../../redux/notificationSlice";
+import { useDispatch, useSelector } from "react-redux";
+
 const Header = () => {
+    const dispatch = useDispatch();
+    
+    // Get state from Redux
+    const { messages, unreadCount, error } = useSelector(
+      (state) => state.notifications
+    );
   const navigate = useNavigate();
   const { isAuthenticated, user, logout, loading } = useAuth(); // Get auth state
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
@@ -615,7 +629,13 @@ const Header = () => {
   };
 
   const handleSellBtnClick = () => {
+    if(!isAuthenticated){
+      setLoginFormModel(true);
+    }
+    else{
     navigate("/sell");
+
+    }
   };
 
   const [loginFormModel, setLoginFormModel] = useState(false);
@@ -818,41 +838,43 @@ const Header = () => {
                     />
                   </Tooltip>
                 )}
-                <motion.div
-                  animate={
-                    isNotificationShaking
-                      ? {
-                          rotate: [0, -10, 10, -10, 10, 0],
-                        }
-                      : {
-                          rotate: 0,
-                        }
-                  }
-                  transition={{
-                    duration: 1,
-                    repeat: isNotificationShaking ? Infinity : 0,
-                    repeatDelay: 2,
-                  }}
-                  className="cursor-pointer"
-                  onMouseEnter={() => setIsNotificationShaking(false)}
-                  onMouseLeave={() => setIsNotificationShaking(true)}
-                >
-                  <Badge
-                    badgeContent={2}
-                    sx={{
-                      "& .MuiBadge-badge": {
-                        backgroundColor: "rgba(24, 166, 11, 1)",
-                        color: "white",
-                      },
-                    }}
-                  >
-                    <NotificationsIcon
-                      style={{ color: "black" }}
-                      onClick={handleNotificationClick}
-                    />
-                  </Badge>
-                </motion.div>
 
+                    {isAuthenticated && (
+                  <motion.div
+                    animate={
+                      isNotificationShaking
+                        ? {
+                            rotate: [0, -10, 10, -10, 10, 0],
+                          }
+                        : {
+                            rotate: 0,
+                          }
+                    }
+                    transition={{
+                      duration: 1,
+                      repeat: isNotificationShaking ? Infinity : 0,
+                      repeatDelay: 2,
+                    }}
+                    className="cursor-pointer"
+                    onMouseEnter={() => setIsNotificationShaking(false)}
+                    onMouseLeave={() => setIsNotificationShaking(true)}
+                  >
+                    <Badge
+                      badgeContent={unreadCount}
+                      sx={{
+                        "& .MuiBadge-badge": {
+                          backgroundColor: "rgba(24, 166, 11, 1)",
+                          color: "white",
+                        },
+                      }}
+                    >
+                      <NotificationsIcon
+                        style={{ color: "black" }}
+                        onClick={handleNotificationClick}
+                      />
+                    </Badge>
+                  </motion.div>
+                    )}
                 {/* Conditional Login/Profile Section */}
                 {loading ? (
                   // Show skeleton while loading auth state
