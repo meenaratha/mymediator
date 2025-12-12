@@ -50,6 +50,8 @@ const CarDescription = () => {
   
      const [otpVerificationModal, setOtpVerificationModal] = useState(false);
       const [passwordResetModel, setPasswordResetModel] = useState(false);
+          const [forgotPhone, setForgotPhone] = useState("");
+      
      const handleReportClick = () => {
       setShowReportModal(true);
     };
@@ -127,6 +129,7 @@ const CarDescription = () => {
           setForgotPasswordModal={setForgotPasswordModal}
           setLoginFormModel={setLoginFormModel}
           setOtpVerificationModal={setOtpVerificationModal}
+           setForgotPhone={setForgotPhone}
         />
       )}
 
@@ -135,6 +138,7 @@ const CarDescription = () => {
           setOtpVerificationModal={setOtpVerificationModal}
           setForgotPasswordModal={setForgotPasswordModal}
           setPasswordResetModel={setPasswordResetModel}
+           phone={forgotPhone} 
         />
       )}
 
@@ -143,6 +147,7 @@ const CarDescription = () => {
           setOtpVerificationModal={setOtpVerificationModal}
           setPasswordResetModel={setPasswordResetModel}
           setLoginFormModel={setLoginFormModel}
+           phone={forgotPhone}
         />
       )}
 

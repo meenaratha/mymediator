@@ -9,6 +9,7 @@ import AccountDeleteModel from "../components/sell/AccountDeleteModel";
 import { FormLayout, SellerEnquiryList, SellerEnquiryListPage, SellerPostDetailsPage, SubscriptionHistoryPlanPage, UserDashboardLayout } from "../components";
 import WishlistPage from "../Pages/wishlist/WishlistPage";
 import ProfileEditScreen from "../Pages/SellerFlow/ProfileEditScreen";
+import ChangePasswordForm from "../components/common/ChangePasswordForm";
 
 // Simple message component for deprecated routes
 const DeprecatedRouteMessage = ({ redirectTo, message }) => (
@@ -101,6 +102,15 @@ const SellerRoutes = () => {
           element={
             <ProtectedRoute requireAuth={true}>
               <WishlistPage />
+            </ProtectedRoute>
+          }
+        />
+
+         <Route
+          path="/change-password"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <ChangePasswordForm />
             </ProtectedRoute>
           }
         />

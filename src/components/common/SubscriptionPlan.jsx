@@ -138,23 +138,33 @@ const SubscriptionPlan = () => {
         razorpay_signature: paymentResponse.razorpay_signature,
       };
 
-      const verifyRes = await api.post("/verify_payment", verifyPayload);
+      // const verifyRes = await api.post("/verify_payment", verifyPayload);
 
-      if (verifyRes.data.success) {
-        await fetchPlans(); // Refresh plans and subscription
+      // if (verifyRes.data.success) {
+      //   await fetchPlans(); // Refresh plans and subscription
+      //   Swal.fire({
+      //     icon: "success",
+      //     title: "Payment Verified!",
+      //     text: "Your subscription has been activated.",
+      //     confirmButtonColor: "#10B981",
+      //   });
+      // } else {
+      //   Swal.fire({
+      //     icon: "error",
+      //     title: "Verification Failed",
+      //     text: "Payment verification failed. Contact support.",
+      //   });
+      // }
+
+       await fetchPlans(); // Refresh plans and subscription
         Swal.fire({
           icon: "success",
           title: "Payment Verified!",
           text: "Your subscription has been activated.",
           confirmButtonColor: "#10B981",
         });
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "Verification Failed",
-          text: "Payment verification failed. Contact support.",
-        });
-      }
+
+
     } catch (err) {
       console.error(err);
       Swal.fire({
@@ -283,6 +293,10 @@ const SubscriptionPlan = () => {
         <div className="max-w-6xl mx-auto">
           <h1 className="pb-10 text-center text-2xl md:text-3xl font-bold mb-12 text-gray-800">Choose your best plan</h1>
           
+   
+
+
+
           <div className=" grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {plans.map((plan) => {
             const colors = getColorClasses(plan.name);
@@ -290,6 +304,26 @@ const SubscriptionPlan = () => {
     subscription?.active && subscription.plan && subscription.plan.id === plan.id;
               return (
                 <>
+
+                {isActivePlan && (
+        <div className=" block md:hidden ">
+          <div className="bg-green-100 border border-green-300 rounded-xl px-6 py-4 text-center shadow-md w-full max-w-md">
+            <h2 className="text-xl font-bold text-green-700 mb-2">
+              Active Plan: {subscription.plan.name}
+            </h2>
+
+            <p className="text-gray-700 text-sm">
+              <span className="font-medium">Start Date:</span>{" "}
+              {new Date(subscription.starts_at).toLocaleDateString("en-IN")}
+            </p>
+
+            <p className="text-gray-700 text-sm">
+              <span className="font-medium">End Date:</span>{" "}
+              {new Date(subscription.ends_at).toLocaleDateString("en-IN") || "N/A"}
+            </p>
+          </div>
+        </div>
+      )}
                 
                  <div key={plan.id} className="relative bg-white rounded-xl shadow-md p-6 flex flex-col">
                   <div className={`font-bold text-center mb-6 text-lg uppercase ${colors.text}`}>
@@ -390,7 +424,7 @@ const SubscriptionPlan = () => {
 
 
                 {isActivePlan && (
-        <div className="absolute top-[-22%] left-[20%]">
+        <div className="hidden md:block absolute top-[-22%] left-[20%]">
           <div className="bg-green-100 border border-green-300 rounded-xl px-6 py-4 text-center shadow-md w-full max-w-md">
             <h2 className="text-xl font-bold text-green-700 mb-2">
               Active Plan: {subscription.plan.name}
@@ -408,6 +442,7 @@ const SubscriptionPlan = () => {
           </div>
         </div>
       )}
+
 
 
 

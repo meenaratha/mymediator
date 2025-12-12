@@ -70,6 +70,8 @@ const [signupFormModel, setSignupFormModel] = useState(false);
  const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
    const [otpVerificationModal, setOtpVerificationModal] = useState(false);
     const [passwordResetModel, setPasswordResetModel] = useState(false);
+        const [forgotPhone, setForgotPhone] = useState("");
+    
   // Default Chennai coordinates
   const defaultLocation = { lat: 13.0827, lng: 80.2707 };
 
@@ -254,6 +256,7 @@ const [signupFormModel, setSignupFormModel] = useState(false);
           setForgotPasswordModal={setForgotPasswordModal}
           setLoginFormModel={setLoginFormModel}
           setOtpVerificationModal={setOtpVerificationModal}
+          setForgotPhone={setForgotPhone}
         />
       )}
 
@@ -262,6 +265,7 @@ const [signupFormModel, setSignupFormModel] = useState(false);
           setOtpVerificationModal={setOtpVerificationModal}
           setForgotPasswordModal={setForgotPasswordModal}
           setPasswordResetModel={setPasswordResetModel}
+           phone={forgotPhone} 
         />
       )}
 
@@ -270,6 +274,7 @@ const [signupFormModel, setSignupFormModel] = useState(false);
           setOtpVerificationModal={setOtpVerificationModal}
           setPasswordResetModel={setPasswordResetModel}
           setLoginFormModel={setLoginFormModel}
+           phone={forgotPhone} 
         />
       )}
 

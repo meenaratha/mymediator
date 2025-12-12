@@ -54,6 +54,8 @@ const { isAuthenticated, user, logout, loading } = useAuth(); // Get auth state
 
    const [otpVerificationModal, setOtpVerificationModal] = useState(false);
     const [passwordResetModel, setPasswordResetModel] = useState(false);
+        const [forgotPhone, setForgotPhone] = useState("");
+    
   const handleReportClick = () => {
     setShowReportModal(true);
   };
@@ -127,6 +129,7 @@ const { isAuthenticated, user, logout, loading } = useAuth(); // Get auth state
           setForgotPasswordModal={setForgotPasswordModal}
           setLoginFormModel={setLoginFormModel}
           setOtpVerificationModal={setOtpVerificationModal}
+           setForgotPhone={setForgotPhone}
         />
       )}
 
@@ -135,6 +138,7 @@ const { isAuthenticated, user, logout, loading } = useAuth(); // Get auth state
           setOtpVerificationModal={setOtpVerificationModal}
           setForgotPasswordModal={setForgotPasswordModal}
           setPasswordResetModel={setPasswordResetModel}
+           phone={forgotPhone} 
         />
       )}
 
@@ -143,6 +147,7 @@ const { isAuthenticated, user, logout, loading } = useAuth(); // Get auth state
           setOtpVerificationModal={setOtpVerificationModal}
           setPasswordResetModel={setPasswordResetModel}
           setLoginFormModel={setLoginFormModel}
+           phone={forgotPhone} 
         />
       )}
 

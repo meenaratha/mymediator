@@ -17,7 +17,7 @@ import {
   FaTimes,
   FaEdit,
 } from "react-icons/fa";
-import { Heart,  } from 'lucide-react';
+import { Heart, Lock,  } from 'lucide-react';
 import { useAuth } from "../auth/AuthContext"; 
 import { api } from "../api/axios";
 const UserDashboardLayout = () => {
@@ -52,6 +52,11 @@ const UserDashboardLayout = () => {
       icon: <Heart className="w-5 h-5" />,
       title: "Wishlist",
       path: "/wishlist",
+    },
+    {
+      icon: <Lock className="w-5 h-5" />,
+      title: "Change Password",
+      path: "/change-password",
     },
     {
       icon: <FaFileContract className="w-5 h-5" />,

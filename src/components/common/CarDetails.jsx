@@ -69,6 +69,8 @@ const CarDetails = ({ car }) => {
    const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
      const [otpVerificationModal, setOtpVerificationModal] = useState(false);
       const [passwordResetModel, setPasswordResetModel] = useState(false);
+          const [forgotPhone, setForgotPhone] = useState("");
+      
    const { isAuthenticated, user, logout, loading } = useAuth(); // Get auth state
 
   // Default Chennai coordinates
@@ -241,6 +243,7 @@ const CarDetails = ({ car }) => {
           setForgotPasswordModal={setForgotPasswordModal}
           setLoginFormModel={setLoginFormModel}
           setOtpVerificationModal={setOtpVerificationModal}
+           setForgotPhone={setForgotPhone}
         />
       )}
 
@@ -249,6 +252,7 @@ const CarDetails = ({ car }) => {
           setOtpVerificationModal={setOtpVerificationModal}
           setForgotPasswordModal={setForgotPasswordModal}
           setPasswordResetModel={setPasswordResetModel}
+           phone={forgotPhone} 
         />
       )}
 
@@ -257,6 +261,7 @@ const CarDetails = ({ car }) => {
           setOtpVerificationModal={setOtpVerificationModal}
           setPasswordResetModel={setPasswordResetModel}
           setLoginFormModel={setLoginFormModel}
+           phone={forgotPhone} 
         />
       )}
 

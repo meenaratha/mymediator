@@ -52,6 +52,8 @@ const ElectronicsDescription = () => {
   
      const [otpVerificationModal, setOtpVerificationModal] = useState(false);
       const [passwordResetModel, setPasswordResetModel] = useState(false);
+          const [forgotPhone, setForgotPhone] = useState("");
+      
    const handleReportClick = () => {
     setShowReportModal(true);
   };
@@ -143,6 +145,7 @@ const ElectronicsDescription = () => {
           setForgotPasswordModal={setForgotPasswordModal}
           setLoginFormModel={setLoginFormModel}
           setOtpVerificationModal={setOtpVerificationModal}
+           setForgotPhone={setForgotPhone}
         />
       )}
 
@@ -151,6 +154,7 @@ const ElectronicsDescription = () => {
           setOtpVerificationModal={setOtpVerificationModal}
           setForgotPasswordModal={setForgotPasswordModal}
           setPasswordResetModel={setPasswordResetModel}
+          phone={forgotPhone} 
         />
       )}
 
@@ -159,6 +163,7 @@ const ElectronicsDescription = () => {
           setOtpVerificationModal={setOtpVerificationModal}
           setPasswordResetModel={setPasswordResetModel}
           setLoginFormModel={setLoginFormModel}
+            phone={forgotPhone}
         />
       )}
 

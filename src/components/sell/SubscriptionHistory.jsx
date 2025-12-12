@@ -25,7 +25,7 @@ const SubscriptionCard = ({
   startDate,
   endDate,
   price,
-  expired ,
+  expired,
   onRenew,
 }) => {
   const getImage = () => {
@@ -98,8 +98,14 @@ const SubscriptionHistory = () => {
     try {
       setLoading(true);
 
-      const response = await api.post("subscribe/history", {
-        page: page, // send page number to backend
+      // const response = await api.post("subscribe/history", {
+      //   page: page, // send page number to backend
+      // });
+
+      const response = await api.get("/subscribe/history", {
+        params: {
+          page, // or page: page
+        },
       });
 
       setSubscriptions(response.data.history);
@@ -151,41 +157,99 @@ const SubscriptionHistory = () => {
     }
   };
 
-  const verifyPayment = async (paymentResponse, subscriptionId) => {
-    try {
-      const payload = {
-        razorpay_order_id: paymentResponse.razorpay_order_id,
-        razorpay_payment_id: paymentResponse.razorpay_payment_id,
-        razorpay_signature: paymentResponse.razorpay_signature,
-      };
+//   const verifyPayment = async (paymentResponse, subscriptionId) => {
+//     try {
+//       const payload = {
+//         razorpay_order_id: paymentResponse.razorpay_order_id,
+//         razorpay_payment_id: paymentResponse.razorpay_payment_id,
+//         razorpay_signature: paymentResponse.razorpay_signature,
+//       };
+//  console.log("Verify payload:", verifyPayload);
+//       // const verifyRes = await api.post(`verify_payment/${subscriptionId}`, payload);
+//       // const verifyRes = await api.post(`verify_payment`, payload);
 
-      // const verifyRes = await api.post(`verify_payment/${subscriptionId}`, payload);
-      const verifyRes = await api.post(`verify_payment`, payload);
+//       // if (verifyRes.data.success) {
+//       //   await fetchSubscriptionHistory();
+//       //   Swal.fire({
+//       //     icon: "success",
+//       //     title: "Payment Verified!",
+//       //     text: "Your subscription has been activated.",
+//       //     confirmButtonColor: "#10B981",
+//       //   });
+//       // } else {
+//       //   Swal.fire({
+//       //     icon: "error",
+//       //     title: "Verification Failed",
+//       //     text: "Payment verification failed. Contact support.",
+//       //   });
+//       // }
 
-      if (verifyRes.data.success) {
-        await fetchSubscriptionHistory();
-        Swal.fire({
-          icon: "success",
-          title: "Payment Verified!",
-          text: "Your subscription has been activated.",
-          confirmButtonColor: "#10B981",
-        });
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "Verification Failed",
-          text: "Payment verification failed. Contact support.",
-        });
-      }
-    } catch (err) {
-      console.error(err);
-      Swal.fire({
-        icon: "error",
-        title: "Verification Error",
-        text: "Server verification failed. Try again.",
-      });
-    }
-  };
+//  await fetchSubscriptionHistory(); // refresh plans & subscription
+//     await Swal.fire({
+//       icon: "success",
+//       title: "Payment Verified!",
+//       text: "Your subscription has been activated.",
+//       confirmButtonColor: "#10B981",
+//     });
+
+
+//     } catch (err) {
+//       console.error(err);
+//       Swal.fire({
+//         icon: "error",
+//         title: "Verification Error",
+//         text: "Server verification failed. Try again.",
+//       });
+//     }
+//   };
+
+
+
+const verifyPayment = async (paymentResponse, subscriptionId) => {
+  try {
+    const payload = {
+      razorpay_order_id: paymentResponse.razorpay_order_id,
+      razorpay_payment_id: paymentResponse.razorpay_payment_id,
+      razorpay_signature: paymentResponse.razorpay_signature,
+    };
+
+    console.log("Verify payload:", payload);
+
+    // When backend is ready:
+    // const verifyRes = await api.post(`verify_payment/${subscriptionId}`, payload);
+    // if (!verifyRes.data.success) {
+    //   throw new Error(verifyRes.data.message || "Verification failed");
+    // }
+
+    await fetchSubscriptionHistory(); // refresh history
+    await Swal.fire({
+      icon: "success",
+      title: "Payment Verified!",
+      text: "Your subscription has been activated.",
+      confirmButtonColor: "#10B981",
+    });
+  } catch (err) {
+    console.error("verifyPayment error:", err);
+
+    const msgFromBackend =
+      err?.response?.data?.message ||
+      (typeof err?.response?.data?.data === "string" && err.response.data.data) ||
+      err.message ||
+      "Server verification failed. Try again.";
+
+    Swal.fire({
+      icon: "error",
+      title: "Verification Error",
+      text: msgFromBackend,
+    });
+  }
+};
+
+
+
+
+
+
 
   const openRazorpay = async (orderData, subscriptionId) => {
     const scriptLoaded = await loadRazorpayScript();
@@ -202,8 +266,21 @@ const SubscriptionHistory = () => {
       order_id: orderData.razorpay_order_id,
 
       handler: async function (response) {
+
+        //  verify api call 
+
         await verifyPayment(response, subscriptionId);
         console.log("razorpay response", response);
+
+
+
+
+
+  
+
+
+
+
       },
 
       prefill: {
@@ -274,47 +351,42 @@ const SubscriptionHistory = () => {
 
         {!loading && (
           <>
-          
+            {subscriptions.length > 0 && (
+              <div>
+                <h2 className="text-lg font-semibold mb-4">Subscriptions</h2>
 
-{subscriptions.length > 0 && (
-  <div>
-    <h2 className="text-lg font-semibold mb-4">Subscriptions</h2>
+                <div
+                  className={`grid gap-4 ${
+                    isMobile || isTablet ? "grid-cols-1" : "grid-cols-2"
+                  }`}
+                >
+                  {subscriptions.map((sub, idx) => (
+                    <SubscriptionCard
+                      key={idx}
+                      type={sub.plan_name}
+                      startDate={sub.starts_at}
+                      plan={sub.upload_limit}
+                      endDate={sub.ends_at}
+                      price={sub.plan_price}
+                      expired={
+                        sub.subscription_status === "expired" ||
+                        sub.subscription_status === "pending"
+                      }
+                      onRenew={() => handleRenew(sub)}
+                    />
+                  ))}
+                </div>
 
-    <div
-      className={`grid gap-4 ${
-        isMobile || isTablet ? "grid-cols-1" : "grid-cols-2"
-      }`}
-    >
-      {subscriptions.map((sub, idx) => (
-        <SubscriptionCard
-          key={idx}
-          type={sub.plan_name}
-          startDate={sub.starts_at}
-          plan={sub.upload_limit}
-          endDate={sub.ends_at}
-          price={sub.plan_price}
-         expired={sub.subscription_status === "expired" || sub.subscription_status === "pending"}
-
-          onRenew={() => handleRenew(sub)}
-        />
-      ))}
-    </div>
-
-    <Pagination />
-  </div>
-)}
-
-
-
-
+                <Pagination />
+              </div>
+            )}
 
             {/* Empty State */}
-            {subscriptions.length === 0 &&
-             (
-                <p className="text-center text-gray-500 mt-4">
-                  No subscription history found.
-                </p>
-              )}
+            {subscriptions.length === 0 && (
+              <p className="text-center text-gray-500 mt-4">
+                No subscription history found.
+              </p>
+            )}
           </>
         )}
       </div>

@@ -7,7 +7,7 @@ const TermsAndConditions = () => {
 
   const fetchTerms = async () => {
     try {
-      const res = await api.get("terms");
+      const res = await api.get("/terms");
 
       if (res.data.success && res.data.content) {
         setContent(res.data.content);

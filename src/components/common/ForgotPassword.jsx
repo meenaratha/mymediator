@@ -7,10 +7,12 @@ import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import IMAGES from "@/utils/images.js";
 import "../../styles/Login.css";
+import { api } from "../../api/axios";
 const ForgotPassword = ({
   setForgotPasswordModal,
   setLoginFormModel,
   setOtpVerificationModal,
+   setForgotPhone,
 }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -77,38 +79,39 @@ const ForgotPassword = ({
     setErrors((prev) => ({ ...prev, mobileNumber: error }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (validateForm()) {
-      console.log("Form submitted:", formData);
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!validateForm()) return;
 
-      // You can add your API call here
-      // Example:
-      // loginUser(formData)
-      //   .then(response => {
-      //     // Handle successful login
-      //     resetFormAndNavigate();
-      //   })
-      //   .catch(error => {
-      //     console.error('Login failed:', error);
-      //   });
-
-      // For now, we'll just simulate a successful login
-      resetFormAndNavigate();
-    }
-  };
-
-  const resetFormAndNavigate = () => {
-    // Reset the form
-    setFormData({
-      mobileNumber: "",
+  try {
+    // send OTP for password reset
+    await api.post("/send-otp", {
+      phone: formData.mobileNumber,
+      purpose: "password_reset",
     });
 
-    // Clear any errors
-    setErrors({});
-    setForgotPasswordModal(false);
-    setOtpVerificationModal(true);
-  };
+    // on success → close this modal, open OTP modal
+    resetFormAndNavigate();
+  } catch (error) {
+    console.error("Forgot password send OTP error:", error);
+    const msg =
+      error?.response?.data?.message ||
+      "Failed to send OTP. Please try again.";
+    setErrors((prev) => ({
+      ...prev,
+      mobileNumber: msg,
+    }));
+  }
+};
+
+const resetFormAndNavigate = () => {
+   setForgotPhone(formData.mobileNumber);   
+  setFormData({ mobileNumber: "" });
+  setErrors({});
+  setForgotPasswordModal(false);
+  setOtpVerificationModal(true);
+};
+
   return (
     <>
       <div

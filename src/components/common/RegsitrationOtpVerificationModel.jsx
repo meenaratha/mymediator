@@ -1,119 +1,78 @@
 import React, { useState, useRef, useEffect } from "react";
-import { TextField, Box, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import IMAGES from "@/utils/images.js";
-import { useMediaQuery } from "react-responsive"; // For detecting mobile devices
+import { useMediaQuery } from "react-responsive";
 import CloseIcon from "@mui/icons-material/Close";
-import PasswordResetModel from "./PasswordResetModel";
-import { api } from "../../api/axios";
 
-const OTPVerificationModal = ({
+const RegisterOTPVerificationModal = ({
   setOtpVerificationModal,
   onResend,
-  setForgotPasswordModal,
-  setPasswordResetModel,
-   phone,
+  onVerified,
 }) => {
   const [otp, setOtp] = useState(["", "", "", ""]);
   const [activeInput, setActiveInput] = useState(0);
   const inputRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resendDisabled, setResendDisabled] = useState(false);
-  const [timer, setTimer] = useState(0); // Timer in seconds
-   const [errorMsg, setErrorMsg] = useState(""); 
+  const [timer, setTimer] = useState(0); // seconds
   const isMobile = useMediaQuery({ maxWidth: 767 });
 
-  // Focus on the active input
+  // Focus on active input
   useEffect(() => {
-    if (inputRefs[activeInput] && inputRefs[activeInput].current) {
+    if (inputRefs[activeInput]?.current) {
       inputRefs[activeInput].current.focus();
     }
   }, [activeInput]);
 
-  // Timer effect
+  // Timer for resend
   useEffect(() => {
     let interval;
     if (resendDisabled && timer > 0) {
       interval = setInterval(() => {
-        setTimer((prevTime) => prevTime - 1);
+        setTimer((prev) => prev - 1);
       }, 1000);
     } else if (timer === 0 && resendDisabled) {
       setResendDisabled(false);
     }
-
     return () => {
       if (interval) clearInterval(interval);
     };
   }, [resendDisabled, timer]);
 
-  // Debugging timer (will see in console)
-  // useEffect(() => {
-  //   console.log(`Timer: ${timer}, Resend Disabled: ${resendDisabled}`);
-  // }, [timer, resendDisabled]);
-
-  // Handle input change
   const handleChange = (index, value) => {
-    // Only allow numbers
     if (isNaN(value)) return;
-
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
 
-    // Move to next input if current input is filled
     if (value !== "" && index < 3) {
       setActiveInput(index + 1);
     }
 
-    // Auto-submit if all fields are filled
     if (index === 3 && value !== "" && !newOtp.includes("")) {
       setTimeout(() => {
         handleVerify();
-      }, 300); // Small delay to allow UI update
+      }, 300);
     }
   };
 
-  // Handle key press
   const handleKeyDown = (index, e) => {
-    // Move to previous input on backspace if current input is empty
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       setActiveInput(index - 1);
     }
   };
 
-  const [confirmPasswordModel, setconfirmPasswordModel] = useState(false);
-  const handlePasswordClose = () => {
-    setconfirmPasswordModel(false);
-  };
-
-   // Verify OTP with API
   const handleVerify = async () => {
     const otpCode = otp.join("");
     if (otpCode.length === 4) {
       setIsSubmitting(true);
-      setErrorMsg("");
       try {
-        await api.post("/verify-otp", {
-          phone: phone,              // e.g. +91987690693
-          purpose: "password_reset",
-          otp: otpCode,
-        });
-
-        // if success: close OTP modal, open password reset modal
-        setOtp(["", "", "", ""]);
-        setActiveInput(0);
-        setOtpVerificationModal(false);
-        setPasswordResetModel(true);
-      } catch (error) {
-        console.error("Verify OTP error:", error);
-       
-        const data = error.response?.data;
-         console.log("otp errorrr",data)
-        const msg =
-          (typeof data === "string" && data) ||
-          data?.message ||
-          "Invalid OTP. Please try again.";
-        setErrorMsg(msg);
-         console.log("otp ",msg)
+        if (typeof onVerified === "function") {
+          await onVerified(otpCode);
+        }
+        // if success, parent will close modal via setOtpVerificationModal(false)
+      } catch (e) {
+        console.error("OTP verify failed", e);
       } finally {
         setIsSubmitting(false);
       }
@@ -123,25 +82,13 @@ const OTPVerificationModal = ({
   const handleResend = async () => {
     if (typeof onResend === "function") {
       await onResend();
-    } else {
-      // default resend via API
-      try {
-        await api.post("/send-otp", {
-          phone: phone,
-          purpose: "password_reset",
-        });
-      } catch (e) {
-        console.error("Resend OTP error", e);
-      }
     }
-
     setOtp(["", "", "", ""]);
     setActiveInput(0);
     setResendDisabled(true);
-    setTimer(120); // 2 minutes
+    setTimer(120); // 2 minutes as requested
   };
 
-  // Format remaining time
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -163,25 +110,16 @@ const OTPVerificationModal = ({
         >
           {/* Close Button */}
           <button
-            onClick={() => {
-              setOtpVerificationModal(false);
-            }}
+            onClick={() => setOtpVerificationModal(false)}
             className="absolute top-3 right-3 text-gray-600 hover:text-black transition-colors cursor-pointer"
           >
             <CloseIcon />
           </button>
+
           {/* Left side - Form */}
           <div className="p-8 md:w-1/2 text-center">
             <div className="mb-6">
-               {errorMsg && (
-  <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-    {errorMsg}
-  </div>
-)}
-              <h2
-                variant="h5"
-                className="font-[700] text-[20px] py-2 text-gray-900"
-              >
+              <h2 className="font-[700] text-[20px] py-2 text-gray-900">
                 OTP Verification
               </h2>
               <Typography variant="body1" className="text-gray-600 mt-2">
@@ -194,7 +132,7 @@ const OTPVerificationModal = ({
                 <Box
                   key={index}
                   className={`w-[50px] h-[50px] rounded-full flex items-center justify-center border border-[#CECECE] 
-                ${digit ? "bg-blue-800 text-white" : "bg-gray-100"}`}
+                  ${digit ? "bg-blue-800 text-white" : "bg-gray-100"}`}
                 >
                   <input
                     ref={inputRefs[index]}
@@ -204,7 +142,7 @@ const OTPVerificationModal = ({
                     onChange={(e) => handleChange(index, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(index, e)}
                     className={`w-[50px] h-[50px] text-center text-xl font-semibold rounded-full border border-[#CECECE] outline-none 
-                  ${digit ? "bg-[#004175] text-white" : "bg-gray-100"}`}
+                    ${digit ? "bg-[#004175] text-white" : "bg-gray-100"}`}
                   />
                 </Box>
               ))}
@@ -234,7 +172,7 @@ const OTPVerificationModal = ({
               disabled={isSubmitting || otp.some((digit) => !digit)}
               className={`py-2 px-4 rounded-full ${
                 isSubmitting || otp.some((digit) => !digit)
-                  ? "bg-[#004175a6] text-white w-[180px] py-3 px-4 rounded-full cursor-not-allowed" // Light blue and not-allowed cursor
+                  ? "bg-[#004175a6] text-white w-[180px] py-3 px-4 rounded-full cursor-not-allowed"
                   : "bg-[#004175] text-white w-[180px] py-3 px-4 rounded-full cursor-pointer hover:bg-blue-900"
               }`}
             >
@@ -258,4 +196,4 @@ const OTPVerificationModal = ({
   );
 };
 
-export default OTPVerificationModal;
+export default RegisterOTPVerificationModal;

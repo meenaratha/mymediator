@@ -25,11 +25,22 @@ import { Skeleton } from "@mui/material"; // Import Skeleton for loading
 import { useAuth } from "../../auth/AuthContext"; // Import auth context
 
 const GOOGLE_MAP_LIBRARIES = ["places"];
+import {
+  fetchNotifications,
+  markAsRead,
+  markAsUnread,
+
+} from "../../redux/notificationSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 const MobileHeader = ({ isFixed }) => {
   const navigate = useNavigate();
   const { isAuthenticated, user, logout, loading } = useAuth(); // Get auth state
-
+ const dispatch = useDispatch();
+  // Get state from Redux
+     const { messages, unreadCount, error } = useSelector(
+       (state) => state.notifications
+     );
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLocationOpen, setIsLocationOpen] = useState(false);
@@ -54,6 +65,13 @@ const MobileHeader = ({ isFixed }) => {
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
     libraries: GOOGLE_MAP_LIBRARIES,
   });
+
+
+  useEffect(() => {
+  if (isAuthenticated) {
+    dispatch(fetchNotifications());
+  }
+}, [dispatch, isAuthenticated]);
 
   // Fetch categories and subcategories for mobile menu
   useEffect(() => {
@@ -423,11 +441,13 @@ const MobileHeader = ({ isFixed }) => {
 
           {/* Search and Notification */}
           <div className="flex items-center gap-4">
-            <button onClick={() => setIsSearchOpen(true)}>
+            {/* <button onClick={() => setIsSearchOpen(true)}>
               <SearchIcon className="text-gray-700" />
-            </button>
+            </button> */}
+
+             {isAuthenticated && (
             <Badge
-              badgeContent={2}
+               badgeContent={unreadCount}
               sx={{
                 "& .MuiBadge-badge": {
                   backgroundColor: "rgba(24, 166, 11, 1)",
@@ -440,6 +460,7 @@ const MobileHeader = ({ isFixed }) => {
                 onClick={handleNotificationClick}
               />
             </Badge>
+             )}
           </div>
         </div>
       </header>
@@ -777,36 +798,27 @@ const MobileHeader = ({ isFixed }) => {
                   </div>
 
                   <div className="space-y-1">
-                    <Link
-                      to="/property"
-                      className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <span className="text-gray-700">Property List</span>
-                    </Link>
 
-                    <Link
-                      to="/electronics"
-                      className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <span className="text-gray-700">Electronic List</span>
-                    </Link>
+  {/* Dynamic category navigation */}
+                {categories.map((category) => (
+                  <div key={category.id} className="mb-4">
+                   
 
-                    <Link
-                      to="/car"
+                     <Link
+                       to={`/${category.slug}`}
                       className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer"
                       onClick={() => setIsMenuOpen(false)}
                     >
-                      <span className="text-gray-700">Car List</span>
+                      <span className="text-gray-700"> {category.name}</span>
                     </Link>
-                    <Link
-                      to="/bike"
-                      className="flex mb-4 items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <span className="text-gray-700">Bike List</span>
-                    </Link>
+                  </div>
+                ))}
+
+
+
+                
+
+                    
                   </div>
 
                   {/* Dynamic Sub Categories */}

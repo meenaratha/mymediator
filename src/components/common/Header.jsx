@@ -18,6 +18,7 @@ import LoginFormModel from "./LoginFormModel";
 import SignupFormModel from "./SignupFormModel";
 import ForgotPassword from "./ForgotPassword";
 import OTPVerificationModal from "./OTPVerificationModal";
+
 import LogoutIcon from "@mui/icons-material/Logout";
 import PersonIcon from "@mui/icons-material/Person";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -126,6 +127,13 @@ const Header = () => {
   useEffect(() => {
     fetchUserProfile();
   }, [isAuthenticated]);
+
+
+  useEffect(() => {
+  if (isAuthenticated) {
+    dispatch(fetchNotifications());
+  }
+}, [dispatch, isAuthenticated]);
 
   // Listen for profile update events from other components
   useEffect(() => {
@@ -643,7 +651,7 @@ const Header = () => {
   const [otpVerificationModal, setOtpVerificationModal] = useState(false);
   const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
   const [passwordResetModel, setPasswordResetModel] = useState(false);
-
+const [forgotPhone, setForgotPhone] = useState("");
   const handleLoginClick = () => {
     setLoginFormModel(true);
   };
@@ -655,6 +663,16 @@ const Header = () => {
   const handleNotificationClick = () => {
     navigate("/notification");
   };
+
+  const handleSearchKeyDown = (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    const q = searchQuery.trim();
+    if (!q) return;
+
+    navigate(`/search?query=${encodeURIComponent(q)}`);
+  }
+};
 
   // Handle logout
   const handleLogout = async () => {
@@ -823,6 +841,7 @@ const Header = () => {
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
+                     onKeyDown={handleSearchKeyDown}
                     className="w-full text-sm text-gray-700 focus:outline-none bg-transparent search-input"
                   />
                 </div>
@@ -1104,16 +1123,19 @@ const Header = () => {
                   </AnimatePresence>
                 </motion.div>
 
+
+
+
                 {/* Dynamic category navigation */}
-                {categories.slice(0, 4).map((category) => (
-                  <motion.div key={category.id} variants={itemVariants}>
+                {categories.map((category) => (
+                  <div key={category.id} variants={itemVariants}>
                     <Link
                       to={`/${category.slug}`}
                       className="text-gray-700 hover:text-blue-600"
                     >
                       {category.name}
                     </Link>
-                  </motion.div>
+                  </div>
                 ))}
 
                 <motion.div
@@ -1318,6 +1340,7 @@ const Header = () => {
           setForgotPasswordModal={setForgotPasswordModal}
           setLoginFormModel={setLoginFormModel}
           setOtpVerificationModal={setOtpVerificationModal}
+           setForgotPhone={setForgotPhone}
         />
       )}
 
@@ -1326,14 +1349,15 @@ const Header = () => {
           setOtpVerificationModal={setOtpVerificationModal}
           setForgotPasswordModal={setForgotPasswordModal}
           setPasswordResetModel={setPasswordResetModel}
+           phone={forgotPhone} 
         />
       )}
 
       {passwordResetModel && (
         <PasswordResetModel
-          setOtpVerificationModal={setOtpVerificationModal}
-          setPasswordResetModel={setPasswordResetModel}
-          setLoginFormModel={setLoginFormModel}
+           setPasswordResetModel={setPasswordResetModel}
+    setLoginFormModel={setLoginFormModel}
+    phone={forgotPhone} // phone saved from ForgotPassword
         />
       )}
     </>

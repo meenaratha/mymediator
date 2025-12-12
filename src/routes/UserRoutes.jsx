@@ -32,6 +32,7 @@ import ElectronicsFormPage from "../Pages/UserFlow/ElectronicsFormPage";
 import BikeFormPage from "../Pages/UserFlow/BikeFormPage";
 import CarDetailPage from "../Pages/UserFlow/CarDetailPage";
 import SellerProfile from "../components/sell/SellerProfile";
+import SearchPage from "../Pages/UserFlow/SearchPage";
 const UserRoutes = () => {
   return (
     <>
@@ -47,6 +48,7 @@ const UserRoutes = () => {
         <Route path="/bike" element={<BikesPage />} /> */}
          <Route path="/cars" element={<CarsPage />} />
         <Route path="/bikes" element={<BikesPage />} />
+        <Route path="/search" element={<SearchPage />} />
         <Route path="/subscription-plan" element={<SubscriptionPlan />} />
         <Route
           path="/filter/property/:subcategory/:subcategoryId"

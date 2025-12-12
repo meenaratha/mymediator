@@ -52,6 +52,8 @@ const PropertyDescription = () => {
 
    const [otpVerificationModal, setOtpVerificationModal] = useState(false);
     const [passwordResetModel, setPasswordResetModel] = useState(false);
+        const [forgotPhone, setForgotPhone] = useState("");
+    
    const handleReportClick = () => {
     setShowReportModal(true);
   };
@@ -130,6 +132,7 @@ const PropertyDescription = () => {
           setForgotPasswordModal={setForgotPasswordModal}
           setLoginFormModel={setLoginFormModel}
           setOtpVerificationModal={setOtpVerificationModal}
+            setForgotPhone={setForgotPhone}
         />
       )}
 
@@ -138,6 +141,7 @@ const PropertyDescription = () => {
           setOtpVerificationModal={setOtpVerificationModal}
           setForgotPasswordModal={setForgotPasswordModal}
           setPasswordResetModel={setPasswordResetModel}
+           phone={forgotPhone} 
         />
       )}
 
@@ -146,6 +150,7 @@ const PropertyDescription = () => {
           setOtpVerificationModal={setOtpVerificationModal}
           setPasswordResetModel={setPasswordResetModel}
           setLoginFormModel={setLoginFormModel}
+            phone={forgotPhone}
         />
       )}
  {/* Report Ads Modal */}
