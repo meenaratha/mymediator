@@ -131,9 +131,9 @@ const Footer = () => {
                     className="contact-icon custom-icon"
                   />
                   <span>
-                    no 3/1,1st street,
-                    <br />
-                    mambalam,chennai-60033
+                   5/133C, colachel road, mulagumoodu,  <br />kanniyakumari district,  <br />pincode:629167
+                   
+                   
                   </span>
                 </div>
               </li>
