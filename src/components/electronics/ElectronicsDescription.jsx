@@ -363,7 +363,13 @@ const ElectronicsDescription = () => {
                   {electronics.unique_code}
                 </div>
                 <div
-                  onClick={handleReportClick}
+                    onClick={() => {
+    if (!isAuthenticated) {
+      setLoginFormModel(true);
+    } else {
+      handleReportClick()
+    }
+  }}
                   className="flex items-center text-blue-600 cursor-pointer"
                   aria-label="report"
                 >

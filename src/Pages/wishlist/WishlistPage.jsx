@@ -540,7 +540,7 @@ const WishlistPage = () => {
                 onClick={() => navigate('/')}
                 className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors"
               >
-                Start Shopping
+              Explore Listings
               </button>
             </div>
           )}

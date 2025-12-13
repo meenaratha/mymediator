@@ -263,6 +263,7 @@ const fetchSearch = async (q, p) => {
     setListings([]);
     setTotal(0);
     setLastPage(1);
+     setPage(1);
     return;
   }
   setLoading(true);
@@ -280,12 +281,14 @@ const fetchSearch = async (q, p) => {
     setListings(result?.data || []);
     setTotal(result?.total || 0);
     setLastPage(result?.last_page || 1);
+    setPage(result?.current_page || 1);
   } catch (err) {
     console.error("Search failed", err);
     toast.error("Failed to load search results");
     setListings([]);
     setTotal(0);
     setLastPage(1);
+      setPage(1);
   } finally {
     setLoading(false);
   }
@@ -307,11 +310,20 @@ const fetchSearch = async (q, p) => {
     navigate(`/search?query=${encodeURIComponent(q)}&page=1`);
   };
 
+  // const handlePageChange = (newPage) => {
+  //   navigate(
+  //     `/search?query=${encodeURIComponent(searchTerm)}&page=${newPage}`
+  //   );
+  // };
+
   const handlePageChange = (newPage) => {
-    navigate(
-      `/search?query=${encodeURIComponent(searchTerm)}&page=${newPage}`
-    );
-  };
+  if (newPage < 1 || newPage > lastPage) return;
+
+  navigate(
+    `/search?query=${encodeURIComponent(searchTerm)}&page=${newPage}`
+  );
+};
+
 
   const currentQuery = params.get("query") || "";
 

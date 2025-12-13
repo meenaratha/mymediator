@@ -292,7 +292,13 @@ const CarDescription = () => {
                   {car.unique_code || car.id}
                 </div>
                 <div
-                  onClick={handleReportClick}
+                    onClick={() => {
+    if (!isAuthenticated) {
+      setLoginFormModel(true);
+    } else {
+      handleReportClick()
+    }
+  }}
                   className="flex items-center text-blue-600 cursor-pointer"
                   aria-label="report"
                 >

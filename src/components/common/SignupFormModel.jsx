@@ -321,7 +321,8 @@ const SignupFormModel = ({ setLoginFormModel, setSignupFormModel }) => {
       setOtp(["", "", "", ""]);
       setActiveInput(0);
       setResendDisabled(true);
-      setTimer(120); // 2 minutes
+      // setTimer(120); // 2 minutes
+        setTimer(60); // 1 minutes
     } catch (error) {
       console.error("Resend OTP error:", error);
     }

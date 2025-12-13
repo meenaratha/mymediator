@@ -138,7 +138,8 @@ const OTPVerificationModal = ({
     setOtp(["", "", "", ""]);
     setActiveInput(0);
     setResendDisabled(true);
-    setTimer(120); // 2 minutes
+    // setTimer(120); // 2 minutes
+     setTimer(60); // 1 minutes
   };
 
   // Format remaining time

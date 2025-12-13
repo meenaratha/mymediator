@@ -321,7 +321,13 @@ const PropertyDescription = () => {
                   {property.unique_code}
                 </div>
                 <div
-                 onClick={handleReportClick}
+                  onClick={() => {
+    if (!isAuthenticated) {
+      setLoginFormModel(true);
+    } else {
+      handleReportClick()
+    }
+  }}
                 className="text-blue-600 cursor-pointer flex items-center" aria-label="report">
                   <ReportIcon />
                   <span className="ml-1">Report Ad</span>
