@@ -423,7 +423,7 @@ const SubscriptionPlan = () => {
 
 
 
-                {isActivePlan && (
+                {/* {isActivePlan && (
         <div className="hidden md:block absolute top-[-22%] left-[20%]">
           <div className="bg-green-100 border border-green-300 rounded-xl px-6 py-4 text-center shadow-md w-full max-w-md">
             <h2 className="text-xl font-bold text-green-700 mb-2">
@@ -442,7 +442,7 @@ const SubscriptionPlan = () => {
           </div>
         </div>
       )}
-
+ */}
 
 
 

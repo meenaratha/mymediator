@@ -110,18 +110,30 @@ const Footer = () => {
             <ul className="footer-contact">
               <li>
                 <a
-                  href="mailto:discount.mark@gmail.com"
+                  href="mailto:mymediator20@gmail.com"
                   className="contact-link"
                 >
                   <EmailIcon className="contact-icon" />
-                  <span>discount.mark@gmail.com</span>
+                  <span>mymediator20@gmail.com</span>
                 </a>
               </li>
-              <li>
-                <a href="tel:+919645223547" className="contact-link">
-                  <LocalPhoneIcon className="contact-icon" />
-                  <span>+91 96452 23547</span>
+              <li className="flex gap-2 ">
+                 
+                                      <LocalPhoneIcon className="contact-icon" />
+ <div className="flex gap-2  flex-wrap">
+                <a href="tel:9843085144" className="contact-link">
+                
+                  <span>9843085144 ,</span>
                 </a>
+                <a href="tel:7502065825" className="contact-link">
+                  {/* <LocalPhoneIcon className="contact-icon" /> */}
+                  <span>7502065825 ,</span>
+                </a>
+                <a href="tel:9345043440" className="contact-link">
+                  {/* <LocalPhoneIcon className="contact-icon" /> */}
+                  <span>9345043440</span>
+                </a>
+                </div>
               </li>
               <li className="address">
                 <div className="contact-link">

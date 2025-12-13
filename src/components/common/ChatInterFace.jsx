@@ -4,8 +4,7 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Delete, MailOutline, Drafts } from "@mui/icons-material";
-import { messaging } from "../../firebase";
-import { onMessage } from "firebase/messaging";
+
 import {
   fetchNotifications,
   markAsRead,
@@ -16,7 +15,7 @@ import {
 
 const ChatInterface = () => {
   const dispatch = useDispatch();
-  
+
   // Get state from Redux
   const { messages, unreadCount, loading, error } = useSelector(
     (state) => state.notifications
@@ -26,31 +25,11 @@ const ChatInterface = () => {
     // Initial load
     dispatch(fetchNotifications());
 
-    // Firebase foreground listener
-    const unsubscribe = onMessage(messaging, (payload) => {
-      console.log("🔥 Foreground FCM:", payload);
-
-      // AUTO REFRESH API
-      dispatch(fetchNotifications());
-      
-      // OR add notification directly to Redux without API call:
-      // const newNotification = {
-      //   id: Date.now(),
-      //   title: payload.notification.title,
-      //   message: payload.notification.body,
-      //   is_read: 0,
-      //   status: "new",
-      //   created_at: new Date().toISOString(),
-      // };
-      // dispatch(addNotification(newNotification));
-    });
-
     // Refresh when user returns to tab
     const handleFocus = () => dispatch(fetchNotifications());
     window.addEventListener("focus", handleFocus);
 
     return () => {
-      unsubscribe();
       window.removeEventListener("focus", handleFocus);
     };
   }, [dispatch]);
@@ -135,7 +114,9 @@ const ChatInterface = () => {
                   toggleReadStatus(message.id, message.is_read);
                 }}
                 className="p-2 rounded-lg hover:bg-gray-200 transition-colors"
-                title={message.is_read === 0 ? "Mark as read" : "Mark as unread"}
+                title={
+                  message.is_read === 0 ? "Mark as read" : "Mark as unread"
+                }
               >
                 {message.is_read === 0 ? (
                   <MailOutline className="text-blue-600" />

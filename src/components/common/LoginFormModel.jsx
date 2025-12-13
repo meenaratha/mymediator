@@ -9,7 +9,8 @@ import IMAGES from "@/utils/images.js";
 import "../../styles/Login.css";
 import { useAuth } from "../../auth/AuthContext";
 import { api } from "../../api/axios";
-import { requestFirebaseToken } from "../../firebase";
+import { generateToken } from "../../notifications/firebase";
+// import { requestFirebaseToken } from "../../firebaseold";
 const LoginFormModel = ({
   setSignupFormModel,
   setLoginFormModel,
@@ -110,7 +111,7 @@ const LoginFormModel = ({
         Object.keys(errorData.errors).forEach((field) => {
           const frontendField = mapBackendFieldToFrontend(field);
           const errorMessages = errorData.errors[field];
-          
+
           if (Array.isArray(errorMessages)) {
             newErrors[frontendField] = errorMessages[0]; // Take first error
           } else {
@@ -118,7 +119,7 @@ const LoginFormModel = ({
           }
         });
       }
-      
+
       // Format 2: { field_errors: { field: 'error message' } }
       else if (errorData.field_errors) {
         Object.keys(errorData.field_errors).forEach((field) => {
@@ -126,9 +127,12 @@ const LoginFormModel = ({
           newErrors[frontendField] = errorData.field_errors[field];
         });
       }
-      
+
       // Format 3: { validation_errors: [...] }
-      else if (errorData.validation_errors && Array.isArray(errorData.validation_errors)) {
+      else if (
+        errorData.validation_errors &&
+        Array.isArray(errorData.validation_errors)
+      ) {
         errorData.validation_errors.forEach((error) => {
           if (error.field) {
             const frontendField = mapBackendFieldToFrontend(error.field);
@@ -136,11 +140,11 @@ const LoginFormModel = ({
           }
         });
       }
-      
+
       // Format 4: Direct field mapping { phone: 'error', password: 'error' }
       else {
         Object.keys(errorData).forEach((field) => {
-          if (field !== 'message') {
+          if (field !== "message") {
             const frontendField = mapBackendFieldToFrontend(field);
             newErrors[frontendField] = errorData[field];
           }
@@ -154,7 +158,7 @@ const LoginFormModel = ({
   // API call function for login
   const loginUser = async (userData) => {
     try {
-      const response = await api.post('/login', {
+      const response = await api.post("/login", {
         phone: userData.mobileNumber,
         password: userData.password,
       });
@@ -165,13 +169,14 @@ const LoginFormModel = ({
       };
     } catch (error) {
       console.error("Login API error:", error);
-      
+
       // Handle axios error response
       if (error.response) {
         // Server responded with error status
         return {
           success: false,
-          error: error.response.data?.message || "Login failed. Please try again.",
+          error:
+            error.response.data?.message || "Login failed. Please try again.",
           data: error.response.data || null,
         };
       } else if (error.request) {
@@ -203,18 +208,18 @@ const LoginFormModel = ({
     setErrors({}); // Clear any previous errors
 
     try {
-
-       // 2️⃣ Get Firebase token
-      const fcmToken = await requestFirebaseToken();
+      // 2️⃣ Get Firebase token
+      // const fcmToken = await requestFirebaseToken();
+      const fcmToken = await generateToken();
+      console.log("Login FCM Token:", fcmToken);
       // Option 1: Use the existing auth context login method
       const result = await login({
         phone: formData.mobileNumber,
         password: formData.password,
-         fcm_token: fcmToken,
+        fcm_token: fcmToken,// ✅ sent to backend
       });
 
       if (result.success) {
-        
         // Reset form
         setFormData({
           mobileNumber: "",
@@ -229,7 +234,7 @@ const LoginFormModel = ({
       } else {
         // Handle API errors
         let errorData = null;
-        
+
         // For the auth context, error data might be in result.data
         if (result.data) {
           errorData = result.data;
@@ -237,7 +242,7 @@ const LoginFormModel = ({
 
         // Handle field-specific errors
         const fieldErrors = handleBackendErrors(errorData);
-        
+
         if (Object.keys(fieldErrors).length > 0) {
           setErrors(fieldErrors);
         } else {
@@ -247,18 +252,17 @@ const LoginFormModel = ({
           });
         }
       }
-
     } catch (error) {
       console.error("Unexpected login error:", error);
-      
+
       // For axios errors, check error.response.data
       let errorData = null;
       if (error.response && error.response.data) {
         errorData = error.response.data;
       }
-      
+
       const fieldErrors = handleBackendErrors(errorData);
-      
+
       if (Object.keys(fieldErrors).length > 0) {
         setErrors(fieldErrors);
       } else {
@@ -322,7 +326,7 @@ const LoginFormModel = ({
                   onChange={handlePhoneChange}
                   placeholder="Mobile Number"
                   className={`w-full px-3 py-1 outline-none ${
-                    (errors.mobileNumber || errors.phone) ? "border-red-500" : ""
+                    errors.mobileNumber || errors.phone ? "border-red-500" : ""
                   } ${isSubmitting ? "opacity-50 pointer-events-none" : ""}`}
                   disabled={isSubmitting}
                 />
@@ -335,7 +339,7 @@ const LoginFormModel = ({
 
               {/* Password Field */}
               <div className="mb-4">
-                <div 
+                <div
                   className={`flex items-center border rounded-md p-2 border-[#CCCBCB] ${
                     errors.password ? "border-red-500" : "border-[#CCCBCB]"
                   } ${isSubmitting ? "opacity-50" : ""}`}
