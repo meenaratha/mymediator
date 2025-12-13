@@ -334,7 +334,7 @@ const CarDescription = () => {
               <span>Year </span>
               <span>:</span>
             </div>
-            <span className="px-[10px]">{car.post_year}</span>
+            <span className="px-[10px]">{car.year}</span>
           </div>
 
           <div className="grid grid-cols-2">

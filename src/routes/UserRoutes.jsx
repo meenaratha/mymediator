@@ -178,6 +178,44 @@ const UserRoutes = () => {
           }
         />
 
+
+        {/* slug issue thats why again repeated */}
+         <Route
+          path="/bikes/:slug/:id"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <BikeFormPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/bikes/:slug/:id/edit"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <BikeFormPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/cars/:slug/:id"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <UploadCarFormPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/cars/:slug/:id/edit"
+          element={
+            <ProtectedRoute requireAuth={true}>
+              <UploadCarFormPage />
+            </ProtectedRoute>
+          }
+        />
+
         <Route
           path="/sale-house-apartment"
           element={

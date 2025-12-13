@@ -1440,7 +1440,12 @@ const isBicycle = slug?.toLowerCase().includes('bicycles');
               {!isEditMode ? `${subName} Form` : `${editFormTitle} Form`}
           </h1>
         </div>
-        
+        {/* Show API error if exists */}
+      {apiError && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+          <strong>Error:</strong> {apiError}
+        </div>
+      )}
         <form onSubmit={handleSubmit}>
           <input type="hidden" name="subcategory_id" value={id} />
           
