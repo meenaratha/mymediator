@@ -41,6 +41,7 @@ import {
 
 import { useLoadScript } from "@react-google-maps/api";
 import { Autocomplete } from "@react-google-maps/api";
+import { toast } from "react-toastify";
 const GOOGLE_MAP_LIBRARIES = ["places"];
 
 
@@ -887,7 +888,7 @@ const loadCities = useCallback(
     const result = await submitCarForm(submissionData, slug, isEditMode);
 
     if (result.success) {
-      alert(
+       toast.success(
         isEditMode
           ? ` ${formData.title} updated successfully`
           : `${formData.title}  submitted successfully`
@@ -903,9 +904,9 @@ const loadCities = useCallback(
       setDeletedMediaIds({ images: [], videos: [] });
     } else {
       if (result.error || result.details) {
-        dispatch(
-          setApiError(result.error || result.details || "Submission failed")
-        );
+         const errorMessage = result.error || result.details || "Submission failed";
+         dispatch(setApiError(errorMessage));
+         toast.error(errorMessage);
       }
 
       if (

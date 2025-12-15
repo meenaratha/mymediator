@@ -40,6 +40,7 @@ import {
 
 import { useLoadScript } from "@react-google-maps/api";
 import { Autocomplete } from "@react-google-maps/api";
+import { toast } from "react-toastify";
 const GOOGLE_MAP_LIBRARIES = ["places"];
 
 const UploadBikeForm = () => {
@@ -887,7 +888,7 @@ const handleSubmit = async (e) => {
     const result = await submitBikeForm(submissionData, slug, isEditMode);
 
     if (result.success) {
-      alert(
+       toast.success(
         isEditMode
           ? `${formData.title} updated successfully!`
           : `${formData.title} submitted successfully!`
@@ -905,9 +906,9 @@ const handleSubmit = async (e) => {
       setDeletedMediaIds({ images: [], videos: [] });
     } else {
       if (result.error || result.details) {
-        dispatch(
-          setApiError(result.error || result.details || "Submission failed")
-        );
+         const errorMessage = result.error || result.details || "Submission failed";
+         dispatch(setApiError(errorMessage));
+         toast.error(errorMessage);
       }
 
       if (
@@ -1195,7 +1196,7 @@ console.log("📦 Extracted data array from response:", dataArray);
           const formFields = {
             // Basic Information
             action_id: bikeData.id || bikeData.action_id,
-            form_type: "bike",
+            form_type: bikeData.form_type || "bike",
             title: bikeData.title || "",
             subcategory_id: bikeData.subcategory_id || "",
             year: bikeData.year || "",

@@ -42,6 +42,7 @@ import {
 
 import { useLoadScript } from "@react-google-maps/api";
 import { Autocomplete } from "@react-google-maps/api";
+import { toast } from "react-toastify";
 const GOOGLE_MAP_LIBRARIES = ["places"];
 
 const PropertyForm = () => {
@@ -53,6 +54,8 @@ const PropertyForm = () => {
   const subName = location.state?.subName;
   const editFormTitle = location.state?.slugName;
   const [autocomplete, setAutocomplete] = useState(null);
+
+
 
   useEffect(() => {
     if (!isEditMode) {
@@ -145,6 +148,17 @@ const PropertyForm = () => {
 
   // Dynamic validation schema based on slug
   const [validationSchema, setValidationSchema] = useState(null);
+
+     // 👇 PASTE useEffect HERE (with other useEffects)
+  useEffect(() => {
+    if (!formData.state) return;
+
+    // ✅ load only when user manually changes state
+    if (!isEditMode && !isAutoPopulating) {
+      loadDistricts(formData.state);
+    }
+  }, [formData.state]);
+  
 
   // Slug configuration mapping
   const SLUG_CONFIG = {
@@ -390,6 +404,7 @@ const PropertyForm = () => {
         dispatch(
           setApiError("Failed to load form options. Please refresh the page.")
         );
+        
       } finally {
         setLoadingDropdowns(false);
       }
@@ -437,17 +452,22 @@ const PropertyForm = () => {
         }));
 
         // If not auto-populating and we have a selected district that's not in the new list, clear it
-        if (isAutoPopulating && formData.district) {
-          const districtExists = districtsData.find(
-            (d) =>
-              String(d.id) === String(formData.district) ||
-              String(d.value) === String(formData.district)
-          );
-          if (!districtExists) {
-            dispatch(updateFormField({ field: "district", value: "" }));
-            dispatch(updateFormField({ field: "city", value: "" }));
-          }
-        }
+       // ✅ Only validate district when NOT auto-populating
+if (!isAutoPopulating && formData.district) {
+  const districtExists = districtsData.find(
+    (d) =>
+      String(d.id) === String(formData.district) ||
+      String(d.value) === String(formData.district)
+  );
+
+  if (!districtExists) {
+    dispatch(updateFormField({ field: "district", value: "" }));
+    dispatch(updateFormField({ field: "city", value: "" }));
+  }
+}
+
+
+
       } catch (error) {
         console.error("Failed to load districts:", error);
         setDropdownData((prev) => ({
@@ -930,11 +950,12 @@ const PropertyForm = () => {
       const result = await submitPropertyForm(submissionData, slug, isEditMode);
 
       if (result.success) {
-        alert(
+        toast.success(
           isEditMode
             ? ` ${formData.propertyName} updated successfully`
             : `${formData.propertyName}  submitted successfully`
         );
+       
         if (!isEditMode) {
           dispatch(resetForm());
           navigate("/sell");
@@ -945,12 +966,14 @@ const PropertyForm = () => {
         // Clear deleted media IDs after successful submission
         setDeletedMediaIds({ images: [], videos: [] });
       } else {
-        // Handle backend errors
+       
+
         if (result.error || result.details) {
-          dispatch(
-            setApiError(result.error || result.details || "Submission failed")
-          );
-        }
+  const errorMessage = result.error || result.details || "Submission failed";
+  dispatch(setApiError(errorMessage));
+  toast.error(errorMessage);
+}
+
 
         // if (
         //   result.validationErrors &&
@@ -1058,9 +1081,16 @@ if (
           }, 100);
         }
       } else {
-        dispatch(
-          setApiError(err.message || "An error occurred during validation")
-        );
+        const errorMessage =
+      err?.response?.data?.message ||
+      err.message ||
+      "Something went wrong. Please try again.";
+         toast.error(errorMessage);
+        // dispatch(
+        //   setApiError(errorMessage || "An error occurred during validation")
+          
+        // );
+        
       }
     } finally {
       dispatch(setLoading(false));

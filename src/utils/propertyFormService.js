@@ -296,7 +296,7 @@ class PropertyFormService {
           case 500:
             return {
               success: false,
-              error: "Server error",
+              error:data.message || "Server error",
               details:
                 "An internal server error occurred. Please try again later.",
             };

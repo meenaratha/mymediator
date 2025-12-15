@@ -22,6 +22,7 @@ const SkeletonCard = () => (
 const SubscriptionCard = ({
   type,
   plan,
+  remainingCount,uploadedCount,
   startDate,
   endDate,
   price,
@@ -52,7 +53,7 @@ const SubscriptionCard = ({
         </div>
         <div className="text-[10px] font-semibold text-gray-900 mt-1 flex items-center justify-between gap-2 pb-1">
           <span className="truncate">Starting date: {startDate}</span>
-          {!expired && <span className="truncate">Ads on: {plan}</span>}
+          
         </div>
         <div className="text-[10px] font-semibold text-gray-900 mt-1 flex items-center justify-between gap-2">
           <span className="truncate">End date: {endDate}</span>
@@ -60,6 +61,14 @@ const SubscriptionCard = ({
             <span className="font-bold text-[16px] text-black">₹ {price}</span>
           )}
         </div>
+
+                <div className="mt-4 text-[10px] flex-wrap font-semibold text-gray-900 mt-1 flex items-center justify-between gap-2 pb-1">
+
+{!expired && <span className="truncate bg-green-50 p-1.5 rounded-[2px] border-1 border-green-200">Ads Limit : {plan}</span>}
+           {!expired && <span className="truncate  bg-red-50 p-1.5 rounded-[2px] border-1 border-red-200">Ads posted : {uploadedCount}</span>}
+             {!expired && <span className="truncate  bg-blue-50 p-1.5 rounded-[2px] border-1 border-blue-200">Remaining Ads : {remainingCount}</span>}
+
+</div>
         {expired && (
           <div className="text-[10px] font-semibold text-gray-900 mt-1 flex items-center justify-between gap-2">
             <span className="font-bold text-[16px] text-black">₹ {price}</span>
@@ -364,9 +373,12 @@ const verifyPayment = async (paymentResponse, subscriptionId) => {
                     <SubscriptionCard
                       key={idx}
                       type={sub.plan_name}
-                      startDate={sub.starts_at}
+                      startDate={sub.starts_at.split(" ")[0]}
                       plan={sub.upload_limit}
-                      endDate={sub.ends_at}
+                      uploadedCount = {sub.upload_count}
+                      remainingCount = {sub.remaining_uploads}
+              
+                      endDate={sub.ends_at.split(" ")[0]}
                       price={sub.plan_price}
                       expired={
                         sub.subscription_status === "expired" ||
