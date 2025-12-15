@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Logo from "../../assets/images/common/footer-logo.png";
 import Googleplay from "../../assets/images/common/google-play.png";
 import Appstore from "../../assets/images/common/app-store.png";
@@ -12,13 +12,76 @@ import EnquiryForm from "../../features/EnquiryForm";
 import { useState } from "react";
 import GeneralEnquiryForm from "../../features/GeneralEnquiryForm";
 import { useAuth } from "../../auth/AuthContext";
+import PasswordResetModel from "./PasswordResetModel";
+import OTPVerificationModal from "./OTPVerificationModal";
+import ForgotPassword from "./ForgotPassword";
+import SignupFormModel from "./SignupFormModel";
+import LoginFormModel from "./LoginFormModel";
 
 const Footer = () => {
+  const navigate = useNavigate();
     const { isAuthenticated, user, logout, loading } = useAuth(); // Get auth state
   
   const [showEnquiryPopup, setShowEnquiryPopup] = useState(false);
+
+    const [loginFormModel, setLoginFormModel] = useState(false);
+    const [signupFormModel, setSignupFormModel] = useState(false);
+    const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
+     const [otpVerificationModal, setOtpVerificationModal] = useState(false);
+      const [passwordResetModel, setPasswordResetModel] = useState(false);
+      const [forgotPhone, setForgotPhone] = useState("");
   return (
     <>
+
+
+ {loginFormModel && (
+        <LoginFormModel
+          setSignupFormModel={setSignupFormModel}
+          setLoginFormModel={setLoginFormModel}
+          setForgotPasswordModal={setForgotPasswordModal}
+        />
+      )}
+
+      {signupFormModel && (
+        <SignupFormModel
+          setSignupFormModel={setSignupFormModel}
+          setLoginFormModel={setLoginFormModel}
+          setForgotPasswordModal={setForgotPasswordModal}
+        />
+      )}
+
+ {forgotPasswordModal && (
+        <ForgotPassword
+          setForgotPasswordModal={setForgotPasswordModal}
+          setLoginFormModel={setLoginFormModel}
+          setOtpVerificationModal={setOtpVerificationModal}
+           setForgotPhone={setForgotPhone}
+        />
+      )}
+
+      {otpVerificationModal && (
+        <OTPVerificationModal
+          setOtpVerificationModal={setOtpVerificationModal}
+          setForgotPasswordModal={setForgotPasswordModal}
+          setPasswordResetModel={setPasswordResetModel}
+           phone={forgotPhone} 
+        />
+      )}
+
+      {passwordResetModel && (
+        <PasswordResetModel
+          setOtpVerificationModal={setOtpVerificationModal}
+          setPasswordResetModel={setPasswordResetModel}
+          setLoginFormModel={setLoginFormModel}
+           phone={forgotPhone} // phone saved from ForgotPassword
+        />
+      )}
+
+
+
+
+
+
      {/* Enquiry Form Popup */}
 {showEnquiryPopup && (
   <GeneralEnquiryForm  onClose={() => setShowEnquiryPopup(false)}
@@ -92,7 +155,15 @@ const Footer = () => {
               </>):(
                 <>
               <li>
-                <Link to="/">Privacy Policy</Link>
+                <div className="text-[12px]"  onClick={() => {
+    if (!isAuthenticated) {
+      setLoginFormModel(true);
+    } else {
+      navigate("/privacy-policy");
+    }
+  }} >Privacy Policy</div>
+
+               
               </li>
               <li>
                 <Link to="/">Terms & Conditions</Link>

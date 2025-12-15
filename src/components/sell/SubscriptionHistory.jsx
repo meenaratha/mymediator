@@ -373,12 +373,14 @@ const verifyPayment = async (paymentResponse, subscriptionId) => {
                     <SubscriptionCard
                       key={idx}
                       type={sub.plan_name}
-                      startDate={sub.starts_at.split(" ")[0]}
+                      // startDate={sub.starts_at.split(" ")[0]}
+                       startDate={sub.starts_at}
                       plan={sub.upload_limit}
                       uploadedCount = {sub.upload_count}
                       remainingCount = {sub.remaining_uploads}
               
-                      endDate={sub.ends_at.split(" ")[0]}
+                      // endDate={sub.ends_at.split(" ")[0]}
+                        endDate={sub.ends_at}
                       price={sub.plan_price}
                       expired={
                         sub.subscription_status === "expired" ||

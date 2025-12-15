@@ -150,15 +150,38 @@ const PropertyForm = () => {
   const [validationSchema, setValidationSchema] = useState(null);
 
      // 👇 PASTE useEffect HERE (with other useEffects)
-  useEffect(() => {
-    if (!formData.state) return;
+  // useEffect(() => {
+  //   if (!formData.state) return;
 
-    // ✅ load only when user manually changes state
-    if (!isEditMode && !isAutoPopulating) {
-      loadDistricts(formData.state);
-    }
-  }, [formData.state]);
+  //   // ✅ load only when user manually changes state
+  //   if (!isEditMode && !isAutoPopulating) {
+  //     loadDistricts(formData.state);
+  //   }
+  // }, [formData.state]);
   
+
+
+
+useEffect(() => {
+  if (!formData.state) return;
+
+  // 🔥 IMPORTANT: Only when USER changes state
+  if (!isAutoPopulating) {
+    // clear dependent fields
+    dispatch(updateFormField({ field: "district", value: "" }));
+
+    setDropdownData((prev) => ({
+      ...prev,
+      districts: [],
+      cities: [],
+    }));
+
+    // load new districts
+    loadDistricts(formData.state);
+  }
+}, [formData.state]);
+
+
 
   // Slug configuration mapping
   const SLUG_CONFIG = {
@@ -365,124 +388,202 @@ const PropertyForm = () => {
 
   // Load dropdown data based on slug
   // Load initial dropdown data based on slug
-  useEffect(() => {
-    const loadDropdownData = async () => {
-      if (!slug) return;
+  // useEffect(() => {
+  //   const loadDropdownData = async () => {
+  //     if (!slug) return;
 
-      setLoadingDropdowns(true);
-      try {
-        const dropdowns = await dropdownService.getDropdownsForPropertyType(
-          slug
-        );
-        console.log(`Loaded dropdown data for: ${slug}`, dropdowns);
+  //     setLoadingDropdowns(true);
+  //     try {
+  //       const dropdowns = await dropdownService.getDropdownsForPropertyType(
+  //         slug
+  //       );
+  //       console.log(`Loaded dropdown data for: ${slug}`, dropdowns);
 
-        // Process each dropdown to ensure we have arrays
-        const processedDropdowns = {};
-        Object.keys(dropdowns).forEach((key) => {
-          const data = dropdowns[key];
-          if (Array.isArray(data)) {
-            processedDropdowns[key] = data;
-          } else if (data && data.data) {
-            processedDropdowns[key] = Array.isArray(data.data) ? data.data : [];
-          } else if (data && data.response) {
-            processedDropdowns[key] = Array.isArray(data.response)
-              ? data.response
-              : [];
-          } else {
-            processedDropdowns[key] = [];
-          }
-        });
+  //       // Process each dropdown to ensure we have arrays
+  //       const processedDropdowns = {};
+  //       Object.keys(dropdowns).forEach((key) => {
+  //         const data = dropdowns[key];
+  //         if (Array.isArray(data)) {
+  //           processedDropdowns[key] = data;
+  //         } else if (data && data.data) {
+  //           processedDropdowns[key] = Array.isArray(data.data) ? data.data : [];
+  //         } else if (data && data.response) {
+  //           processedDropdowns[key] = Array.isArray(data.response)
+  //             ? data.response
+  //             : [];
+  //         } else {
+  //           processedDropdowns[key] = [];
+  //         }
+  //       });
 
-        setDropdownData((prev) => ({
-          ...prev,
-          ...processedDropdowns,
-          districts: [], // Will be loaded when state is selected
-          cities: [], // Will be loaded when district is selected
-        }));
-      } catch (error) {
-        console.error("Failed to load dropdown data:", error);
-        dispatch(
-          setApiError("Failed to load form options. Please refresh the page.")
-        );
+  //       setDropdownData((prev) => ({
+  //         ...prev,
+  //         ...processedDropdowns,
+  //         districts: [], // Will be loaded when state is selected
+  //         cities: [], // Will be loaded when district is selected
+  //       }));
+  //     } catch (error) {
+  //       console.error("Failed to load dropdown data:", error);
+  //       dispatch(
+  //         setApiError("Failed to load form options. Please refresh the page.")
+  //       );
         
-      } finally {
-        setLoadingDropdowns(false);
-      }
-    };
+  //     } finally {
+  //       setLoadingDropdowns(false);
+  //     }
+  //   };
 
-    loadDropdownData();
-  }, [slug, dispatch]);
+  //   loadDropdownData();
+  // }, [slug, dispatch]);
 
   // Memoized function to load districts
-  const loadDistricts = useCallback(
-    async (stateId) => {
-      if (!stateId) return;
+//   const loadDistricts = useCallback(
+//     async (stateId) => {
+//       if (!stateId) return;
 
-      setLoadingDistricts(true);
-      try {
-        console.log("Loading districts for state:", stateId);
-        const response = await dropdownService.getDistricts(stateId);
+//       setLoadingDistricts(true);
+//       try {
+//         console.log("Loading districts for state:", stateId);
+//         const response = await dropdownService.getDistricts(stateId);
 
-        // Handle different response formats
-        let districtsData = [];
-        if (Array.isArray(response)) {
-          districtsData = response;
-        } else if (response && response.data && Array.isArray(response.data)) {
-          districtsData = response.data;
-        } else if (
-          response &&
-          response.districts &&
-          Array.isArray(response.districts)
-        ) {
-          districtsData = response.districts;
-        } else if (
-          response &&
-          response.response &&
-          Array.isArray(response.response)
-        ) {
-          districtsData = response.response;
-        }
+//         // Handle different response formats
+//         let districtsData = [];
+//         if (Array.isArray(response)) {
+//           districtsData = response;
+//         } else if (response && response.data && Array.isArray(response.data)) {
+//           districtsData = response.data;
+//         } else if (
+//           response &&
+//           response.districts &&
+//           Array.isArray(response.districts)
+//         ) {
+//           districtsData = response.districts;
+//         } else if (
+//           response &&
+//           response.response &&
+//           Array.isArray(response.response)
+//         ) {
+//           districtsData = response.response;
+//         }
 
-        console.log("Loaded districts:", districtsData);
+//         console.log("Loaded districts:", districtsData);
 
-        setDropdownData((prev) => ({
-          ...prev,
-          districts: districtsData,
-          cities: [], // Clear cities when state changes
-        }));
+//         setDropdownData((prev) => ({
+//           ...prev,
+//           districts: districtsData,
+//           cities: [], // Clear cities when state changes
+//         }));
 
-        // If not auto-populating and we have a selected district that's not in the new list, clear it
-       // ✅ Only validate district when NOT auto-populating
-if (!isAutoPopulating && formData.district) {
-  const districtExists = districtsData.find(
-    (d) =>
-      String(d.id) === String(formData.district) ||
-      String(d.value) === String(formData.district)
-  );
+//         // If not auto-populating and we have a selected district that's not in the new list, clear it
+//        // ✅ Only validate district when NOT auto-populating
+// if (!isAutoPopulating && formData.district) {
+//   const districtExists = districtsData.find(
+//     (d) =>
+//       String(d.id) === String(formData.district) ||
+//       String(d.value) === String(formData.district)
+//   );
 
-  if (!districtExists) {
-    dispatch(updateFormField({ field: "district", value: "" }));
-    dispatch(updateFormField({ field: "city", value: "" }));
-  }
-}
+//   if (!districtExists) {
+//     dispatch(updateFormField({ field: "district", value: "" }));
+//     dispatch(updateFormField({ field: "city", value: "" }));
+//   }
+// }
 
 
 
-      } catch (error) {
-        console.error("Failed to load districts:", error);
-        setDropdownData((prev) => ({
-          ...prev,
-          districts: [],
-          cities: [],
-        }));
-        // Show user-friendly error
-        dispatch(setApiError("Failed to load districts. Please try again."));
-      } finally {
-        setLoadingDistricts(false);
+//       } catch (error) {
+//         console.error("Failed to load districts:", error);
+//         setDropdownData((prev) => ({
+//           ...prev,
+//           districts: [],
+//           cities: [],
+//         }));
+//         // Show user-friendly error
+//         dispatch(setApiError("Failed to load districts. Please try again."));
+//       } finally {
+//         setLoadingDistricts(false);
+//       }
+//     },
+//     [dispatch, isAutoPopulating, formData.district]
+//   );
+
+
+const loadDistricts = useCallback(
+  async (stateId) => {
+    if (!stateId) return;
+
+    setLoadingDistricts(true);
+    try {
+      console.log("Loading districts for state:", stateId);
+      const response = await dropdownService.getDistricts(stateId);
+
+      // Handle different response formats
+      let districtsData = [];
+      if (Array.isArray(response)) {
+        districtsData = response;
+      } else if (response && response.data && Array.isArray(response.data)) {
+        districtsData = response.data;
+      } else if (
+        response &&
+        response.districts &&
+        Array.isArray(response.districts)
+      ) {
+        districtsData = response.districts;
+      } else if (
+        response &&
+        response.response &&
+        Array.isArray(response.response)
+      ) {
+        districtsData = response.response;
       }
-    },
-    [dispatch, isAutoPopulating, formData.district]
-  );
+
+      console.log("Loaded districts:", districtsData);
+
+      setDropdownData((prev) => ({
+        ...prev,
+        districts: districtsData,
+      }));
+
+      return districtsData; // Return the data for chaining
+    } catch (error) {
+      console.error("Failed to load districts:", error);
+      setDropdownData((prev) => ({
+        ...prev,
+        districts: [],
+        cities: [],
+      }));
+      dispatch(setApiError("Failed to load districts. Please try again."));
+      return [];
+    } finally {
+      setLoadingDistricts(false);
+    }
+  },
+  [dispatch]
+);
+
+useEffect(() => {
+  if (!formData.state) return;
+
+  // ❌ block auto-populate
+  if (isAutoPopulating) return;
+
+  console.log("Loading districts for state:", formData.state);
+
+  // clear old selections
+  dispatch(updateFormField({ field: "district", value: "" }));
+  dispatch(updateFormField({ field: "city", value: "" }));
+
+  setDropdownData((prev) => ({
+    ...prev,
+    districts: [],
+    cities: [],
+  }));
+
+  // ✅ SINGLE API CALL
+  loadDistricts(formData.state);
+}, [formData.state]);
+
+
 
   // Memoized function to load cities
   const loadCities = useCallback(
@@ -760,15 +861,13 @@ if (!isAutoPopulating && formData.district) {
         setDropdownData((prev) => ({
           ...prev,
           districts: [],
-          cities: [],
+        
         }));
         // Clear dependent fields
         if (formData.district) {
           dispatch(updateFormField({ field: "district", value: "" }));
         }
-        if (formData.city) {
-          dispatch(updateFormField({ field: "city", value: "" }));
-        }
+     
       }
       return;
     }
@@ -784,7 +883,7 @@ if (!isAutoPopulating && formData.district) {
     dispatch,
     isAutoPopulating, // Added this dependency
     formData.district,
-    formData.city,
+  
   ]);
 
   // FIXED: Update the loadCities useEffect similarly

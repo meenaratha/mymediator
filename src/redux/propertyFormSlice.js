@@ -376,9 +376,11 @@ const propertyFormSlice = createSlice({
       console.log("Form populated from API data with proper field mapping");
 
       // Reset auto-populating flag after a brief delay to allow dropdown loading
-      setTimeout(() => {
-        state.isAutoPopulating = false;
-      }, 100);
+      // setTimeout(() => {
+      //   state.isAutoPopulating = false;
+      // }, 100);
+
+      state.isAutoPopulating = false;
     },
 
     // Action to merge API data with existing form data

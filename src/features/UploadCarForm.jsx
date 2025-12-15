@@ -154,52 +154,52 @@ const UploadCarForm = () => {
   // Dynamic validation schema based on slug
   const [validationSchema, setValidationSchema] = useState(uploadCarFormSchema);
 
-  useEffect(() => {
-    const loadDropdownData = async () => {
-      console.log("🔄 Loading dropdown data for slug:", slug);
-      setLoadingDropdowns(true);
+  // useEffect(() => {
+  //   const loadDropdownData = async () => {
+  //     console.log("🔄 Loading dropdown data for slug:", slug);
+  //     setLoadingDropdowns(true);
 
-      try {
-        const data = await dropdownService.getDropdownsForPropertyType(
-          slug || "car"
-        );
+  //     try {
+  //       const data = await dropdownService.getDropdownsForPropertyType(
+  //         slug || "car"
+  //       );
 
-        console.log("📦 Raw dropdown data received:", data);
+  //       console.log("📦 Raw dropdown data received:", data);
 
-        const processedData = {
-          states: response.states?.data || response.states || [],
-          districts: [],
-          cities: [],
-          carBrand: response.carBrand?.data || response.carBrand || [],
-          carModel: [],
-          fuelTypes: response.fuelTypes?.data || response.fuelTypes || [],
-          transmissions:
-            response.transmissions?.data || response.transmissions || [],
-          numberOfOwners:
-            response.numberOfOwners?.data || response.numberOfOwners || [],
-        };
+  //       const processedData = {
+  //         states: response.states?.data || response.states || [],
+  //         districts: [],
+  //         cities: [],
+  //         carBrand: response.carBrand?.data || response.carBrand || [],
+  //         carModel: [],
+  //         fuelTypes: response.fuelTypes?.data || response.fuelTypes || [],
+  //         transmissions:
+  //           response.transmissions?.data || response.transmissions || [],
+  //         numberOfOwners:
+  //           response.numberOfOwners?.data || response.numberOfOwners || [],
+  //       };
 
-        // console.log("✅ Processed dropdown data:", processedData);
-        // console.log("🚗 Car brands count:", processedData.carBrand.length);
+  //       // console.log("✅ Processed dropdown data:", processedData);
+  //       // console.log("🚗 Car brands count:", processedData.carBrand.length);
 
-        // setDropdownData(processedData);
-          setDropdownData((prev) => ({
-          ...prev,
-          ...processedDropdowns,
-          districts: [], // Will be loaded when state is selected
-          cities: [], // Will be loaded when district is selected
-        }));
-        setLoadingDropdowns(false);
-      } catch (error) {
-        console.error("❌ Failed to load dropdowns:", error);
-        console.error("Error details:", error.response?.data || error.message);
-        dispatch(setApiError("Failed to load dropdown data"));
-        setLoadingDropdowns(false);
-      }
-    };
+  //       // setDropdownData(processedData);
+  //         setDropdownData((prev) => ({
+  //         ...prev,
+  //         ...processedDropdowns,
+  //         districts: [], // Will be loaded when state is selected
+  //         cities: [], // Will be loaded when district is selected
+  //       }));
+  //       setLoadingDropdowns(false);
+  //     } catch (error) {
+  //       console.error("❌ Failed to load dropdowns:", error);
+  //       console.error("Error details:", error.response?.data || error.message);
+  //       dispatch(setApiError(error.response.message || "Failed to load dropdown data"));
+  //       setLoadingDropdowns(false);
+  //     }
+  //   };
 
-    loadDropdownData();
-  }, [slug, dispatch]);
+  //   loadDropdownData();
+  // }, [slug, dispatch]);
 
  // Enhanced useEffect for car models loading
 useEffect(() => {

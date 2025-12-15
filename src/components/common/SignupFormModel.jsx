@@ -294,8 +294,9 @@ const SignupFormModel = ({ setLoginFormModel, setSignupFormModel }) => {
       // reset OTP UI
       setOtp(["", "", "", ""]);
       setActiveInput(0);
-      setResendDisabled(false);
-      setTimer(0);
+     // ⛔ disable resend initially
+setResendDisabled(true);
+setTimer(60); // 1 second delay
     } catch (error) {
       console.error("Send OTP error:", error);
       const msg =
