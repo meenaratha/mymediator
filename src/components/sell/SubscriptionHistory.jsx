@@ -28,6 +28,8 @@ const SubscriptionCard = ({
   price,
   expired,
   onRenew,
+  currentplan,
+  subscription_status,
 }) => {
   const getImage = () => {
     switch (type) {
@@ -45,7 +47,9 @@ const SubscriptionCard = ({
   };
 
   return (
-    <div className="border border-gray-200 rounded-lg px-2 py-4 flex items-start bg-white">
+   <div className={`border border-gray-200 rounded-lg px-2 py-4 flex items-start bg-white relative
+  ${currentplan ? "animate-glow border-green-400" : ""}`}>
+
       {getImage()}
       <div className="ml-3 flex-1 min-w-0">
         <div className="font-semibold text-[14px] truncate pb-2">
@@ -64,12 +68,12 @@ const SubscriptionCard = ({
 
                 <div className="mt-4 text-[10px] flex-wrap font-semibold text-gray-900 mt-1 flex items-center justify-between gap-2 pb-1">
 
-{!expired && <span className="truncate bg-green-50 p-1.5 rounded-[2px] border-1 border-green-200">Ads Limit : {plan}</span>}
-           {!expired && <span className="truncate  bg-red-50 p-1.5 rounded-[2px] border-1 border-red-200">Ads posted : {uploadedCount}</span>}
-             {!expired && <span className="truncate  bg-blue-50 p-1.5 rounded-[2px] border-1 border-blue-200">Remaining Ads : {remainingCount}</span>}
+{currentplan && <span className="truncate bg-green-50 p-1.5 rounded-[2px] border-1 border-green-200">Ads Limit : {plan}</span>}
+           {currentplan && <span className="truncate  bg-red-50 p-1.5 rounded-[2px] border-1 border-red-200">Ads posted : {uploadedCount}</span>}
+             {currentplan && <span className="truncate  bg-blue-50 p-1.5 rounded-[2px] border-1 border-blue-200">Remaining Ads : {remainingCount}</span>}
 
 </div>
-        {expired && (
+        {/* {expired && (
           <div className="text-[10px] font-semibold text-gray-900 mt-1 flex items-center justify-between gap-2">
             <span className="font-bold text-[16px] text-black">₹ {price}</span>
             <button
@@ -79,7 +83,51 @@ const SubscriptionCard = ({
               Renewal
             </button>
           </div>
-        )}
+        )} */}
+
+        {/* {subscription_status === "pending" && (
+          <div className="absolute top-2 right-4 flex items-center gap-2 
+                  bg-red-100 text-red-700 text-[12px] 
+                  px-2 py-1 rounded-full shadow-sm">
+     <span className="font-semibold">Pending</span>
+    <span className="relative flex h-2.5 w-2.5">
+      <span className=" absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+    </span>
+
+   
+  </div>
+        )} */}
+
+         {/* {subscription_status === "expired" && (
+          <div className="absolute top-2 right-4 flex items-center gap-2 
+                  bg-red-100 text-red-700 text-[12px] 
+                  px-2 py-1 rounded-full shadow-sm">
+     <span className="font-semibold">Expired</span>
+    <span className="relative flex h-2.5 w-2.5">
+      <span className=" absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+    </span>
+
+   
+  </div>
+        )} */}
+
+      {currentplan && (
+  <div className="absolute top-2 right-4 flex items-center gap-2 
+                  bg-green-100 text-green-700 text-[12px] 
+                  px-2 py-1 rounded-full shadow-sm">
+     <span className="font-semibold">Active</span>
+    <span className="relative flex h-2.5 w-2.5">
+      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+    </span>
+
+   
+  </div>
+)}
+
+
       </div>
     </div>
   );
@@ -102,6 +150,9 @@ const SubscriptionHistory = () => {
     current_page: 1,
     total_pages: 1,
   });
+
+  const [hasCurrentSubscription, setHasCurrentSubscription] = useState(false);
+
 
   const fetchSubscriptionHistory = async (page = 1) => {
     try {
@@ -127,8 +178,37 @@ const SubscriptionHistory = () => {
     }
   };
 
+const checkAllSubscriptions = async () => {
+  try {
+    let page = 1;
+    let foundCurrent = false;
+
+    while (true) {
+      const res = await api.get("/subscribe/history", {
+        params: { page },
+      });
+
+      const history = res.data.history || [];
+
+      if (history.some((sub) => sub.is_current === true)) {
+        foundCurrent = true;
+        break;
+      }
+
+      if (page >= res.data.pagination.total_pages) break;
+      page++;
+    }
+
+    setHasCurrentSubscription(foundCurrent);
+  } catch (err) {
+    console.error("Failed to check current subscription", err);
+  }
+};
+
+
   useEffect(() => {
-    fetchSubscriptionHistory();
+    fetchSubscriptionHistory(1);
+     checkAllSubscriptions();
   }, []);
 
   const loadRazorpayScript = () => {
@@ -163,8 +243,28 @@ const SubscriptionHistory = () => {
       await openRazorpay(res.data, subscription.id);
     } catch (error) {
       console.error("Renew API error:", error);
+       Swal.fire({
+      icon: "error",
+      title: "Payment Error",
+      text: error.response?.data?.message || "Server error. Try again.",
+    });
     }
   };
+
+
+
+
+
+// Decide if renew button should show
+const canRenew = (sub) => {
+  if (hasCurrentSubscription) return false;
+  return sub.subscription_status === "expired";
+};
+
+
+
+
+
 
 //   const verifyPayment = async (paymentResponse, subscriptionId) => {
 //     try {
@@ -382,11 +482,11 @@ const verifyPayment = async (paymentResponse, subscriptionId) => {
                       // endDate={sub.ends_at.split(" ")[0]}
                         endDate={sub.ends_at}
                       price={sub.plan_price}
-                      expired={
-                        sub.subscription_status === "expired" ||
-                        sub.subscription_status === "pending"
-                      }
-                      onRenew={() => handleRenew(sub)}
+                       expired={canRenew(sub)}
+    onRenew={() => handleRenew(sub)}
+
+    currentplan={sub.is_current}
+    subscription_status={sub.subscription_status}
                     />
                   ))}
                 </div>
