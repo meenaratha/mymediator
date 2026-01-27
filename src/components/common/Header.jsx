@@ -804,7 +804,7 @@ const [forgotPhone, setForgotPhone] = useState("");
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
-                className="flex items-center w-full max-w-md px-4 py-2 border border-gray-300 rounded-full shadow-sm search-container"
+                className="tour-search flex items-center w-full max-w-md px-4 py-2 border border-gray-300 rounded-full shadow-sm search-container"
               >
                 <SearchIcon className="text-gray-500 mr-2" />
                 <div className="w-full relative">
@@ -908,7 +908,7 @@ const [forgotPhone, setForgotPhone] = useState("");
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       transition={{ duration: 0.2 }}
-                      className="flex items-center gap-2 cursor-pointer"
+                      className="tour-profile flex items-center gap-2 cursor-pointer"
                       onClick={handleProfileClick}
                     >
                       <Avatar
@@ -1020,7 +1020,7 @@ const [forgotPhone, setForgotPhone] = useState("");
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   transition={{ duration: 0.2 }}
-                  className="mymediator__sell_button"
+                  className="tour-sell mymediator__sell_button"
                   onClick={handleSellBtnClick}
                 >
                   Sell
@@ -1049,7 +1049,7 @@ const [forgotPhone, setForgotPhone] = useState("");
                   ref={allcategorymenuRef}
                   onClick={() => setIsMegaMenuOpen(!isMegaMenuOpen)}
                 >
-                  <span className="text-gray-700">All Categories</span>
+                  <span className="tour-categories text-gray-700">All Categories</span>
                   <motion.div
                     animate={{ rotate: isMegaMenuOpen ? 180 : 0 }}
                     transition={{ duration: 0.3 }}
@@ -1142,7 +1142,7 @@ const [forgotPhone, setForgotPhone] = useState("");
                   variants={itemVariants}
                   whileHover={{ scale: 1.02 }}
                   transition={{ duration: 0.2 }}
-                  className="flex items-center gap-1 ml-6 cursor-pointer border border-gray-300 rounded-full px-3 py-1.5 relative"
+                  className="tour-location flex items-center gap-1 ml-6 cursor-pointer border border-gray-300 rounded-full px-3 py-1.5 relative"
                   onClick={() => setIsLocationOpen(!isLocationOpen)}
                 >
                   <LocationOnIcon className="w-5 h-5 text-red-500" />

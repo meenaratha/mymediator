@@ -10,12 +10,27 @@ import { useMediaQuery } from "react-responsive"; // For detecting mobile device
 import IMAGES from "@/utils/images.js";
 import { api } from "@/api/axios";
 import { toast } from "react-toastify";
+import { useTour } from "@reactour/tour";
 const HomePage = () => {
   const isMobile = useMediaQuery({ maxWidth: 767 });
   // State for slider images
   const [sliderImages, setSliderImages] = useState([]);
   const [loadingImages, setLoadingImages] = useState(false);
   const [imageError, setImageError] = useState(false);
+
+    const { setIsOpen } = useTour();
+
+    useEffect(() => {
+      const token = localStorage.getItem("token");
+      const tourDone = localStorage.getItem("homeTourDone");
+
+      if (!token && !tourDone) {
+        setTimeout(() => {
+          setIsOpen(true);
+          localStorage.setItem("homeTourDone", "true");
+        }, 500);
+      }
+    }, [setIsOpen]);
 
   // Fallback images in case API fails
   const fallbackImages = [
@@ -110,15 +125,15 @@ const HomePage = () => {
           <SliderSkeleton />
         ) : (
           <>
-            <BannerSlider 
-              images={sliderImages} 
+            <BannerSlider
+              images={sliderImages}
               isLoading={loadingImages}
               hasError={imageError}
             />
             {/* Show retry button if there was an error */}
             {imageError && (
               <div className="text-center mb-4">
-                <button 
+                <button
                   onClick={fetchSliderImages}
                   className="text-blue-600 hover:text-blue-800 text-sm underline"
                 >

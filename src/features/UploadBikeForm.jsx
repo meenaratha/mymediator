@@ -5,6 +5,7 @@ import VideoCameraBackIcon from "@mui/icons-material/VideoCameraBack";
 import ClearIcon from "@mui/icons-material/Clear";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
 
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
@@ -12,7 +13,7 @@ import { DynamicInputs } from "@/components";
 import { useDispatch, useSelector } from "react-redux";
 
 // Import dynamic validation schemas
-import {  createBikeFormSchema, getVehicleType } from "../validation/BikeFormSchema";
+import { createBikeFormSchema, getVehicleType } from "../validation/BikeFormSchema";
 
 // Import API services
 import { dropdownService } from "../utils/propertyDropdownService";
@@ -41,37 +42,41 @@ import {
 import { useLoadScript } from "@react-google-maps/api";
 import { Autocomplete } from "@react-google-maps/api";
 import { toast } from "react-toastify";
+import MapPickerModal from "@/components/common/MapPickerModal";
+
 const GOOGLE_MAP_LIBRARIES = ["places"];
 
 const UploadBikeForm = () => {
-    const navigate = useNavigate();
-  
+  const navigate = useNavigate();
+
   const dispatch = useDispatch();
   const { slug, id } = useParams(); // Get both slug and id from URL params
   const location = useLocation();
-const subName = location.state?.subName;
+  const subName = location.state?.subName;
   const editFormTitle = location.state?.slugName;
-    const formTittle = subName ;
+  const formTittle = subName;
   const isEditMode = location.pathname.includes("edit");
 
   const [autocomplete, setAutocomplete] = useState(null);
-  
-   useEffect(() => {
-        if (!isEditMode) {
-          console.log("🧹 Exiting edit mode - clearing form data");
-    
-          // Reset everything to initial state
-          dispatch(resetForm());
-    
-          // Clear local states
-          setDeletedMediaIds({ images: [], videos: [] });
-    
-          // Clear auto-populate data
-          dispatch(clearAutoPopulateData());
-    
-          console.log("✅ Form cleared successfully");
-        }
-      }, [isEditMode, dispatch]);
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+  const [usedAutocomplete, setUsedAutocomplete] = useState(false);
+
+  useEffect(() => {
+    if (!isEditMode) {
+      console.log("🧹 Exiting edit mode - clearing form data");
+
+      // Reset everything to initial state
+      dispatch(resetForm());
+
+      // Clear local states
+      setDeletedMediaIds({ images: [], videos: [] });
+
+      // Clear auto-populate data
+      dispatch(clearAutoPopulateData());
+
+      console.log("✅ Form cleared successfully");
+    }
+  }, [isEditMode, dispatch]);
 
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
@@ -95,6 +100,9 @@ const subName = location.state?.subName;
         return;
       }
 
+      // Mark that autocomplete was used
+      setUsedAutocomplete(true);
+
       // Update address and coordinates in Redux
       dispatch(
         updateFormField({
@@ -114,16 +122,34 @@ const subName = location.state?.subName;
           value: place.geometry.location.lng(),
         })
       );
+
+      console.log("Autocomplete used:", {
+        address: place.formatted_address,
+        lat: place.geometry.location.lat(),
+        lng: place.geometry.location.lng(),
+      });
     }
   };
 
- useEffect(() => {
-  // Create dynamic validation schema based on slug
-  const dynamicSchema = createBikeFormSchema(slug);
-  setValidationSchema(dynamicSchema);
-  
-  console.log("🔧 Validation schema updated for slug:", slug);
-}, [slug]);
+  // Handle location confirmation from map modal
+  const handleLocationConfirm = ({ address, latitude, longitude }) => {
+    // Mark that map was used (not autocomplete)
+    setUsedAutocomplete(false);
+
+    dispatch(updateFormField({ field: "address", value: address }));
+    dispatch(updateFormField({ field: "latitude", value: latitude }));
+    dispatch(updateFormField({ field: "longitude", value: longitude }));
+    setIsMapModalOpen(false);
+    console.log("Map location confirmed:", { address, latitude, longitude });
+  };
+
+  useEffect(() => {
+    // Create dynamic validation schema based on slug
+    const dynamicSchema = createBikeFormSchema(slug);
+    setValidationSchema(dynamicSchema);
+
+    console.log("🔧 Validation schema updated for slug:", slug);
+  }, [slug]);
 
 
   const { formData, errors, touched, isLoading, apiError, autoPopulateData } =
@@ -174,9 +200,9 @@ const subName = location.state?.subName;
           states: response.states?.data || response.states || [],
           districts: [],
           cities: [],
-         bikeBrand: response.bikeBrand?.data || response.bikeBrand || [],
+          bikeBrand: response.bikeBrand?.data || response.bikeBrand || [],
           bikeModel: [],
-         fuelTypes: response.FuelTypes?.data || response.FuelTypes || response.fuelTypes?.data || response.fuelTypes || [],
+          fuelTypes: response.FuelTypes?.data || response.FuelTypes || response.fuelTypes?.data || response.fuelTypes || [],
           numberOfOwners: response.bikeOwners?.data || response.bikeOwners || response.numberOfOwners?.data || response.numberOfOwners || [],
         };
 
@@ -491,9 +517,8 @@ const subName = location.state?.subName;
       dispatch(
         setErrors({
           ...errors,
-          [type]: `Only ${
-            type === "images" ? "image" : "video"
-          } files are allowed`,
+          [type]: `Only ${type === "images" ? "image" : "video"
+            } files are allowed`,
         })
       );
       dispatch(setTouched(type));
@@ -560,9 +585,8 @@ const subName = location.state?.subName;
       dispatch(
         setErrors({
           ...errors,
-          [type]: `Only ${
-            type === "images" ? "image" : "video"
-          } files are allowed`,
+          [type]: `Only ${type === "images" ? "image" : "video"
+            } files are allowed`,
         })
       );
       dispatch(setTouched(type));
@@ -794,151 +818,182 @@ const subName = location.state?.subName;
 
   // Handle field blur for validation
   const handleBlur = async (e) => {
-  const { name } = e.target;
-  dispatch(setTouched(name));
+    const { name } = e.target;
+    dispatch(setTouched(name));
 
-  const currentValidationSchema = createBikeFormSchema(slug);
-  if (!currentValidationSchema) return;
+    const currentValidationSchema = createBikeFormSchema(slug);
+    if (!currentValidationSchema) return;
 
-  // Skip validation for bicycle-excluded fields
-  const isBicycle = slug?.toLowerCase().includes('bicycle');
-  const bicycleExcludedFields = ['kilometers', 'engine_cc', 'fuel_type_id'];
-  
-  if (isBicycle && bicycleExcludedFields.includes(name)) {
-    console.log(`🚲 Skipping validation for ${name} (bicycle mode)`);
-    return;
-  }
+    // Skip validation for bicycle-excluded fields
+    const isBicycle = slug?.toLowerCase().includes('bicycle');
+    const bicycleExcludedFields = ['kilometers', 'engine_cc', 'fuel_type_id'];
 
-  try {
-    await currentValidationSchema.validateAt(name, formData);
-    dispatch(setErrors({ ...errors, [name]: "" }));
-  } catch (err) {
-    dispatch(setErrors({ ...errors, [name]: err.message }));
-  }
-};
+    if (isBicycle && bicycleExcludedFields.includes(name)) {
+      console.log(`🚲 Skipping validation for ${name} (bicycle mode)`);
+      return;
+    }
+
+    try {
+      await currentValidationSchema.validateAt(name, formData);
+      dispatch(setErrors({ ...errors, [name]: "" }));
+    } catch (err) {
+      dispatch(setErrors({ ...errors, [name]: err.message }));
+    }
+  };
 
   // Update your handleSubmit function to use the dynamic schema:
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  if (isLoading) return;
+    if (isLoading) return;
 
-  // Create validation schema based on current slug
-  const currentValidationSchema = createBikeFormSchema(slug);
-  
-  if (!currentValidationSchema) {
-    dispatch(
-      setApiError("Validation schema not loaded. Please refresh the page.")
-    );
-    return;
-  }
+    // Create validation schema based on current slug
+    const currentValidationSchema = createBikeFormSchema(slug);
 
-  const isEditMode = location.pathname.includes("edit");
-  const isBicycle = slug?.toLowerCase().includes('bicycle');
-
-  dispatch(setErrors({}));
-  dispatch(setApiError(null));
-
-  try {
-    dispatch(setLoading(true));
-    
-    // Filter form data to exclude irrelevant fields for bicycles
-    let dataToValidate = { ...formData };
-    
-    if (isBicycle) {
-      // Remove motor bike specific fields from validation data
-      const { kilometers, engine_cc, fuel_type_id, ...bicycleData } = dataToValidate;
-      dataToValidate = bicycleData;
-      
-      console.log("🚲 Validating bicycle data (excluding motor bike fields):", Object.keys(dataToValidate));
-    } else {
-      console.log("🏍️ Validating motor bike data (all fields):", Object.keys(dataToValidate));
-    }
-    
-    await currentValidationSchema.validate(dataToValidate, { abortEarly: false });
-
-    const allFieldsTouched = {};
-    Object.keys(formData).forEach((key) => {
-      allFieldsTouched[key] = true;
-    });
-    dispatch({
-      type: "uploadbikeform/setAllTouched",
-      payload: allFieldsTouched,
-    });
-
-    console.log("✅ Client-side validation passed:", dataToValidate);
-
-    const allDeletedMedia = [
-      ...deletedMediaIds.images,
-      ...deletedMediaIds.videos,
-    ].join(",");
-
-    const submissionData = {
-      ...formData,
-      media_to_delete: allDeletedMedia,
-      action_id: isEditMode ? formData.action_id : undefined,
-      subcategory_id: id,
-      slug: slug,
-      urlId: id,
-      vehicle_type: getVehicleType(slug), // Add vehicle type for backend
-    };
-
-    console.log("🏍️ Submitting bike form data:", submissionData);
-
-    const result = await submitBikeForm(submissionData, slug, isEditMode);
-
-    if (result.success) {
-       toast.success(
-        isEditMode
-          ? `${formData.title} updated successfully!`
-          : `${formData.title} submitted successfully!`
+    if (!currentValidationSchema) {
+      dispatch(
+        setApiError("Validation schema not loaded. Please refresh the page.")
       );
-      if (!isEditMode) {
-        dispatch(resetForm());
-                  navigate("/sell");
+      return;
+    }
 
+    const isEditMode = location.pathname.includes("edit");
+    const isBicycle = slug?.toLowerCase().includes('bicycle');
+
+    dispatch(setErrors({}));
+    dispatch(setApiError(null));
+
+    try {
+      dispatch(setLoading(true));
+
+      // Filter form data to exclude irrelevant fields for bicycles
+      let dataToValidate = { ...formData };
+
+      if (isBicycle) {
+        // Remove motor bike specific fields from validation data
+        const { kilometers, engine_cc, fuel_type_id, ...bicycleData } = dataToValidate;
+        dataToValidate = bicycleData;
+
+        console.log("🚲 Validating bicycle data (excluding motor bike fields):", Object.keys(dataToValidate));
       } else {
-        // ✅ If edit mode → navigate
-        navigate("/seller-post-details");
+        console.log("🏍️ Validating motor bike data (all fields):", Object.keys(dataToValidate));
       }
 
+      await currentValidationSchema.validate(dataToValidate, { abortEarly: false });
 
-      setDeletedMediaIds({ images: [], videos: [] });
-    } else {
-      if (result.error || result.details) {
-         const errorMessage = result.error || result.details || "Submission failed";
-         dispatch(setApiError(errorMessage));
-         toast.error(errorMessage);
+      const allFieldsTouched = {};
+      Object.keys(formData).forEach((key) => {
+        allFieldsTouched[key] = true;
+      });
+      dispatch({
+        type: "uploadbikeform/setAllTouched",
+        payload: allFieldsTouched,
+      });
+
+      console.log("✅ Client-side validation passed:", dataToValidate);
+
+      const allDeletedMedia = [
+        ...deletedMediaIds.images,
+        ...deletedMediaIds.videos,
+      ].join(",");
+
+      const submissionData = {
+        ...formData,
+        media_to_delete: allDeletedMedia,
+        action_id: isEditMode ? formData.action_id : undefined,
+        subcategory_id: id,
+        slug: slug,
+        urlId: id,
+        vehicle_type: getVehicleType(slug), // Add vehicle type for backend
+      };
+
+      console.log("🏍️ Submitting bike form data:", submissionData);
+
+      const result = await submitBikeForm(submissionData, slug, isEditMode);
+
+      if (result.success) {
+        toast.success(
+          isEditMode
+            ? `${formData.title} updated successfully!`
+            : `${formData.title} submitted successfully!`
+        );
+        if (!isEditMode) {
+          dispatch(resetForm());
+          navigate("/sell");
+
+        } else {
+          // ✅ If edit mode → navigate
+          navigate("/seller-post-details");
+        }
+
+
+        setDeletedMediaIds({ images: [], videos: [] });
+      } else {
+        if (result.error || result.details) {
+          const errorMessage = result.error || result.details || "Submission failed";
+          dispatch(setApiError(errorMessage));
+          toast.error(errorMessage);
+        }
+
+        if (
+          result.validationErrors &&
+          Object.keys(result.validationErrors).length > 0
+        ) {
+
+          const formattedErrors = {};
+
+          Object.entries(result.validationErrors).forEach(
+            ([field, messages]) => {
+              // Flatten image.* errors into "images"
+              if (field.startsWith("images")) {
+                if (!formattedErrors["images"]) {
+                  formattedErrors["images"] = [];
+                }
+                formattedErrors["images"].push(...messages);
+              } else {
+                formattedErrors[field] = Array.isArray(messages)
+                  ? messages
+                  : [messages];
+              }
+            }
+          );
+
+          dispatch(setErrors(formattedErrors));
+
+          const firstErrorField = Object.keys(formattedErrors)[0];
+          if (firstErrorField) {
+            dispatch(setFocusedField(firstErrorField));
+            setTimeout(() => {
+              const errorElement = document.getElementById(firstErrorField);
+              if (errorElement) {
+                errorElement.scrollIntoView({
+                  behavior: "smooth",
+                  block: "center",
+                });
+                errorElement.focus();
+              }
+            }, 100);
+          }
+        }
       }
-
-      if (
-        result.validationErrors &&
-        Object.keys(result.validationErrors).length > 0
-      ) {
-
+    } catch (err) {
+      if (err.name === "ValidationError" && err.inner) {
+        console.log("❌ Validation failed:", err.inner);
         const formattedErrors = {};
-
-         Object.entries(result.validationErrors).forEach(
-           ([field, messages]) => {
-             // Flatten image.* errors into "images"
-             if (field.startsWith("images")) {
-               if (!formattedErrors["images"]) {
-                 formattedErrors["images"] = [];
-               }
-               formattedErrors["images"].push(...messages);
-             } else {
-               formattedErrors[field] = Array.isArray(messages)
-                 ? messages
-                 : [messages];
-             }
-           }
-         );
-
+        const touchedFields = {};
+        err.inner.forEach((error) => {
+          formattedErrors[error.path] = error.message;
+          touchedFields[error.path] = true;
+        });
+        const allFields = Object.keys(formData).reduce((acc, key) => {
+          acc[key] = true;
+          return acc;
+        }, {});
         dispatch(setErrors(formattedErrors));
+        dispatch({ type: "uploadbikeform/setAllTouched", payload: allFields });
 
-        const firstErrorField = Object.keys(formattedErrors)[0];
-        if (firstErrorField) {
-          dispatch(setFocusedField(firstErrorField));
+        if (err.inner.length > 0) {
+          const firstErrorField = err.inner[0].path;
           setTimeout(() => {
             const errorElement = document.getElementById(firstErrorField);
             if (errorElement) {
@@ -950,46 +1005,15 @@ const handleSubmit = async (e) => {
             }
           }, 100);
         }
+      } else {
+        dispatch(
+          setApiError(err.message || "An error occurred during validation")
+        );
       }
+    } finally {
+      dispatch(setLoading(false));
     }
-  } catch (err) {
-    if (err.name === "ValidationError" && err.inner) {
-      console.log("❌ Validation failed:", err.inner);
-      const formattedErrors = {};
-      const touchedFields = {};
-      err.inner.forEach((error) => {
-        formattedErrors[error.path] = error.message;
-        touchedFields[error.path] = true;
-      });
-      const allFields = Object.keys(formData).reduce((acc, key) => {
-        acc[key] = true;
-        return acc;
-      }, {});
-      dispatch(setErrors(formattedErrors));
-      dispatch({ type: "uploadbikeform/setAllTouched", payload: allFields });
-
-      if (err.inner.length > 0) {
-        const firstErrorField = err.inner[0].path;
-        setTimeout(() => {
-          const errorElement = document.getElementById(firstErrorField);
-          if (errorElement) {
-            errorElement.scrollIntoView({
-              behavior: "smooth",
-              block: "center",
-            });
-            errorElement.focus();
-          }
-        }, 100);
-      }
-    } else {
-      dispatch(
-        setApiError(err.message || "An error occurred during validation")
-      );
-    }
-  } finally {
-    dispatch(setLoading(false));
-  }
-};
+  };
 
 
   const renderDropdownOptionsWithOther = (options, fieldName = "") => {
@@ -1054,7 +1078,7 @@ const handleSubmit = async (e) => {
 
 
 
-console.log("📦 Extracted data array from response:", dataArray);
+        console.log("📦 Extracted data array from response:", dataArray);
       } else {
         console.warn("⚠️ Options object doesn't have a data array:", options);
         return [];
@@ -1075,16 +1099,16 @@ console.log("📦 Extracted data array from response:", dataArray);
       return [];
     }
 
-   const processedOptions = dataArray.map((option, index) => {
-    // FIX: Better handling of option properties
-    const value = option.id || option.value || option.key || index;
-    const label = option.name || option.label || option.title || option.text || option.display_name || `Option ${index + 1}`;
-    
-    return {
-      value: value,
-      label: label,
-    };
-  });
+    const processedOptions = dataArray.map((option, index) => {
+      // FIX: Better handling of option properties
+      const value = option.id || option.value || option.key || index;
+      const label = option.name || option.label || option.title || option.text || option.display_name || `Option ${index + 1}`;
+
+      return {
+        value: value,
+        label: label,
+      };
+    });
     // console.log("✅ Final processed options:", processedOptions);
     return processedOptions;
   };
@@ -1109,63 +1133,63 @@ console.log("📦 Extracted data array from response:", dataArray);
 
   // Enhanced useEffect for bike models loading
   useEffect(() => {
-  const loadBikeModels = async () => {
-    if (formData.brand_id && formData.brand_id !== "other") {
-      console.log("🔄 Loading bike models for brand_id:", formData.brand_id);
+    const loadBikeModels = async () => {
+      if (formData.brand_id && formData.brand_id !== "other") {
+        console.log("🔄 Loading bike models for brand_id:", formData.brand_id);
 
-      try {
-        setDropdownData((prev) => ({
-          ...prev,
-          bikeModel: [], // Clear existing models while loading
-        }));
-
-        const models = await dropdownService.getBikeModel(formData.brand_id);
-        console.log("📦 Bike models received:", models);
-
-        // FIX: Better handling of different response formats
-        let modelData = [];
-        if (Array.isArray(models)) {
-          modelData = models;
-        } else if (models && models.data && Array.isArray(models.data)) {
-          modelData = models.data;
-        } else if (models && models.response && Array.isArray(models.response)) {
-          modelData = models.response;
-        } else if (models && models.bikeModel && Array.isArray(models.bikeModel)) {
-          modelData = models.bikeModel;
-        }
-
-        console.log("🏍️ Processed bike models:", modelData);
-
-        setDropdownData((prev) => {
-          const newData = {
+        try {
+          setDropdownData((prev) => ({
             ...prev,
-            bikeModel: modelData,
-          };
-          console.log("✅ Updated dropdown data with models:", newData);
-          return newData;
-        });
-      } catch (error) {
-        console.error("❌ Failed to load bike models:", error);
+            bikeModel: [], // Clear existing models while loading
+          }));
+
+          const models = await dropdownService.getBikeModel(formData.brand_id);
+          console.log("📦 Bike models received:", models);
+
+          // FIX: Better handling of different response formats
+          let modelData = [];
+          if (Array.isArray(models)) {
+            modelData = models;
+          } else if (models && models.data && Array.isArray(models.data)) {
+            modelData = models.data;
+          } else if (models && models.response && Array.isArray(models.response)) {
+            modelData = models.response;
+          } else if (models && models.bikeModel && Array.isArray(models.bikeModel)) {
+            modelData = models.bikeModel;
+          }
+
+          console.log("🏍️ Processed bike models:", modelData);
+
+          setDropdownData((prev) => {
+            const newData = {
+              ...prev,
+              bikeModel: modelData,
+            };
+            console.log("✅ Updated dropdown data with models:", newData);
+            return newData;
+          });
+        } catch (error) {
+          console.error("❌ Failed to load bike models:", error);
+          setDropdownData((prev) => ({
+            ...prev,
+            bikeModel: [],
+          }));
+          // Don't show error for models as it's not critical
+        }
+      } else {
+        console.log("⚠️ No brand_id selected or brand is 'other', clearing models");
         setDropdownData((prev) => ({
           ...prev,
           bikeModel: [],
         }));
-        // Don't show error for models as it's not critical
       }
-    } else {
-      console.log("⚠️ No brand_id selected or brand is 'other', clearing models");
-      setDropdownData((prev) => ({
-        ...prev,
-        bikeModel: [],
-      }));
-    }
-  };
+    };
 
-  // Only load models when not in auto-populating mode OR when it's the initial load
-  if (!isAutoPopulating || formData.brand_id) {
-    loadBikeModels();
-  }
-}, [formData.brand_id, isAutoPopulating]);
+    // Only load models when not in auto-populating mode OR when it's the initial load
+    if (!isAutoPopulating || formData.brand_id) {
+      loadBikeModels();
+    }
+  }, [formData.brand_id, isAutoPopulating]);
 
 
   // Enhanced useEffect for edit mode initialization with proper dependent dropdowns
@@ -1177,21 +1201,21 @@ console.log("📦 Extracted data array from response:", dataArray);
       }
 
       console.log("🔄 Loading bike data for edit mode, ID:", id);
-      
+
       try {
         dispatch(setLoading(true));
         dispatch(setApiError(null));
-        
+
         // Fetch bike data from API
         const response = await api.get(`/bike/${id}/edit`);
         const result = response.data;
-        
+
         console.log("📦 Bike API response:", result);
-        
+
         if (result && (result.data || result.status)) {
           const bikeData = result.data || result;
           console.log("✅ Bike data received:", bikeData);
-          
+
           // Map API response to form fields
           const formFields = {
             // Basic Information
@@ -1205,7 +1229,7 @@ console.log("📦 Extracted data array from response:", dataArray);
             price: bikeData.price || "",
             description: bikeData.description || "",
             mobile_number: bikeData.mobile_number || "",
-            
+
             // Bike specifications
             brand_id: bikeData.brand_id || "",
             brand_name: bikeData.brand_name || "",
@@ -1213,7 +1237,7 @@ console.log("📦 Extracted data array from response:", dataArray);
             model_name: bikeData.model_name || "",
             fuel_type_id: bikeData.fuel_type_id || "",
             number_of_owner_id: bikeData.number_of_owner_id || "",
-            
+
             // Location
             address: bikeData.address || "",
             latitude: bikeData.latitude || "",
@@ -1221,35 +1245,35 @@ console.log("📦 Extracted data array from response:", dataArray);
             state_id: bikeData.state_id || "",
             district_id: bikeData.district_id || "",
             city_id: bikeData.city_id || "",
-            
+
             // Status
             status: bikeData.status || "available",
-            
+
             // Media files
             images: transformMediaFiles(bikeData.images || [], 'image'),
             videos: transformMediaFiles(bikeData.videos || [], 'video'),
-            
+
             // Media deletion tracking
             media_to_delete: "",
           };
-          
+
           console.log("🔧 Transformed form fields:", formFields);
-          
+
           // Populate form using Redux action
           dispatch(populateFormFromApi(formFields));
-          
+
           // Load dependent dropdowns AFTER populating form data
           if (bikeData.state_id) {
             console.log("🌍 Loading districts for state:", bikeData.state_id);
             await loadDistricts(bikeData.state_id);
-            
+
             // Load cities after districts are loaded
             if (bikeData.district_id) {
               console.log("🏙️ Loading cities for district:", bikeData.district_id);
               await loadCities(bikeData.district_id);
             }
           }
-          
+
           // Load bike models if brand is selected
           if (bikeData.brand_id && bikeData.brand_id !== "other") {
             console.log("🏍️ Loading bike models for brand:", bikeData.brand_id);
@@ -1263,7 +1287,7 @@ console.log("📦 Extracted data array from response:", dataArray);
               console.error("❌ Failed to load bike models:", error);
             }
           }
-          
+
           console.log("✅ Bike form populated successfully");
         } else {
           console.error("❌ Invalid bike API response:", result);
@@ -1271,7 +1295,7 @@ console.log("📦 Extracted data array from response:", dataArray);
         }
       } catch (error) {
         console.error("❌ Error loading bike data:", error);
-        
+
         if (error.response) {
           const { status, data } = error.response;
           switch (status) {
@@ -1306,19 +1330,19 @@ console.log("📦 Extracted data array from response:", dataArray);
 
     return mediaArray.map((media, index) => {
       console.log(`📎 Processing ${type} ${index + 1}:`, media);
-      
+
       // Create a file-like object that passes validation
       const transformedMedia = {
         // API data
         [`media_${type}_id`]: media.id || media.media_image_id || media.media_video_id,
         url: media.url || media.file_path,
         name: media.name || `${type}_${index + 1}`,
-        
+
         // Form validation requirements
         type: type === 'image' ? 'image/jpeg' : 'video/mp4',
         size: media.size || 0,
         isFromApi: true,
-        
+
         // Original API data for reference
         originalData: media,
       };
@@ -1374,17 +1398,17 @@ console.log("📦 Extracted data array from response:", dataArray);
       }
     }
   }, [
-    formData.brand_id, 
-    formData.model_id, 
-    formData.brand_name, 
-    formData.model_name, 
+    formData.brand_id,
+    formData.model_id,
+    formData.brand_name,
+    formData.model_name,
     dropdownData.bikeBrand,
     dropdownData.bikeModel,
     dispatch
   ]);
 
 
-const isBicycle = slug?.toLowerCase().includes('bicycles');
+  const isBicycle = slug?.toLowerCase().includes('bicycles');
 
 
 
@@ -1421,7 +1445,7 @@ const isBicycle = slug?.toLowerCase().includes('bicycles');
       </div>
     );
   }
-  
+
   if (!isLoaded) {
     return (
       <div className="bg-gray-50 p-6 rounded-3xl w-full max-w-6xl shadow-[0_0_10px_rgba(176,_176,_176,_0.25)] mx-auto border border-[#b9b9b9] bg-[#f6f6f6]">
@@ -1438,18 +1462,18 @@ const isBicycle = slug?.toLowerCase().includes('bicycles');
       <div className="bg-gray-50 p-6 rounded-3xl w-full max-w-6xl shadow-[0_0_10px_rgba(176,_176,_176,_0.25)] mx-auto border border-[#b9b9b9] bg-[#f6f6f6]">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-center text-xl font-medium text-[#02487C] flex-1">
-              {!isEditMode ? `${subName} Form` : `${editFormTitle} Form`}
+            {!isEditMode ? `${subName} Form` : `${editFormTitle} Form`}
           </h1>
         </div>
         {/* Show API error if exists */}
-      {apiError && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-          <strong>Error:</strong> {apiError}
-        </div>
-      )}
+        {apiError && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+            <strong>Error:</strong> {apiError}
+          </div>
+        )}
         <form onSubmit={handleSubmit}>
           <input type="hidden" name="subcategory_id" value={id} />
-          
+
           {/* Row 1 - Common fields for all bike types */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div>
@@ -1539,30 +1563,30 @@ const isBicycle = slug?.toLowerCase().includes('bicycles');
               </label>
               {!showOtherModel && (
                 <DynamicInputs
-      type="select"
-      name="model_id"
-      id="model_id"
-      className="appearance-none w-full px-4 py-3 rounded-full border
+                  type="select"
+                  name="model_id"
+                  id="model_id"
+                  className="appearance-none w-full px-4 py-3 rounded-full border
        border-[#bfbfbf] bg-white focus:outline-none"
-      placeholder={
-        !formData.brand_id || formData.brand_id === "other"
-          ? "Select brand first"
-          : dropdownData.bikeModel.length === 0
-          ? "No models available"
-          : "Select Model"
-      }
-      onChange={handleChange}
-      value={formData.model_id || ""}
-      onBlur={handleBlur}
-      error={errors.model_id}
-      touched={touched.model_id}
-      focusedField={focusedField}
-      options={renderDropdownOptionsWithOther(
-        dropdownData.bikeModel,
-        "model"
-      )}
-      disabled={!formData.brand_id || formData.brand_id === "other" || loadingDropdowns || isAutoPopulating}
-    />
+                  placeholder={
+                    !formData.brand_id || formData.brand_id === "other"
+                      ? "Select brand first"
+                      : dropdownData.bikeModel.length === 0
+                        ? "No models available"
+                        : "Select Model"
+                  }
+                  onChange={handleChange}
+                  value={formData.model_id || ""}
+                  onBlur={handleBlur}
+                  error={errors.model_id}
+                  touched={touched.model_id}
+                  focusedField={focusedField}
+                  options={renderDropdownOptionsWithOther(
+                    dropdownData.bikeModel,
+                    "model"
+                  )}
+                  disabled={!formData.brand_id || formData.brand_id === "other" || loadingDropdowns || isAutoPopulating}
+                />
               )}
 
               {showOtherModel && (
@@ -1601,56 +1625,56 @@ const isBicycle = slug?.toLowerCase().includes('bicycles');
 
           {/* Row 2 - Bike specific fields */}
 
-         
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-           
-          {!isBicycle && (
-              <>
-            <div>
-              <label className="block text-gray-800 font-medium mb-2 px-4">
-                Enter kilometers
-              </label>
-              <DynamicInputs
-                type="text"
-                name="kilometers"
-                id="kilometers"
-                className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border 
-                border-[#bfbfbf] bg-white focus:outline-none "
-                placeholder="Enter kilometers"
-                onChange={handleChange}
-                value={formData.kilometers || ""}
-                onBlur={handleBlur}
-                error={errors.kilometers}
-                touched={touched.kilometers}
-                focusedField={focusedField}
-              />
-            </div>
 
-            <div>
-              <label className="block text-gray-800 font-medium mb-2 px-4">
-                Engine CC
-              </label>
-              <DynamicInputs
-                type="text"
-                name="engine_cc"
-                id="engine_cc"
-                className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border 
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+
+            {!isBicycle && (
+              <>
+                <div>
+                  <label className="block text-gray-800 font-medium mb-2 px-4">
+                    Enter kilometers
+                  </label>
+                  <DynamicInputs
+                    type="text"
+                    name="kilometers"
+                    id="kilometers"
+                    className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border 
                 border-[#bfbfbf] bg-white focus:outline-none "
-                placeholder="Enter engine CC (e.g., 125cc)"
-                value={formData.engine_cc || ""}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={errors.engine_cc}
-                touched={touched.engine_cc}
-                focusedField={focusedField}
-              />
-            </div>
-           </>
-             )}
-           
-           
+                    placeholder="Enter kilometers"
+                    onChange={handleChange}
+                    value={formData.kilometers || ""}
+                    onBlur={handleBlur}
+                    error={errors.kilometers}
+                    touched={touched.kilometers}
+                    focusedField={focusedField}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-gray-800 font-medium mb-2 px-4">
+                    Engine CC
+                  </label>
+                  <DynamicInputs
+                    type="text"
+                    name="engine_cc"
+                    id="engine_cc"
+                    className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border 
+                border-[#bfbfbf] bg-white focus:outline-none "
+                    placeholder="Enter engine CC (e.g., 125cc)"
+                    value={formData.engine_cc || ""}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={errors.engine_cc}
+                    touched={touched.engine_cc}
+                    focusedField={focusedField}
+                  />
+                </div>
+              </>
+            )}
+
+
           </div>
-        
+
 
           {/* Row 3 - Location fields */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -1658,22 +1682,43 @@ const isBicycle = slug?.toLowerCase().includes('bicycles');
               <label className="block text-gray-800 font-medium mb-2 px-4">
                 Address
               </label>
-              <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
-                <DynamicInputs
-                  type="text"
-                  name="address"
-                  id="address"
-                  className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border 
+
+              <div className="flex gap-2  flex-col">
+                <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
+                  <DynamicInputs
+                    type="text"
+                    name="address"
+                    id="address"
+                    className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border 
                 border-[#bfbfbf] bg-white focus:outline-none "
-                  placeholder="Enter address"
-                  onChange={handleChange}
-                  value={formData.address || ""}
-                  onBlur={handleBlur}
-                  error={errors.address}
-                  touched={touched.address}
-                  focusedField={focusedField}
-                />
-              </Autocomplete>
+                    placeholder="Type address or click map button"
+                    onChange={handleChange}
+                    value={formData.address || ""}
+                    onBlur={handleBlur}
+                    error={errors.address}
+                    touched={touched.address}
+                    focusedField={focusedField}
+                  />
+                </Autocomplete>
+                <button
+                  type="button"
+                  onClick={() => setIsMapModalOpen(true)}
+                  className="cursor-pointer px-4 py-3 underline text-red-900 text-[12px] transition-colors font-medium whitespace-nowrap flex items-center gap-2"
+                  title="Select location on map"
+                >
+                  {formData.address ? (
+                    <span className="flex items-center gap-1">
+                      <LocationOnIcon className="w-5 h-5 text-red-500" />
+                      Map
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1">
+                      <LocationOnIcon className="w-5 h-5 text-red-500" />
+                      Select Location on Map
+                    </span>
+                  )}
+                </button>
+              </div>
             </div>
 
             <div>
@@ -1713,8 +1758,8 @@ const isBicycle = slug?.toLowerCase().includes('bicycles');
                   !formData.state_id
                     ? "Select state first"
                     : loadingDistricts || isAutoPopulating
-                    ? "Loading..."
-                    : "Select district"
+                      ? "Loading..."
+                      : "Select district"
                 }
                 onChange={(e) =>
                   handleFieldChange("district_id", e.target.value)
@@ -1766,18 +1811,18 @@ const isBicycle = slug?.toLowerCase().includes('bicycles');
               />
             </div> */}
 
-              <div>
+            <div>
               <label className="block text-gray-800 font-medium mb-2 px-4">
                 Enter Mobile No.
               </label>
               <DynamicInputs
                 type="text"
-                  name="mobile_number"
+                name="mobile_number"
                 id="mobile_number"
                 className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border 
                 border-[#bfbfbf] bg-white focus:outline-none "
                 placeholder="Enter mobile no."
-               onChange={handleChange}
+                onChange={handleChange}
                 value={formData.mobile_number || ""}
                 onBlur={handleBlur}
                 error={errors.mobile_number}
@@ -1786,7 +1831,7 @@ const isBicycle = slug?.toLowerCase().includes('bicycles');
               />
             </div>
 
-             <div>
+            <div>
               <label className="block text-gray-800 font-medium mb-2 px-4">
                 Enter year
               </label>
@@ -1823,8 +1868,8 @@ const isBicycle = slug?.toLowerCase().includes('bicycles');
                 error={errors.number_of_owner_id}
                 touched={touched.number_of_owner_id}
                 focusedField={focusedField}
-                 options={renderDropdownOptions(dropdownData.numberOfOwners)}
-    disabled={loadingDropdowns}
+                options={renderDropdownOptions(dropdownData.numberOfOwners)}
+                disabled={loadingDropdowns}
               />
             </div>
           </div>
@@ -1848,8 +1893,8 @@ const isBicycle = slug?.toLowerCase().includes('bicycles');
                 error={errors.fuel_type_id}
                 touched={touched.fuel_type_id}
                 focusedField={focusedField}
-               options={renderDropdownOptions(dropdownData.fuelTypes)}
-    disabled={loadingDropdowns}
+                options={renderDropdownOptions(dropdownData.fuelTypes)}
+                disabled={loadingDropdowns}
               />
             </div>
             <div>
@@ -1872,7 +1917,7 @@ const isBicycle = slug?.toLowerCase().includes('bicycles');
               />
             </div>
 
-          
+
           </div>
 
           {/* Description text area - Common for all types */}
@@ -2036,6 +2081,15 @@ const isBicycle = slug?.toLowerCase().includes('bicycles');
             </div>
           </div>
 
+          {/* Map Picker Modal */}
+          <MapPickerModal
+            isOpen={isMapModalOpen}
+            onClose={() => setIsMapModalOpen(false)}
+            initialLat={parseFloat(formData.latitude) || 28.6139}
+            initialLng={parseFloat(formData.longitude) || 77.209}
+            onConfirm={handleLocationConfirm}
+          />
+
           <div className="flex justify-center">
             <button
               type="submit"
@@ -2046,8 +2100,8 @@ const isBicycle = slug?.toLowerCase().includes('bicycles');
               {isLoading ? "Submitting..." : isEditMode ? "Update " : "Submit "}
             </button>
           </div>
-        </form>
-      </div>
+        </form >
+      </div >
     </>
   );
 };

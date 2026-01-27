@@ -227,7 +227,9 @@ const LoginFormModel = ({
         });
         setErrors({});
         setLoginFormModel(false);
-
+        // IMPORTANT: reset tour flag for new user
+        localStorage.removeItem("homeTourDone");
+       
         // Navigate to dashboard
         // navigate("/profile-edit");
         navigate("/");

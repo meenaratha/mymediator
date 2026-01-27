@@ -6,7 +6,7 @@ import VideoCameraBackIcon from "@mui/icons-material/VideoCameraBack";
 import ClearIcon from "@mui/icons-material/Clear";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
-
+import LocationOnIcon from "@mui/icons-material/LocationOn";
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { DynamicInputs } from "@/components";
@@ -40,9 +40,10 @@ import {
   updateMediaToDelete,
 } from "../redux/propertyFormSlice";
 
-import { useLoadScript } from "@react-google-maps/api";
-import { Autocomplete } from "@react-google-maps/api";
 import { toast } from "react-toastify";
+import MapPickerModal from "@/components/common/MapPickerModal";
+import { useLoadScript, Autocomplete } from "@react-google-maps/api";
+
 const GOOGLE_MAP_LIBRARIES = ["places"];
 
 const PropertyForm = () => {
@@ -53,7 +54,9 @@ const PropertyForm = () => {
   const isEditMode = location.pathname.includes("edit");
   const subName = location.state?.subName;
   const editFormTitle = location.state?.slugName;
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
   const [autocomplete, setAutocomplete] = useState(null);
+  const [usedAutocomplete, setUsedAutocomplete] = useState(false);
 
 
 
@@ -96,6 +99,9 @@ const PropertyForm = () => {
         return;
       }
 
+      // Mark that autocomplete was used
+      setUsedAutocomplete(true);
+
       // Update address and coordinates in Redux
       dispatch(
         updateFormField({
@@ -115,7 +121,25 @@ const PropertyForm = () => {
           value: place.geometry.location.lng(),
         })
       );
+
+      console.log("Autocomplete used:", {
+        address: place.formatted_address,
+        lat: place.geometry.location.lat(),
+        lng: place.geometry.location.lng(),
+      });
     }
+  };
+
+  // Handle location confirmation from map modal
+  const handleLocationConfirm = ({ address, latitude, longitude }) => {
+    // Mark that map was used (not autocomplete)
+    setUsedAutocomplete(false);
+
+    dispatch(updateFormField({ field: "address", value: address }));
+    dispatch(updateFormField({ field: "latitude", value: latitude }));
+    dispatch(updateFormField({ field: "longitude", value: longitude }));
+    setIsMapModalOpen(false);
+    console.log("Map location confirmed:", { address, latitude, longitude });
   };
 
   const { formData, errors, touched, isLoading, apiError, autoPopulateData } =
@@ -149,7 +173,7 @@ const PropertyForm = () => {
   // Dynamic validation schema based on slug
   const [validationSchema, setValidationSchema] = useState(null);
 
-     // 👇 PASTE useEffect HERE (with other useEffects)
+  // 👇 PASTE useEffect HERE (with other useEffects)
   // useEffect(() => {
   //   if (!formData.state) return;
 
@@ -158,28 +182,28 @@ const PropertyForm = () => {
   //     loadDistricts(formData.state);
   //   }
   // }, [formData.state]);
-  
 
 
 
-useEffect(() => {
-  if (!formData.state) return;
 
-  // 🔥 IMPORTANT: Only when USER changes state
-  if (!isAutoPopulating) {
-    // clear dependent fields
-    dispatch(updateFormField({ field: "district", value: "" }));
+  useEffect(() => {
+    if (!formData.state) return;
 
-    setDropdownData((prev) => ({
-      ...prev,
-      districts: [],
-      cities: [],
-    }));
+    // 🔥 IMPORTANT: Only when USER changes state
+    if (!isAutoPopulating) {
+      // clear dependent fields
+      dispatch(updateFormField({ field: "district", value: "" }));
 
-    // load new districts
-    loadDistricts(formData.state);
-  }
-}, [formData.state]);
+      setDropdownData((prev) => ({
+        ...prev,
+        districts: [],
+        cities: [],
+      }));
+
+      // load new districts
+      loadDistricts(formData.state);
+    }
+  }, [formData.state]);
 
 
 
@@ -427,7 +451,7 @@ useEffect(() => {
   //       dispatch(
   //         setApiError("Failed to load form options. Please refresh the page.")
   //       );
-        
+
   //     } finally {
   //       setLoadingDropdowns(false);
   //     }
@@ -437,151 +461,151 @@ useEffect(() => {
   // }, [slug, dispatch]);
 
   // Memoized function to load districts
-//   const loadDistricts = useCallback(
-//     async (stateId) => {
-//       if (!stateId) return;
+  //   const loadDistricts = useCallback(
+  //     async (stateId) => {
+  //       if (!stateId) return;
 
-//       setLoadingDistricts(true);
-//       try {
-//         console.log("Loading districts for state:", stateId);
-//         const response = await dropdownService.getDistricts(stateId);
+  //       setLoadingDistricts(true);
+  //       try {
+  //         console.log("Loading districts for state:", stateId);
+  //         const response = await dropdownService.getDistricts(stateId);
 
-//         // Handle different response formats
-//         let districtsData = [];
-//         if (Array.isArray(response)) {
-//           districtsData = response;
-//         } else if (response && response.data && Array.isArray(response.data)) {
-//           districtsData = response.data;
-//         } else if (
-//           response &&
-//           response.districts &&
-//           Array.isArray(response.districts)
-//         ) {
-//           districtsData = response.districts;
-//         } else if (
-//           response &&
-//           response.response &&
-//           Array.isArray(response.response)
-//         ) {
-//           districtsData = response.response;
-//         }
+  //         // Handle different response formats
+  //         let districtsData = [];
+  //         if (Array.isArray(response)) {
+  //           districtsData = response;
+  //         } else if (response && response.data && Array.isArray(response.data)) {
+  //           districtsData = response.data;
+  //         } else if (
+  //           response &&
+  //           response.districts &&
+  //           Array.isArray(response.districts)
+  //         ) {
+  //           districtsData = response.districts;
+  //         } else if (
+  //           response &&
+  //           response.response &&
+  //           Array.isArray(response.response)
+  //         ) {
+  //           districtsData = response.response;
+  //         }
 
-//         console.log("Loaded districts:", districtsData);
+  //         console.log("Loaded districts:", districtsData);
 
-//         setDropdownData((prev) => ({
-//           ...prev,
-//           districts: districtsData,
-//           cities: [], // Clear cities when state changes
-//         }));
+  //         setDropdownData((prev) => ({
+  //           ...prev,
+  //           districts: districtsData,
+  //           cities: [], // Clear cities when state changes
+  //         }));
 
-//         // If not auto-populating and we have a selected district that's not in the new list, clear it
-//        // ✅ Only validate district when NOT auto-populating
-// if (!isAutoPopulating && formData.district) {
-//   const districtExists = districtsData.find(
-//     (d) =>
-//       String(d.id) === String(formData.district) ||
-//       String(d.value) === String(formData.district)
-//   );
+  //         // If not auto-populating and we have a selected district that's not in the new list, clear it
+  //        // ✅ Only validate district when NOT auto-populating
+  // if (!isAutoPopulating && formData.district) {
+  //   const districtExists = districtsData.find(
+  //     (d) =>
+  //       String(d.id) === String(formData.district) ||
+  //       String(d.value) === String(formData.district)
+  //   );
 
-//   if (!districtExists) {
-//     dispatch(updateFormField({ field: "district", value: "" }));
-//     dispatch(updateFormField({ field: "city", value: "" }));
-//   }
-// }
-
-
-
-//       } catch (error) {
-//         console.error("Failed to load districts:", error);
-//         setDropdownData((prev) => ({
-//           ...prev,
-//           districts: [],
-//           cities: [],
-//         }));
-//         // Show user-friendly error
-//         dispatch(setApiError("Failed to load districts. Please try again."));
-//       } finally {
-//         setLoadingDistricts(false);
-//       }
-//     },
-//     [dispatch, isAutoPopulating, formData.district]
-//   );
+  //   if (!districtExists) {
+  //     dispatch(updateFormField({ field: "district", value: "" }));
+  //     dispatch(updateFormField({ field: "city", value: "" }));
+  //   }
+  // }
 
 
-const loadDistricts = useCallback(
-  async (stateId) => {
-    if (!stateId) return;
 
-    setLoadingDistricts(true);
-    try {
-      console.log("Loading districts for state:", stateId);
-      const response = await dropdownService.getDistricts(stateId);
+  //       } catch (error) {
+  //         console.error("Failed to load districts:", error);
+  //         setDropdownData((prev) => ({
+  //           ...prev,
+  //           districts: [],
+  //           cities: [],
+  //         }));
+  //         // Show user-friendly error
+  //         dispatch(setApiError("Failed to load districts. Please try again."));
+  //       } finally {
+  //         setLoadingDistricts(false);
+  //       }
+  //     },
+  //     [dispatch, isAutoPopulating, formData.district]
+  //   );
 
-      // Handle different response formats
-      let districtsData = [];
-      if (Array.isArray(response)) {
-        districtsData = response;
-      } else if (response && response.data && Array.isArray(response.data)) {
-        districtsData = response.data;
-      } else if (
-        response &&
-        response.districts &&
-        Array.isArray(response.districts)
-      ) {
-        districtsData = response.districts;
-      } else if (
-        response &&
-        response.response &&
-        Array.isArray(response.response)
-      ) {
-        districtsData = response.response;
+
+  const loadDistricts = useCallback(
+    async (stateId) => {
+      if (!stateId) return;
+
+      setLoadingDistricts(true);
+      try {
+        console.log("Loading districts for state:", stateId);
+        const response = await dropdownService.getDistricts(stateId);
+
+        // Handle different response formats
+        let districtsData = [];
+        if (Array.isArray(response)) {
+          districtsData = response;
+        } else if (response && response.data && Array.isArray(response.data)) {
+          districtsData = response.data;
+        } else if (
+          response &&
+          response.districts &&
+          Array.isArray(response.districts)
+        ) {
+          districtsData = response.districts;
+        } else if (
+          response &&
+          response.response &&
+          Array.isArray(response.response)
+        ) {
+          districtsData = response.response;
+        }
+
+        console.log("Loaded districts:", districtsData);
+
+        setDropdownData((prev) => ({
+          ...prev,
+          districts: districtsData,
+        }));
+
+        return districtsData; // Return the data for chaining
+      } catch (error) {
+        console.error("Failed to load districts:", error);
+        setDropdownData((prev) => ({
+          ...prev,
+          districts: [],
+          cities: [],
+        }));
+        dispatch(setApiError("Failed to load districts. Please try again."));
+        return [];
+      } finally {
+        setLoadingDistricts(false);
       }
+    },
+    [dispatch]
+  );
 
-      console.log("Loaded districts:", districtsData);
+  useEffect(() => {
+    if (!formData.state) return;
 
-      setDropdownData((prev) => ({
-        ...prev,
-        districts: districtsData,
-      }));
+    // ❌ block auto-populate
+    if (isAutoPopulating) return;
 
-      return districtsData; // Return the data for chaining
-    } catch (error) {
-      console.error("Failed to load districts:", error);
-      setDropdownData((prev) => ({
-        ...prev,
-        districts: [],
-        cities: [],
-      }));
-      dispatch(setApiError("Failed to load districts. Please try again."));
-      return [];
-    } finally {
-      setLoadingDistricts(false);
-    }
-  },
-  [dispatch]
-);
+    console.log("Loading districts for state:", formData.state);
 
-useEffect(() => {
-  if (!formData.state) return;
+    // clear old selections
+    dispatch(updateFormField({ field: "district", value: "" }));
+    dispatch(updateFormField({ field: "city", value: "" }));
 
-  // ❌ block auto-populate
-  if (isAutoPopulating) return;
+    setDropdownData((prev) => ({
+      ...prev,
+      districts: [],
+      cities: [],
+    }));
 
-  console.log("Loading districts for state:", formData.state);
-
-  // clear old selections
-  dispatch(updateFormField({ field: "district", value: "" }));
-  dispatch(updateFormField({ field: "city", value: "" }));
-
-  setDropdownData((prev) => ({
-    ...prev,
-    districts: [],
-    cities: [],
-  }));
-
-  // ✅ SINGLE API CALL
-  loadDistricts(formData.state);
-}, [formData.state]);
+    // ✅ SINGLE API CALL
+    loadDistricts(formData.state);
+  }, [formData.state]);
 
 
 
@@ -861,13 +885,13 @@ useEffect(() => {
         setDropdownData((prev) => ({
           ...prev,
           districts: [],
-        
+
         }));
         // Clear dependent fields
         if (formData.district) {
           dispatch(updateFormField({ field: "district", value: "" }));
         }
-     
+
       }
       return;
     }
@@ -883,7 +907,7 @@ useEffect(() => {
     dispatch,
     isAutoPopulating, // Added this dependency
     formData.district,
-  
+
   ]);
 
   // FIXED: Update the loadCities useEffect similarly
@@ -948,8 +972,7 @@ useEffect(() => {
 
       if (currentValue > 0 && otherValue > 0) {
         console.log(
-          `Will calculate: ${currentValue} × ${otherValue} = ${
-            currentValue * otherValue
+          `Will calculate: ${currentValue} × ${otherValue} = ${currentValue * otherValue
           } sq ft`
         );
       }
@@ -1054,7 +1077,7 @@ useEffect(() => {
             ? ` ${formData.propertyName} updated successfully`
             : `${formData.propertyName}  submitted successfully`
         );
-       
+
         if (!isEditMode) {
           dispatch(resetForm());
           navigate("/sell");
@@ -1065,13 +1088,13 @@ useEffect(() => {
         // Clear deleted media IDs after successful submission
         setDeletedMediaIds({ images: [], videos: [] });
       } else {
-       
+
 
         if (result.error || result.details) {
-  const errorMessage = result.error || result.details || "Submission failed";
-  dispatch(setApiError(errorMessage));
-  toast.error(errorMessage);
-}
+          const errorMessage = result.error || result.details || "Submission failed";
+          dispatch(setApiError(errorMessage));
+          toast.error(errorMessage);
+        }
 
 
         // if (
@@ -1097,42 +1120,42 @@ useEffect(() => {
         // }
 
 
-if (
-  result.validationErrors &&
-  Object.keys(result.validationErrors).length > 0
-) {
-  const formattedErrors = {};
+        if (
+          result.validationErrors &&
+          Object.keys(result.validationErrors).length > 0
+        ) {
+          const formattedErrors = {};
 
-  Object.entries(result.validationErrors).forEach(([field, messages]) => {
-    // Flatten image.* errors into "images"
-    if (field.startsWith("images")) {
-      if (!formattedErrors["images"]) {
-        formattedErrors["images"] = [];
-      }
-      formattedErrors["images"].push(...messages);
-    } else {
-      formattedErrors[field] = Array.isArray(messages) ? messages : [messages];
-    }
-  });
+          Object.entries(result.validationErrors).forEach(([field, messages]) => {
+            // Flatten image.* errors into "images"
+            if (field.startsWith("images")) {
+              if (!formattedErrors["images"]) {
+                formattedErrors["images"] = [];
+              }
+              formattedErrors["images"].push(...messages);
+            } else {
+              formattedErrors[field] = Array.isArray(messages) ? messages : [messages];
+            }
+          });
 
-  dispatch(setErrors(formattedErrors));
+          dispatch(setErrors(formattedErrors));
 
-  // Focus first error field
-  const firstErrorField = Object.keys(formattedErrors)[0];
-  if (firstErrorField) {
-    dispatch(setFocusedField(firstErrorField));
-    setTimeout(() => {
-      const errorElement = document.getElementById(firstErrorField);
-      if (errorElement) {
-        errorElement.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-        errorElement.focus();
-      }
-    }, 100);
-  }
-}
+          // Focus first error field
+          const firstErrorField = Object.keys(formattedErrors)[0];
+          if (firstErrorField) {
+            dispatch(setFocusedField(firstErrorField));
+            setTimeout(() => {
+              const errorElement = document.getElementById(firstErrorField);
+              if (errorElement) {
+                errorElement.scrollIntoView({
+                  behavior: "smooth",
+                  block: "center",
+                });
+                errorElement.focus();
+              }
+            }, 100);
+          }
+        }
 
 
       }
@@ -1181,15 +1204,15 @@ if (
         }
       } else {
         const errorMessage =
-      err?.response?.data?.message ||
-      err.message ||
-      "Something went wrong. Please try again.";
-         toast.error(errorMessage);
+          err?.response?.data?.message ||
+          err.message ||
+          "Something went wrong. Please try again.";
+        toast.error(errorMessage);
         // dispatch(
         //   setApiError(errorMessage || "An error occurred during validation")
-          
+
         // );
-        
+
       }
     } finally {
       dispatch(setLoading(false));
@@ -1212,9 +1235,8 @@ if (
       dispatch(
         setErrors({
           ...errors,
-          [type]: `Only ${
-            type === "images" ? "image" : "video"
-          } files are allowed`,
+          [type]: `Only ${type === "images" ? "image" : "video"
+            } files are allowed`,
         })
       );
       dispatch(setTouched(type));
@@ -1281,9 +1303,8 @@ if (
       dispatch(
         setErrors({
           ...errors,
-          [type]: `Only ${
-            type === "images" ? "image" : "video"
-          } files are allowed`,
+          [type]: `Only ${type === "images" ? "image" : "video"
+            } files are allowed`,
         })
       );
       dispatch(setTouched(type));
@@ -1443,18 +1464,18 @@ if (
     return (
       <div className="bg-gray-50 p-6 rounded-3xl w-full max-w-6xl shadow-[0_0_10px_rgba(176,_176,_176,_0.25)] mx-auto border border-[#b9b9b9] bg-[#f6f6f6]">
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          <span className="ml-4 text-gray-600">Error map loading</span>
+          <p className="text-red-500">Error loading Google Maps</p>
         </div>
       </div>
     );
   }
+
   if (!isLoaded) {
     return (
       <div className="bg-gray-50 p-6 rounded-3xl w-full max-w-6xl shadow-[0_0_10px_rgba(176,_176,_176,_0.25)] mx-auto border border-[#b9b9b9] bg-[#f6f6f6]">
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          <span className="ml-4 text-gray-600"> map loading...</span>
+          <span className="ml-4 text-gray-600">Loading Google Maps...</span>
         </div>
       </div>
     );
@@ -1568,22 +1589,48 @@ if (
               Address
             </label>
 
-            <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
-              <DynamicInputs
-                type="text"
-                name="address"
-                id="address"
-                onChange={handleChange}
-                value={formData.address || ""}
-                className="w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] 
+            <div className="flex gap-2  flex-col">
+              <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
+                <DynamicInputs
+                  type="text"
+                  name="address"
+                  id="address"
+                  onChange={handleChange}
+                  value={formData.address || ""}
+                  className="w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] 
           bg-white focus:outline-none"
-                placeholder="Enter address"
-                onBlur={handleBlur}
-                error={errors.address}
-                touched={touched.address}
-                focusedField={focusedField}
-              />
-            </Autocomplete>
+                  placeholder="Type address or click map button"
+                  onBlur={handleBlur}
+                  error={errors.address}
+                  touched={touched.address}
+                  focusedField={focusedField}
+                />
+              </Autocomplete>
+              <button
+                type="button"
+                onClick={() => setIsMapModalOpen(true)}
+                className="cursor-pointer px-4 py-3 underline text-red-900 text-[12px] transition-colors font-medium whitespace-nowrap flex items-center gap-2"
+                title="Select location on map"
+              >
+                {formData.address ? (<span className="flex items-center gap-1">
+                  <LocationOnIcon className="w-5 h-5 text-red-500" />
+                  Map
+                </span>) : (<span className="flex items-center gap-1">
+                  <LocationOnIcon className="w-5 h-5 text-red-500" />
+                  Select Location on Map
+                </span>)}
+              </button>
+            </div>
+            {/* {!usedAutocomplete && formData.latitude && formData.longitude && (
+              <p className="text-xs text-gray-500 mt-2 px-4">
+                📍 Location selected from map
+              </p>
+            )}
+            {usedAutocomplete && formData.latitude && formData.longitude && (
+              <p className="text-xs text-gray-500 mt-2 px-4">
+                ✓ Location from autocomplete
+              </p>
+            )} */}
           </div>
           <div>
             <label className="block text-gray-800 font-medium mb-2 px-4">
@@ -1622,8 +1669,8 @@ if (
                 !formData.state
                   ? "Select state first"
                   : loadingDistricts || isAutoPopulating
-                  ? "Loading..."
-                  : "Select district"
+                    ? "Loading..."
+                    : "Select district"
               }
               onBlur={handleBlur}
               error={errors.district}
@@ -1740,301 +1787,301 @@ if (
           shouldShowField("bedroom") ||
           shouldShowField("bathroom") ||
           shouldShowField("wash_room")) && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            {shouldShowField("bhk") && (
-              <div>
-                <label className="block text-gray-800 font-medium mb-2 px-4">
-                  BHK Type
-                </label>
-                <DynamicInputs
-                  type="select"
-                  name="bhk"
-                  id="bhk"
-                  onChange={handleChange}
-                  value={formData.bhk || ""}
-                  className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              {shouldShowField("bhk") && (
+                <div>
+                  <label className="block text-gray-800 font-medium mb-2 px-4">
+                    BHK Type
+                  </label>
+                  <DynamicInputs
+                    type="select"
+                    name="bhk"
+                    id="bhk"
+                    onChange={handleChange}
+                    value={formData.bhk || ""}
+                    className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border
                     border-[#bfbfbf] bg-white focus:outline-none "
-                  placeholder="Select BHK"
-                  onBlur={handleBlur}
-                  error={errors.bhk}
-                  touched={touched.bhk}
-                  focusedField={focusedField}
-                  options={renderDropdownOptions(dropdownData.bhkTypes)}
-                />
-              </div>
-            )}
+                    placeholder="Select BHK"
+                    onBlur={handleBlur}
+                    error={errors.bhk}
+                    touched={touched.bhk}
+                    focusedField={focusedField}
+                    options={renderDropdownOptions(dropdownData.bhkTypes)}
+                  />
+                </div>
+              )}
 
-            {shouldShowField("bedroom") && (
-              <div>
-                <label className="block text-gray-800 font-medium mb-2 px-4">
-                  Bedrooms
-                </label>
-                <DynamicInputs
-                  type="text"
-                  name="bedroom"
-                  id="bedroom"
-                  onChange={handleChange}
-                  value={formData.bedroom || ""}
-                  className="w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] 
+              {shouldShowField("bedroom") && (
+                <div>
+                  <label className="block text-gray-800 font-medium mb-2 px-4">
+                    Bedrooms
+                  </label>
+                  <DynamicInputs
+                    type="text"
+                    name="bedroom"
+                    id="bedroom"
+                    onChange={handleChange}
+                    value={formData.bedroom || ""}
+                    className="w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] 
                   bg-white focus:outline-none "
-                  placeholder="Enter bedrooms"
-                  onBlur={handleBlur}
-                  error={errors.bedroom}
-                  touched={touched.bedroom}
-                  focusedField={focusedField}
-                />
-              </div>
-            )}
+                    placeholder="Enter bedrooms"
+                    onBlur={handleBlur}
+                    error={errors.bedroom}
+                    touched={touched.bedroom}
+                    focusedField={focusedField}
+                  />
+                </div>
+              )}
 
-            {shouldShowField("bathroom") && (
-              <div>
-                <label className="block text-gray-800 font-medium mb-2 px-4">
-                  Bathrooms
-                </label>
-                <DynamicInputs
-                  type="text"
-                  name="bathroom"
-                  id="bathroom"
-                  onChange={handleChange}
-                  value={formData.bathroom || ""}
-                  className="w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] 
+              {shouldShowField("bathroom") && (
+                <div>
+                  <label className="block text-gray-800 font-medium mb-2 px-4">
+                    Bathrooms
+                  </label>
+                  <DynamicInputs
+                    type="text"
+                    name="bathroom"
+                    id="bathroom"
+                    onChange={handleChange}
+                    value={formData.bathroom || ""}
+                    className="w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] 
                   bg-white focus:outline-none "
-                  placeholder="Enter bathrooms"
-                  onBlur={handleBlur}
-                  error={errors.bathroom}
-                  touched={touched.bathroom}
-                  focusedField={focusedField}
-                />
-              </div>
-            )}
-          </div>
-        )}
+                    placeholder="Enter bathrooms"
+                    onBlur={handleBlur}
+                    error={errors.bathroom}
+                    touched={touched.bathroom}
+                    focusedField={focusedField}
+                  />
+                </div>
+              )}
+            </div>
+          )}
 
         {/* Property features row - Only show if any feature field is enabled */}
         {(shouldShowField("furnished") ||
           shouldShowField("constructionStatus") ||
           shouldShowField("maintenance")) && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            {shouldShowField("furnished") && (
-              <div>
-                <label className="block text-gray-800 font-medium mb-2 px-4">
-                  Furnished Status
-                </label>
-                <DynamicInputs
-                  type="select"
-                  name="furnished"
-                  id="furnished"
-                  onChange={handleChange}
-                  value={formData.furnished || ""}
-                  className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              {shouldShowField("furnished") && (
+                <div>
+                  <label className="block text-gray-800 font-medium mb-2 px-4">
+                    Furnished Status
+                  </label>
+                  <DynamicInputs
+                    type="select"
+                    name="furnished"
+                    id="furnished"
+                    onChange={handleChange}
+                    value={formData.furnished || ""}
+                    className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border
                     border-[#bfbfbf] bg-white focus:outline-none "
-                  placeholder="Select furnished status"
-                  onBlur={handleBlur}
-                  error={errors.furnished}
-                  touched={touched.furnished}
-                  focusedField={focusedField}
-                  options={renderDropdownOptions(dropdownData.furnishingTypes)}
-                />
-              </div>
-            )}
+                    placeholder="Select furnished status"
+                    onBlur={handleBlur}
+                    error={errors.furnished}
+                    touched={touched.furnished}
+                    focusedField={focusedField}
+                    options={renderDropdownOptions(dropdownData.furnishingTypes)}
+                  />
+                </div>
+              )}
 
-            {shouldShowField("constructionStatus") && (
-              <div>
-                <label className="block text-gray-800 font-medium mb-2 px-4">
-                  Construction Status
-                </label>
-                <DynamicInputs
-                  type="select"
-                  name="constructionStatus"
-                  id="constructionStatus"
-                  onChange={handleChange}
-                  value={formData.constructionStatus || ""}
-                  className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border
+              {shouldShowField("constructionStatus") && (
+                <div>
+                  <label className="block text-gray-800 font-medium mb-2 px-4">
+                    Construction Status
+                  </label>
+                  <DynamicInputs
+                    type="select"
+                    name="constructionStatus"
+                    id="constructionStatus"
+                    onChange={handleChange}
+                    value={formData.constructionStatus || ""}
+                    className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border
                     border-[#bfbfbf] bg-white focus:outline-none "
-                  placeholder="Select construction status"
-                  onBlur={handleBlur}
-                  error={errors.constructionStatus}
-                  touched={touched.constructionStatus}
-                  focusedField={focusedField}
-                  options={renderDropdownOptions(
-                    dropdownData.constructionStatuses
-                  )}
-                />
-              </div>
-            )}
+                    placeholder="Select construction status"
+                    onBlur={handleBlur}
+                    error={errors.constructionStatus}
+                    touched={touched.constructionStatus}
+                    focusedField={focusedField}
+                    options={renderDropdownOptions(
+                      dropdownData.constructionStatuses
+                    )}
+                  />
+                </div>
+              )}
 
-            {shouldShowField("maintenance") && (
-              <div>
-                <label className="block text-gray-800 font-medium mb-2 px-4">
-                  Maintenance
-                </label>
-                <DynamicInputs
-                  type="select"
-                  name="maintenance"
-                  id="maintenance"
-                  onChange={handleChange}
-                  value={formData.maintenance || ""}
-                  className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border
+              {shouldShowField("maintenance") && (
+                <div>
+                  <label className="block text-gray-800 font-medium mb-2 px-4">
+                    Maintenance
+                  </label>
+                  <DynamicInputs
+                    type="select"
+                    name="maintenance"
+                    id="maintenance"
+                    onChange={handleChange}
+                    value={formData.maintenance || ""}
+                    className="appearance-none w-full max-w-sm px-4 py-3 rounded-full border
                     border-[#bfbfbf] bg-white focus:outline-none "
-                  placeholder="Select maintenance"
-                  onBlur={handleBlur}
-                  error={errors.maintenance}
-                  touched={touched.maintenance}
-                  focusedField={focusedField}
-                  options={renderDropdownOptions(
-                    dropdownData.maintenanceFrequencies
-                  )}
-                />
-              </div>
-            )}
-          </div>
-        )}
+                    placeholder="Select maintenance"
+                    onBlur={handleBlur}
+                    error={errors.maintenance}
+                    touched={touched.maintenance}
+                    focusedField={focusedField}
+                    options={renderDropdownOptions(
+                      dropdownData.maintenanceFrequencies
+                    )}
+                  />
+                </div>
+              )}
+            </div>
+          )}
 
         {/* Area details row - Only show if any area field is enabled */}
         {(shouldShowField("superBuildArea") ||
           shouldShowField("carpetArea")) && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            {shouldShowField("superBuildArea") && (
-              <div>
-                <label className="block text-gray-800 font-medium mb-2 px-4">
-                  Super Built-up Area (sq ft)
-                </label>
-                <DynamicInputs
-                  type="text"
-                  name="superBuildArea"
-                  id="superBuildArea"
-                  onChange={handleChange}
-                  value={formData.superBuildArea || ""}
-                  className="w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] 
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              {shouldShowField("superBuildArea") && (
+                <div>
+                  <label className="block text-gray-800 font-medium mb-2 px-4">
+                    Super Built-up Area (sq ft)
+                  </label>
+                  <DynamicInputs
+                    type="text"
+                    name="superBuildArea"
+                    id="superBuildArea"
+                    onChange={handleChange}
+                    value={formData.superBuildArea || ""}
+                    className="w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] 
                   bg-white focus:outline-none "
-                  placeholder=" e.g. 1,200 sq ft"
-                  onBlur={handleBlur}
-                  error={errors.superBuildArea}
-                  touched={touched.superBuildArea}
-                  focusedField={focusedField}
-                />
-              </div>
-            )}
+                    placeholder=" e.g. 1,200 sq ft"
+                    onBlur={handleBlur}
+                    error={errors.superBuildArea}
+                    touched={touched.superBuildArea}
+                    focusedField={focusedField}
+                  />
+                </div>
+              )}
 
-            {shouldShowField("carpetArea") && (
-              <div>
-                <label className="block text-gray-800 font-medium mb-2 px-4">
-                  Carpet Area (sq ft)
-                </label>
-                <DynamicInputs
-                  type="text"
-                  name="carpetArea"
-                  id="carpetArea"
-                  onChange={handleChange}
-                  value={formData.carpetArea || ""}
-                  className="w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] 
+              {shouldShowField("carpetArea") && (
+                <div>
+                  <label className="block text-gray-800 font-medium mb-2 px-4">
+                    Carpet Area (sq ft)
+                  </label>
+                  <DynamicInputs
+                    type="text"
+                    name="carpetArea"
+                    id="carpetArea"
+                    onChange={handleChange}
+                    value={formData.carpetArea || ""}
+                    className="w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] 
                   bg-white focus:outline-none "
-                  placeholder="Enter carpet area"
-                  onBlur={handleBlur}
-                  error={errors.carpetArea}
-                  touched={touched.carpetArea}
-                  focusedField={focusedField}
-                />
-              </div>
-            )}
+                    placeholder="Enter carpet area"
+                    onBlur={handleBlur}
+                    error={errors.carpetArea}
+                    touched={touched.carpetArea}
+                    focusedField={focusedField}
+                  />
+                </div>
+              )}
 
-            {shouldShowField("floorNumber") && (
-              <div>
-                <label className="block text-gray-800 font-medium mb-2 px-4">
-                  Floor Number
-                </label>
-                <DynamicInputs
-                  type="text"
-                  name="floorNumber"
-                  id="floorNumber"
-                  onChange={handleChange}
-                  value={formData.floorNumber || ""}
-                  className="w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] 
+              {shouldShowField("floorNumber") && (
+                <div>
+                  <label className="block text-gray-800 font-medium mb-2 px-4">
+                    Floor Number
+                  </label>
+                  <DynamicInputs
+                    type="text"
+                    name="floorNumber"
+                    id="floorNumber"
+                    onChange={handleChange}
+                    value={formData.floorNumber || ""}
+                    className="w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] 
                   bg-white focus:outline-none "
-                  placeholder="Enter floor number"
-                  onBlur={handleBlur}
-                  error={errors.floorNumber}
-                  touched={touched.floorNumber}
-                  focusedField={focusedField}
-                />
-              </div>
-            )}
-          </div>
-        )}
+                    placeholder="Enter floor number"
+                    onBlur={handleBlur}
+                    error={errors.floorNumber}
+                    touched={touched.floorNumber}
+                    focusedField={focusedField}
+                  />
+                </div>
+              )}
+            </div>
+          )}
 
         {/* Floor and parking details row - Only show if any parking/floor field is enabled */}
         {(shouldShowField("floorNumber") ||
           shouldShowField("totalFloor") ||
           shouldShowField("bikeParking") ||
           shouldShowField("carParking")) && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            {shouldShowField("totalFloor") && (
-              <div>
-                <label className="block text-gray-800 font-medium mb-2 px-4">
-                  Total Floors
-                </label>
-                <DynamicInputs
-                  type="text"
-                  name="totalFloor"
-                  id="totalFloor"
-                  onChange={handleChange}
-                  value={formData.totalFloor || ""}
-                  className="w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] 
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              {shouldShowField("totalFloor") && (
+                <div>
+                  <label className="block text-gray-800 font-medium mb-2 px-4">
+                    Total Floors
+                  </label>
+                  <DynamicInputs
+                    type="text"
+                    name="totalFloor"
+                    id="totalFloor"
+                    onChange={handleChange}
+                    value={formData.totalFloor || ""}
+                    className="w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] 
                   bg-white focus:outline-none "
-                  placeholder="Enter total floors"
-                  onBlur={handleBlur}
-                  error={errors.totalFloor}
-                  touched={touched.totalFloor}
-                  focusedField={focusedField}
-                />
-              </div>
-            )}
+                    placeholder="Enter total floors"
+                    onBlur={handleBlur}
+                    error={errors.totalFloor}
+                    touched={touched.totalFloor}
+                    focusedField={focusedField}
+                  />
+                </div>
+              )}
 
-            {shouldShowField("bikeParking") && (
-              <div>
-                <label className="block text-gray-800 font-medium mb-2 px-4">
-                  Bike Parking
-                </label>
-                <DynamicInputs
-                  type="text"
-                  name="bikeParking"
-                  id="bikeParking"
-                  onChange={handleChange}
-                  value={formData.bikeParking || ""}
-                  className="w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] 
+              {shouldShowField("bikeParking") && (
+                <div>
+                  <label className="block text-gray-800 font-medium mb-2 px-4">
+                    Bike Parking
+                  </label>
+                  <DynamicInputs
+                    type="text"
+                    name="bikeParking"
+                    id="bikeParking"
+                    onChange={handleChange}
+                    value={formData.bikeParking || ""}
+                    className="w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] 
                   bg-white focus:outline-none "
-                  placeholder="Enter bike parking"
-                  onBlur={handleBlur}
-                  error={errors.bikeParking}
-                  touched={touched.bikeParking}
-                  focusedField={focusedField}
-                />
-              </div>
-            )}
+                    placeholder="Enter bike parking"
+                    onBlur={handleBlur}
+                    error={errors.bikeParking}
+                    touched={touched.bikeParking}
+                    focusedField={focusedField}
+                  />
+                </div>
+              )}
 
-            {shouldShowField("carParking") && (
-              <div>
-                <label className="block text-gray-800 font-medium mb-2 px-4">
-                  Car Parking
-                </label>
-                <DynamicInputs
-                  type="text"
-                  name="carParking"
-                  id="carParking"
-                  onChange={handleChange}
-                  value={formData.carParking || ""}
-                  className="w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] 
+              {shouldShowField("carParking") && (
+                <div>
+                  <label className="block text-gray-800 font-medium mb-2 px-4">
+                    Car Parking
+                  </label>
+                  <DynamicInputs
+                    type="text"
+                    name="carParking"
+                    id="carParking"
+                    onChange={handleChange}
+                    value={formData.carParking || ""}
+                    className="w-full max-w-sm px-4 py-3 rounded-full border border-[#bfbfbf] 
                   bg-white focus:outline-none "
-                  placeholder="Enter car parking"
-                  onBlur={handleBlur}
-                  error={errors.carParking}
-                  touched={touched.carParking}
-                  focusedField={focusedField}
-                />
-              </div>
-            )}
-          </div>
-        )}
+                    placeholder="Enter car parking"
+                    onBlur={handleBlur}
+                    error={errors.carParking}
+                    touched={touched.carParking}
+                    focusedField={focusedField}
+                  />
+                </div>
+              )}
+            </div>
+          )}
 
         {/* Additional fields row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -2290,6 +2337,15 @@ if (
             )}
           </div>
         </div>
+
+        {/* Map Picker Modal */}
+        <MapPickerModal
+          isOpen={isMapModalOpen}
+          onClose={() => setIsMapModalOpen(false)}
+          initialLat={parseFloat(formData.latitude) || 28.6139}
+          initialLng={parseFloat(formData.longitude) || 77.209}
+          onConfirm={handleLocationConfirm}
+        />
 
         {/* Submit Button */}
         <div className="flex justify-center">

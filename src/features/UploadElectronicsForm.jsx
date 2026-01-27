@@ -5,6 +5,7 @@ import VideoCameraBackIcon from "@mui/icons-material/VideoCameraBack";
 import ClearIcon from "@mui/icons-material/Clear";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
 
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
@@ -41,37 +42,41 @@ import {
 import { useLoadScript } from "@react-google-maps/api";
 import { Autocomplete } from "@react-google-maps/api";
 import { toast } from "react-toastify";
+import MapPickerModal from "@/components/common/MapPickerModal";
+
 const GOOGLE_MAP_LIBRARIES = ["places"];
 
 const UploadElectronicsForm = () => {
-    const navigate = useNavigate();
-  
+  const navigate = useNavigate();
+
   const dispatch = useDispatch();
   const { slug, id } = useParams();
   const location = useLocation();
-const subName = location.state?.subName;
+  const subName = location.state?.subName;
   const editFormTitle = location.state?.slugName;
   const formTittle = subName;
   const isEditMode = location.pathname.includes("edit");
 
   const [autocomplete, setAutocomplete] = useState(null);
-  
- useEffect(() => {
-     if (!isEditMode) {
-       console.log("🧹 Exiting edit mode - clearing form data");
- 
-       // Reset everything to initial state
-       dispatch(resetForm());
- 
-       // Clear local states
-       setDeletedMediaIds({ images: [], videos: [] });
- 
-       // Clear auto-populate data
-       dispatch(clearAutoPopulateData());
- 
-       console.log("✅ Form cleared successfully");
-     }
-   }, [isEditMode, dispatch]);
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+  const [usedAutocomplete, setUsedAutocomplete] = useState(false);
+
+  useEffect(() => {
+    if (!isEditMode) {
+      console.log("🧹 Exiting edit mode - clearing form data");
+
+      // Reset everything to initial state
+      dispatch(resetForm());
+
+      // Clear local states
+      setDeletedMediaIds({ images: [], videos: [] });
+
+      // Clear auto-populate data
+      dispatch(clearAutoPopulateData());
+
+      console.log("✅ Form cleared successfully");
+    }
+  }, [isEditMode, dispatch]);
 
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
@@ -95,6 +100,9 @@ const subName = location.state?.subName;
         return;
       }
 
+      // Mark that autocomplete was used
+      setUsedAutocomplete(true);
+
       dispatch(
         updateFormField({
           field: "address",
@@ -113,7 +121,25 @@ const subName = location.state?.subName;
           value: place.geometry.location.lng(),
         })
       );
+
+      console.log("Autocomplete used:", {
+        address: place.formatted_address,
+        lat: place.geometry.location.lat(),
+        lng: place.geometry.location.lng(),
+      });
     }
+  };
+
+  // Handle location confirmation from map modal
+  const handleLocationConfirm = ({ address, latitude, longitude }) => {
+    // Mark that map was used (not autocomplete)
+    setUsedAutocomplete(false);
+
+    dispatch(updateFormField({ field: "address", value: address }));
+    dispatch(updateFormField({ field: "latitude", value: latitude }));
+    dispatch(updateFormField({ field: "longitude", value: longitude }));
+    setIsMapModalOpen(false);
+    console.log("Map location confirmed:", { address, latitude, longitude });
   };
 
   useEffect(() => {
@@ -164,8 +190,8 @@ const subName = location.state?.subName;
           states: response.states?.data || response.states || [],
           districts: [],
           cities: [],
-         electronicsBrand: extractDataFromResponse(response.electronicsBrand),
-        electronicsModel: [],
+          electronicsBrand: extractDataFromResponse(response.electronicsBrand),
+          electronicsModel: [],
         };
 
         setDropdownData((prev) => ({
@@ -173,25 +199,25 @@ const subName = location.state?.subName;
           ...processedDropdowns,
           districts: [],
           cities: [],
-           electronicsModel: [],
+          electronicsModel: [],
         }));
 
-         // FIXED: Additional validation for electronics brands
-      if (!processedDropdowns.electronicsBrand || processedDropdowns.electronicsBrand.length === 0) {
-        console.warn("⚠️ No electronics brands loaded, trying direct API call");
-        try {
-          const directBrands = await dropdownService.getelectronicsBrand();
-          const extractedBrands = extractDataFromResponse(directBrands);
-          console.log("🔄 Direct brands call result:", extractedBrands);
-          
-          setDropdownData(prev => ({
-            ...prev,
-            electronicsBrand: extractedBrands,
-          }));
-        } catch (directError) {
-          console.error("❌ Direct brands call failed:", directError);
+        // FIXED: Additional validation for electronics brands
+        if (!processedDropdowns.electronicsBrand || processedDropdowns.electronicsBrand.length === 0) {
+          console.warn("⚠️ No electronics brands loaded, trying direct API call");
+          try {
+            const directBrands = await dropdownService.getelectronicsBrand();
+            const extractedBrands = extractDataFromResponse(directBrands);
+            console.log("🔄 Direct brands call result:", extractedBrands);
+
+            setDropdownData(prev => ({
+              ...prev,
+              electronicsBrand: extractedBrands,
+            }));
+          } catch (directError) {
+            console.error("❌ Direct brands call failed:", directError);
+          }
         }
-      }
 
         setLoadingDropdowns(false);
       } catch (error) {
@@ -359,42 +385,42 @@ const subName = location.state?.subName;
     loadCities,
   ]);
 
- useEffect(() => {
-  const loadElectronicsModels = async () => {
-    if (!formData.brand_id || formData.brand_id === "other") {
-      setDropdownData((prev) => ({
-        ...prev,
-        electronicsModel: [],
-      }));
-      return;
-    }
+  useEffect(() => {
+    const loadElectronicsModels = async () => {
+      if (!formData.brand_id || formData.brand_id === "other") {
+        setDropdownData((prev) => ({
+          ...prev,
+          electronicsModel: [],
+        }));
+        return;
+      }
 
-    console.log("📱 Loading models for brand:", formData.brand_id);
+      console.log("📱 Loading models for brand:", formData.brand_id);
 
-    try {
-      const models = await dropdownService.getelectronicsModel(formData.brand_id);
-      console.log("📱 Models response:", models);
-      
-      const extractedModels = extractDataFromResponse(models);
-      console.log("📱 Extracted models:", extractedModels);
-      
-      setDropdownData((prev) => ({
-        ...prev,
-        electronicsModel: extractedModels,
-      }));
-    } catch (error) {
-      console.error("Failed to load electronics models:", error);
-      setDropdownData((prev) => ({
-        ...prev,
-        electronicsModel: [],
-      }));
-      // Optional: Show user-friendly error
-      dispatch(setApiError("Failed to load models for selected brand"));
-    }
-  };
+      try {
+        const models = await dropdownService.getelectronicsModel(formData.brand_id);
+        console.log("📱 Models response:", models);
 
-  loadElectronicsModels();
-}, [formData.brand_id, dispatch]);
+        const extractedModels = extractDataFromResponse(models);
+        console.log("📱 Extracted models:", extractedModels);
+
+        setDropdownData((prev) => ({
+          ...prev,
+          electronicsModel: extractedModels,
+        }));
+      } catch (error) {
+        console.error("Failed to load electronics models:", error);
+        setDropdownData((prev) => ({
+          ...prev,
+          electronicsModel: [],
+        }));
+        // Optional: Show user-friendly error
+        dispatch(setApiError("Failed to load models for selected brand"));
+      }
+    };
+
+    loadElectronicsModels();
+  }, [formData.brand_id, dispatch]);
 
   useEffect(() => {
     previewUrls.images.forEach((url) => {
@@ -451,9 +477,8 @@ const subName = location.state?.subName;
       dispatch(
         setErrors({
           ...errors,
-          [type]: `Only ${
-            type === "images" ? "image" : "video"
-          } files are allowed`,
+          [type]: `Only ${type === "images" ? "image" : "video"
+            } files are allowed`,
         })
       );
       dispatch(setTouched(type));
@@ -512,9 +537,8 @@ const subName = location.state?.subName;
       dispatch(
         setErrors({
           ...errors,
-          [type]: `Only ${
-            type === "images" ? "image" : "video"
-          } files are allowed`,
+          [type]: `Only ${type === "images" ? "image" : "video"
+            } files are allowed`,
         })
       );
       dispatch(setTouched(type));
@@ -761,7 +785,7 @@ const subName = location.state?.subName;
         form_type: "electronics",
         media_to_delete: allDeletedMedia,
         action_id: isEditMode ? formData.action_id : undefined,
-        subcategory_id:  isEditMode ? formData.subcategory_id : id,
+        subcategory_id: isEditMode ? formData.subcategory_id : id,
         slug: slug,
         urlId: id,
       };
@@ -769,14 +793,14 @@ const subName = location.state?.subName;
       const result = await submitElectronicsForm(submissionData, slug, isEditMode);
 
       if (result.success) {
-         toast.success(
+        toast.success(
           isEditMode
             ? `${formData.title} updated successfully!`
             : `${formData.title} submitted successfully!`
         );
         if (!isEditMode) {
           dispatch(resetForm());
-                    navigate("/sell");
+          navigate("/sell");
 
         } else {
           // ✅ If edit mode → navigate
@@ -785,9 +809,9 @@ const subName = location.state?.subName;
         setDeletedMediaIds({ images: [], videos: [] });
       } else {
         if (result.error || result.details) {
-           const errorMessage = result.error || result.details || "Submission failed";
-           dispatch(setApiError(errorMessage));
-           toast.error(errorMessage);
+          const errorMessage = result.error || result.details || "Submission failed";
+          dispatch(setApiError(errorMessage));
+          toast.error(errorMessage);
         }
 
         if (result.validationErrors) {
@@ -848,32 +872,32 @@ const subName = location.state?.subName;
   };
 
   const renderDropdownOptionsWithOther = (options, fieldName = "") => {
-  console.log(`🎛️ Rendering options for ${fieldName}:`, options);
-  
-  let dataArray = extractDataFromResponse(options);
-  
-  if (!Array.isArray(dataArray) || dataArray.length === 0) {
-    console.log(`⚠️ No options available for ${fieldName}, returning Other only`);
-    return [{ value: "other", label: "Other" }];
-  }
+    console.log(`🎛️ Rendering options for ${fieldName}:`, options);
 
-  const processedOptions = dataArray.map((option, index) => {
-    const processedOption = {
-      value: option.id || option.value || option.key || index,
-      label: option.name || option.label || option.title || option.text || `Option ${index + 1}`,
-    };
-    console.log(`🔄 Processed option ${index}:`, processedOption);
-    return processedOption;
-  });
+    let dataArray = extractDataFromResponse(options);
 
-  // Add "Other" option if not already present
-  if (shouldAddOtherOption(dataArray)) {
-    processedOptions.push({ value: "other", label: "Other" });
-  }
+    if (!Array.isArray(dataArray) || dataArray.length === 0) {
+      console.log(`⚠️ No options available for ${fieldName}, returning Other only`);
+      return [{ value: "other", label: "Other" }];
+    }
 
-  console.log(`✅ Final options for ${fieldName}:`, processedOptions);
-  return processedOptions;
-};
+    const processedOptions = dataArray.map((option, index) => {
+      const processedOption = {
+        value: option.id || option.value || option.key || index,
+        label: option.name || option.label || option.title || option.text || `Option ${index + 1}`,
+      };
+      console.log(`🔄 Processed option ${index}:`, processedOption);
+      return processedOption;
+    });
+
+    // Add "Other" option if not already present
+    if (shouldAddOtherOption(dataArray)) {
+      processedOptions.push({ value: "other", label: "Other" });
+    }
+
+    console.log(`✅ Final options for ${fieldName}:`, processedOptions);
+    return processedOptions;
+  };
 
   const renderDropdownOptions = (options) => {
     let dataArray = options;
@@ -927,20 +951,20 @@ const subName = location.state?.subName;
       try {
         dispatch(setLoading(true));
         dispatch(setApiError(null));
-        
+
         const response = await api.get(`/electronics/${id}/edit`);
         const result = response.data;
-        
+
         if (result && (result.data || result.status)) {
           const electronicsData = result.data || result;
-          
+
           const formFields = {
-            action_id:  electronicsData.action_id,
+            action_id: electronicsData.action_id,
             form_type: "electronics",
             title: electronicsData.title || "",
             subcategory_id: electronicsData.subcategory_id || "",
             price: electronicsData.price || "",
-             year: electronicsData.year || electronicsData.post_year,
+            year: electronicsData.year || electronicsData.post_year,
             description: electronicsData.description || "",
             mobile_number: electronicsData.mobile_number || "",
             brand_id: electronicsData.brand_id || "",
@@ -960,17 +984,17 @@ const subName = location.state?.subName;
             videos: transformMediaFiles(electronicsData.videos || [], 'video'),
             media_to_delete: "",
           };
-          
+
           dispatch(populateFormFromApi(formFields));
-          
+
           if (electronicsData.state_id) {
             await loadDistricts(electronicsData.state_id);
-            
+
             if (electronicsData.district_id) {
               await loadCities(electronicsData.district_id);
             }
           }
-          
+
           if (electronicsData.brand_id && electronicsData.brand_id !== "other") {
             try {
               const models = await dropdownService.getElectronicsModel(electronicsData.brand_id);
@@ -987,7 +1011,7 @@ const subName = location.state?.subName;
         }
       } catch (error) {
         console.error("Error loading electronics data:", error);
-        
+
         if (error.response) {
           const { status, data } = error.response;
           switch (status) {
@@ -1069,10 +1093,10 @@ const subName = location.state?.subName;
       }
     }
   }, [
-    formData.brand_id, 
-    formData.model_id, 
-    formData.brand_name, 
-    formData.model_name, 
+    formData.brand_id,
+    formData.model_id,
+    formData.brand_name,
+    formData.model_name,
     dropdownData.electronicsBrand,
     dropdownData.electronicsModel,
     dispatch
@@ -1110,7 +1134,7 @@ const subName = location.state?.subName;
       </div>
     );
   }
-  
+
   if (!isLoaded) {
     return (
       <div className="bg-gray-50 p-6 rounded-3xl w-full max-w-6xl shadow-[0_0_10px_rgba(176,_176,_176,_0.25)] mx-auto border border-[#b9b9b9] bg-[#f6f6f6]">
@@ -1126,7 +1150,7 @@ const subName = location.state?.subName;
     <div className="bg-gray-50 p-6 rounded-3xl w-full max-w-6xl shadow-[0_0_10px_rgba(176,_176,_176,_0.25)] mx-auto border border-[#b9b9b9] bg-[#f6f6f6]">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-center text-xl font-medium text-[#02487C] flex-1">
-           {!isEditMode ? `${subName} Form` : `${editFormTitle} Form`}
+          {!isEditMode ? `${subName} Form` : `${editFormTitle} Form`}
         </h1>
       </div>
 
@@ -1357,22 +1381,43 @@ const subName = location.state?.subName;
             <label className="block text-gray-800 font-medium mb-2 px-4">
               Address <span className="text-red-500">*</span>
             </label>
-            <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
-              <DynamicInputs
-                type="text"
-                name="address"
-                id="address"
-                className="appearance-none w-full px-4 py-3 rounded-full border 
+
+            <div className="flex gap-2  flex-col">
+              <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
+                <DynamicInputs
+                  type="text"
+                  name="address"
+                  id="address"
+                  className="appearance-none w-full px-4 py-3 rounded-full border 
               border-[#bfbfbf] bg-white focus:outline-none"
-                placeholder="Enter address"
-                onChange={handleChange}
-                value={formData.address || ""}
-                onBlur={handleBlur}
-                error={errors.address}
-                touched={touched.address}
-                focusedField={focusedField}
-              />
-            </Autocomplete>
+                  placeholder="Type address or click map button"
+                  onChange={handleChange}
+                  value={formData.address || ""}
+                  onBlur={handleBlur}
+                  error={errors.address}
+                  touched={touched.address}
+                  focusedField={focusedField}
+                />
+              </Autocomplete>
+              <button
+                type="button"
+                onClick={() => setIsMapModalOpen(true)}
+                className="cursor-pointer px-4 py-3 underline text-red-900 text-[12px] transition-colors font-medium whitespace-nowrap flex items-center gap-2"
+                title="Select location on map"
+              >
+                {formData.address ? (
+                  <span className="flex items-center gap-1">
+                    <LocationOnIcon className="w-5 h-5 text-red-500" />
+                    Map
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1">
+                    <LocationOnIcon className="w-5 h-5 text-red-500" />
+                    Select Location on Map
+                  </span>
+                )}
+              </button>
+            </div>
           </div>
 
           <div>
@@ -1412,8 +1457,8 @@ const subName = location.state?.subName;
                 !formData.state_id
                   ? "Select state first"
                   : loadingDistricts || isAutoPopulating
-                  ? "Loading..."
-                  : "Select district"
+                    ? "Loading..."
+                    : "Select district"
               }
               onChange={(e) => handleFieldChange("district_id", e.target.value)}
               value={formData.district_id || ""}
@@ -1659,6 +1704,15 @@ const subName = location.state?.subName;
             )}
           </div>
         </div>
+
+        {/* Map Picker Modal */}
+        <MapPickerModal
+          isOpen={isMapModalOpen}
+          onClose={() => setIsMapModalOpen(false)}
+          initialLat={parseFloat(formData.latitude) || 28.6139}
+          initialLng={parseFloat(formData.longitude) || 77.209}
+          onConfirm={handleLocationConfirm}
+        />
 
         <div className="flex justify-center">
           <button
