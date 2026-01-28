@@ -389,7 +389,7 @@ const SubscriptionPlan = () => {
                   
                   <button  
                   //  disabled={loadingPlanId === plan.id || isActivePlan}
-                  disabled={loadingPlanId === plan.id || isActivePlan || plan.current == true}
+                  disabled={loadingPlanId === plan.id || isActivePlan || plan.current == true || plan.is_free == true}
                     onClick={() => handleSubscribe(plan.id)} 
                    className={`py-2 px-4 rounded-full transition-colors w-full text-sm font-medium 
                     flex items-center justify-center
@@ -400,7 +400,7 @@ const SubscriptionPlan = () => {
                     }
                     
                     
-                    ${plan.current === true ? 'cursor-not-allowed opacity-[0.5]':'cursor-pointer'}
+                    ${(plan.current === true  || plan.is_free === true) ? 'cursor-not-allowed opacity-[0.5]':'cursor-pointer'}
                     
                     
                     `}>

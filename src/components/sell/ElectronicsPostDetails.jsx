@@ -29,6 +29,7 @@ const ElectronicsCard = ({
   slug,
   editformslug,
   status,
+  adminapproved,
   isPublished,
   subcategory,
   onStatusChange,
@@ -51,7 +52,7 @@ const ElectronicsCard = ({
     setShowStatusDropdown(!showStatusDropdown);
   };
 
- 
+
   const toggleAds = (e) => {
     e.stopPropagation();
     setAdsEnabled(!adsEnabled);
@@ -181,91 +182,97 @@ const ElectronicsCard = ({
   };
 
   // Handle card click with conditional navigation
-    const handleCardClick = (event) => {
-      // Prevent navigation if clicking on action buttons
-      if (event.target.closest(".action-button")) {
-        return;
+  const handleCardClick = (event) => {
+    // Prevent navigation if clicking on action buttons
+    if (event.target.closest(".action-button")) {
+      return;
+    }
+
+    // Check if admin has not approved the electronics
+    if (adminapproved === 0 || adminapproved === false) {
+      toast.warning("Waiting for admin approval. Your electronics is under review.");
+      return;
+    }
+
+    // Check if navigation should be disabled
+    if (isNavigationDisabled()) {
+      if (currentStatus === "sold" || currentStatus === "available") {
+        toast.info("This electronics has been sold and is no longer available");
+      } else if (!currentPublishStatus) {
+        toast.info("This electronics is currently unpublished");
       }
-  
-      // Check if navigation should be disabled
-      if (isNavigationDisabled()) {
-        if (currentStatus === "sold" || currentStatus === "available") {
-          toast.info("This property has been sold and is no longer available");
-        } else if (!currentPublishStatus) {
-          toast.info("This property is currently unpublished");
-        }
-        return;
-      }
-  
-      // Navigate to property details
-      navigate(`/electronic/${slug}`);
-    };
-  
-    // Get card styling based on status
-    const getCardStyling = () => {
-      if (isNavigationDisabled()) {
-        return "opacity-100 bg-[#c1bebe] cursor-not-allowed z-99 relative";
-      }
-      return "cursor-pointer hover:shadow-lg transition-shadow";
-    };
-  
-    // Get status badge styling
-    // Get status badge styling with proper priority
-    const getStatusBadge = () => {
-      // Priority 1: SOLD status (highest priority)
-      if (currentStatus === "sold" || currentStatus === "soldout") {
+      return;
+    }
+
+    // Navigate to electronics details
+    navigate(`/electronics/${slug}`);
+  };
+
+  // Get card styling based on status
+  const getCardStyling = () => {
+    if (isNavigationDisabled()) {
+      return "opacity-100 bg-[#c1bebe] cursor-not-allowed z-99 relative";
+    }
+    return "cursor-pointer hover:shadow-lg transition-shadow";
+  };
+
+  // Get status badge styling
+  // Get status badge styling with proper priority
+  const getStatusBadge = () => {
+    // Priority 1: SOLD status (highest priority)
+    if (currentStatus === "sold" || currentStatus === "soldout") {
+      return (
+        <span className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-semibold z-10">
+          SOLD
+        </span>
+      );
+    }
+
+    // Priority 2: UNPUBLISHED status
+    if (!currentPublishStatus) {
+      return (
+        <span className="absolute top-2 left-2 bg-gray-500 text-white px-2 py-1 rounded text-xs font-semibold z-10">
+          UNPUBLISHED
+        </span>
+      );
+    }
+
+    // Priority 3: Other statuses for published properties
+    if (currentPublishStatus) {
+      if (currentStatus === "available") {
         return (
-          <span className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-semibold z-10">
-            SOLD
+          <span className="absolute top-2 left-2 bg-blue-900 text-white px-2 py-1 rounded text-xs font-semibold z-10">
+            AVAILABLE
           </span>
         );
       }
-  
-      // Priority 2: UNPUBLISHED status
-      if (!currentPublishStatus) {
+
+      if (currentStatus === "pending") {
         return (
-          <span className="absolute top-2 left-2 bg-gray-500 text-white px-2 py-1 rounded text-xs font-semibold z-10">
-            UNPUBLISHED
+          <span className="absolute top-2 left-2 bg-yellow-500 text-white px-2 py-1 rounded text-xs font-semibold z-10">
+            PENDING
           </span>
         );
       }
-  
-      // Priority 3: Other statuses for published properties
-      if (currentPublishStatus) {
-        if (currentStatus === "available") {
-          return (
-            <span className="absolute top-2 left-2 bg-blue-900 text-white px-2 py-1 rounded text-xs font-semibold z-10">
-              AVAILABLE
-            </span>
-          );
-        }
-  
-        if (currentStatus === "pending") {
-          return (
-            <span className="absolute top-2 left-2 bg-yellow-500 text-white px-2 py-1 rounded text-xs font-semibold z-10">
-              PENDING
-            </span>
-          );
-        }
-  
-        // For any other status
-        return (
-          <span className="absolute top-2 left-2 bg-blue-500 text-white px-2 py-1 rounded text-xs font-semibold z-10">
-            {currentStatus.toUpperCase()}
-          </span>
-        );
-      }
-  
-      return null;
-    };
-  
+
+      // For any other status
+      return (
+        <span className="absolute top-2 left-2 bg-blue-500 text-white px-2 py-1 rounded text-xs font-semibold z-10">
+          {currentStatus.toUpperCase()}
+        </span>
+      );
+    }
+
+    return null;
+  };
+
   return (
     <div
       onClick={handleCardClick}
       className={`flex items-start p-2 bg-white rounded-lg shadow-sm border border-gray-100 w-full relative ${getCardStyling()}`}
     >
-      {/* Status Badge */}
-      {getStatusBadge()}
+      {/* Status Badge - Only show if admin approved */}
+      {(adminapproved === 1 || adminapproved === true) && getStatusBadge()}
       {/* Electronics Image */}
       <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
         <img
@@ -321,134 +328,138 @@ const ElectronicsCard = ({
             </span>
           </div>
           <div className="flex items-center gap-2">
-            {/* Edit Icon */}
-            <button
-              onClick={handleEdit}
-              className="text-gray-600 hover:text-blue-600 cursor-pointer"
-              title="Edit electronics item "
-            >
-              <EditIcon fontSize="small text-blue-600 " />
-            </button>
+            {/* Only show Edit and Status buttons if admin approved */}
+            {(adminapproved === 1 || adminapproved === true) && (
+              <>
+                {/* Edit Icon */}
+                <button
+                  onClick={handleEdit}
+                  className="action-button text-gray-600 hover:text-blue-600 cursor-pointer"
+                  title="Edit electronics item "
+                >
+                  <EditIcon fontSize="small text-blue-600 " />
+                </button>
 
-            {/* Status Dropdown */}
-            <div className="relative">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleDropdown();
-                }}
-                className="action-button bg-[#0f1c5e] text-white px-4 py-1 rounded-md text-sm flex items-center disabled:opacity-50"
-                disabled={isUpdatingStatus || isUpdatingPublish}
-              >
-                Status
-                {isUpdatingStatus || isUpdatingPublish ? (
-                  <div className="animate-spin h-3 w-3 border border-white border-t-transparent rounded-full ml-1"></div>
-                ) : showStatusDropdown ? (
-                  <KeyboardArrowUpIcon style={{ fontSize: 18 }} />
-                ) : (
-                  <KeyboardArrowDownIcon style={{ fontSize: 18 }} />
-                )}
-              </button>
+                {/* Status Dropdown */}
+                <div className="relative">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleDropdown();
+                    }}
+                    className="action-button bg-[#0f1c5e] text-white px-4 py-1 rounded-md text-sm flex items-center disabled:opacity-50"
+                    disabled={isUpdatingStatus || isUpdatingPublish}
+                  >
+                    Status
+                    {isUpdatingStatus || isUpdatingPublish ? (
+                      <div className="animate-spin h-3 w-3 border border-white border-t-transparent rounded-full ml-1"></div>
+                    ) : showStatusDropdown ? (
+                      <KeyboardArrowUpIcon style={{ fontSize: 18 }} />
+                    ) : (
+                      <KeyboardArrowDownIcon style={{ fontSize: 18 }} />
+                    )}
+                  </button>
 
-              {/* Status Dropdown */}
-              {showStatusDropdown && (
-                <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200">
-                  {/* Sold/Available Toggle */}
-                  <div className="px-4 py-3 border-b border-gray-100">
-                    <div className="flex items-center justify-between">
-                      <span
-                        className={`text-sm text-white px-2 py-1 rounded ${
-                          currentStatus === "sold"
-                            ? "bg-red-600"
-                            : "bg-green-600"
-                        }`}
-                      >
-                        {currentStatus === "sold" ? "Sold Out" : "Available"}
-                      </span>
-                      <div
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (currentStatus === "sold") {
-                            markAsAvailable(e);
-                          } else {
-                            markAsSold(e);
-                          }
-                        }}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
-                          currentStatus === "sold"
-                            ? "bg-red-500"
-                            : "bg-green-500"
-                        } ${
-                          isUpdatingStatus
-                            ? "opacity-50 pointer-events-none"
-                            : ""
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            currentStatus === "sold"
-                              ? "translate-x-1"
-                              : "translate-x-6"
-                          }`}
-                        />
+                  {/* Status Dropdown */}
+                  {showStatusDropdown && (
+                    <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200">
+                      {/* Sold/Available Toggle */}
+                      <div className="px-4 py-3 border-b border-gray-100">
+                        <div className="flex items-center justify-between">
+                          <span
+                            className={`text-sm text-white px-2 py-1 rounded ${currentStatus === "sold"
+                              ? "bg-red-600"
+                              : "bg-green-600"
+                              }`}
+                          >
+                            {currentStatus === "sold" ? "Sold Out" : "Available"}
+                          </span>
+                          <div
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (currentStatus === "sold") {
+                                markAsAvailable(e);
+                              } else {
+                                markAsSold(e);
+                              }
+                            }}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${currentStatus === "sold"
+                              ? "bg-red-500"
+                              : "bg-green-500"
+                              } ${isUpdatingStatus
+                                ? "opacity-50 pointer-events-none"
+                                : ""
+                              }`}
+                          >
+                            <span
+                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${currentStatus === "sold"
+                                ? "translate-x-1"
+                                : "translate-x-6"
+                                }`}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Publish/Unpublish Toggle */}
+                      <div className="px-4 py-3 border-b border-gray-100">
+                        <div className="flex items-center justify-between">
+                          <span
+                            className={`text-sm text-white px-2 py-1 rounded ${currentPublishStatus
+                              ? "bg-green-600"
+                              : "bg-yellow-500"
+                              }`}
+                          >
+                            {currentPublishStatus ? "Published" : "Draft"}
+                          </span>
+                          <div
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              updatePublishStatus(!currentPublishStatus);
+                              setShowStatusDropdown(false);
+                            }}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${currentPublishStatus ? "bg-blue-500" : "bg-gray-300"
+                              } ${isUpdatingPublish
+                                ? "opacity-50 pointer-events-none"
+                                : ""
+                              }`}
+                          >
+                            <span
+                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${currentPublishStatus
+                                ? "translate-x-6"
+                                : "translate-x-1"
+                                }`}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Delete Button */}
+                      <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-center">
+                        <button
+                          onClick={handleDelete}
+                          className="action-button text-white flex items-center justify-center gap-2 px-4 py-2 bg-red-600 rounded disabled:opacity-60 hover:bg-red-700 transition-colors"
+                          title="Delete property"
+                          disabled={isDeleting}
+                        >
+                          <DeleteIcon fontSize="small" />
+                          <span className="text-sm">
+                            {isDeleting ? "Deleting..." : "Delete"}
+                          </span>
+                        </button>
                       </div>
                     </div>
-                  </div>
-
-                  {/* Publish/Unpublish Toggle */}
-                  <div className="px-4 py-3 border-b border-gray-100">
-                    <div className="flex items-center justify-between">
-                      <span
-                        className={`text-sm text-white px-2 py-1 rounded ${
-                          currentPublishStatus
-                            ? "bg-green-600"
-                            : "bg-yellow-500"
-                        }`}
-                      >
-                        {currentPublishStatus ? "Published" : "Draft"}
-                      </span>
-                      <div
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          updatePublishStatus(!currentPublishStatus);
-                          setShowStatusDropdown(false);
-                        }}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
-                          currentPublishStatus ? "bg-blue-500" : "bg-gray-300"
-                        } ${
-                          isUpdatingPublish
-                            ? "opacity-50 pointer-events-none"
-                            : ""
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            currentPublishStatus
-                              ? "translate-x-6"
-                              : "translate-x-1"
-                          }`}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Delete Button */}
-                  <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-center">
-                    <button
-                      onClick={handleDelete}
-                      className="action-button text-white flex items-center justify-center gap-2 px-4 py-2 bg-red-600 rounded disabled:opacity-60 hover:bg-red-700 transition-colors"
-                      title="Delete property"
-                      disabled={isDeleting}
-                    >
-                      <DeleteIcon fontSize="small" />
-                      <span className="text-sm">
-                        {isDeleting ? "Deleting..." : "Delete"}
-                      </span>
-                    </button>
-                  </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </>
+            )}
+
+            {/* Show pending approval message if not approved */}
+            {(adminapproved === 0 || adminapproved === false) && (
+              <span className="text-xs text-yellow-600 bg-yellow-50 px-2 py-1 rounded border border-yellow-200">
+                Pending Approval
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -483,7 +494,7 @@ const ElectronicsPostDetails = () => {
   const handleDeleteElectronics = async (id) => {
     try {
       await api.delete(`/electronics/${id}/delete`);
-      setElectronics((prevElectronics) => 
+      setElectronics((prevElectronics) =>
         prevElectronics.filter((item) => item.id !== id)
       );
       setTotal((prev) => prev - 1);
@@ -512,9 +523,9 @@ const ElectronicsPostDetails = () => {
       setTotal(result.total);
       setHasMoreData(
         result.next_page_url !== null &&
-          result.current_page < result.last_page &&
-          result.data &&
-          result.data.length > 0
+        result.current_page < result.last_page &&
+        result.data &&
+        result.data.length > 0
       );
     } catch (err) {
       console.error("Failed to load electronics", err);
@@ -602,41 +613,40 @@ const ElectronicsPostDetails = () => {
     <div className="max-w-7xl mx-auto md:px-4 px-0">
       <div className="mb-8">
         <div
-          className={`grid gap-4 ${
-            isMobile ? "grid-cols-1" : isTablet ? "grid-cols-2" : "grid-cols-2"
-          }`}
+          className={`grid gap-4 ${isMobile ? "grid-cols-1" : isTablet ? "grid-cols-2" : "grid-cols-2"
+            }`}
         >
           {loading
             ? Array.from({ length: 6 }).map((_, index) => (
-                <LoadingSkeleton key={index} />
-              ))
+              <LoadingSkeleton key={index} />
+            ))
             : electronics.map((item) => (
-                <ElectronicsCard
-                  key={item.id}
-                  id={item.id}
-                  slug={item.action_slug}
-                  editformslug={item.slug}
-                  editformslugName={item.subcategory}
-                  electronicsImage={item.image_url || item.images?.[0]?.url}
-                  electronicsTitle={item.title}
-                  location={`${item.district ? `${item.district}` : ""}${
-                    item.state ? `, ${item.state}` : ""
+              <ElectronicsCard
+                key={item.id}
+                id={item.id}
+                slug={item.action_slug}
+                editformslug={item.slug}
+                editformslugName={item.subcategory}
+                electronicsImage={item.image_url || item.images?.[0]?.url}
+                electronicsTitle={item.title}
+                location={`${item.district ? `${item.district}` : ""}${item.state ? `, ${item.state}` : ""
                   }`}
-                  brand={item.brand_name || item.brand}
-                  model={item.model_name || item.model}
-                  year={item.year}
-                  features={item.features}
-                  specifications={item.specifications}
-                  price={
-                    item.price 
-                  }
-                  status={item.status || "available"}
-                  isPublished={item.is_published || 0}
-                  subcategory={item.subcategory}
-                  onStatusChange={handleStatusChange}
-                  onDelete={handleDeleteElectronics}
-                />
-              ))}
+                brand={item.brand_name || item.brand}
+                model={item.model_name || item.model}
+                year={item.year}
+                features={item.features}
+                specifications={item.specifications}
+                price={
+                  item.price
+                }
+                status={item.status || "available"}
+                adminapproved={item.is_approved || 0}
+                isPublished={item.is_published || 0}
+                subcategory={item.subcategory}
+                onStatusChange={handleStatusChange}
+                onDelete={handleDeleteElectronics}
+              />
+            ))}
         </div>
 
         {!loading && hasMoreData && electronics.length > 0 && (

@@ -21,10 +21,10 @@ const HomePage = () => {
     const { setIsOpen } = useTour();
 
     useEffect(() => {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("access_token");
       const tourDone = localStorage.getItem("homeTourDone");
 
-      if (!token && !tourDone) {
+      if (token && !tourDone) {
         setTimeout(() => {
           setIsOpen(true);
           localStorage.setItem("homeTourDone", "true");

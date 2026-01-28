@@ -1075,7 +1075,7 @@ const PropertyForm = () => {
         toast.success(
           isEditMode
             ? ` ${formData.propertyName} updated successfully`
-            : `${formData.propertyName}  submitted successfully`
+            : `${formData.propertyName} submitted successfully. It will be reviewed and published after admin approval.`,
         );
 
         if (!isEditMode) {
@@ -1133,12 +1133,30 @@ const PropertyForm = () => {
                 formattedErrors["images"] = [];
               }
               formattedErrors["images"].push(...messages);
-            } else {
+            }
+            // Flatten videos.* errors into "videos"
+            else if (field.startsWith("videos")) {
+              if (!formattedErrors["videos"]) {
+                formattedErrors["videos"] = [];
+              }
+              formattedErrors["videos"].push(...messages);
+            }
+            else {
               formattedErrors[field] = Array.isArray(messages) ? messages : [messages];
             }
           });
 
           dispatch(setErrors(formattedErrors));
+
+          // Mark all error fields as touched
+          const touchedFields = {};
+          Object.keys(formattedErrors).forEach((field) => {
+            touchedFields[field] = true;
+          });
+          dispatch({
+            type: "propertyform/setAllTouched",
+            payload: touchedFields,
+          });
 
           // Focus first error field
           const firstErrorField = Object.keys(formattedErrors)[0];
@@ -2261,7 +2279,9 @@ const PropertyForm = () => {
                 </ul>
                 {/* {touched.images && errors.images && (
                   <p className="text-red-500 text-xs mt-2 px-4">
-                    {errors.images}
+                    {Array.isArray(errors.images)
+                      ? errors.images.join(", ")
+                      : errors.images}
                   </p>
                 )} */}
               </div>
@@ -2285,6 +2305,7 @@ const PropertyForm = () => {
               error={errors.videos}
               touched={touched.videos}
               accept="video/*"
+
             />
 
             {/* Display video file previews and clear icon */}
@@ -2328,11 +2349,13 @@ const PropertyForm = () => {
                     </li>
                   ))}
                 </ul>
-                {touched.videos && errors.videos && (
+                {/* {touched.videos && errors.videos && (
                   <p className="text-red-500 text-xs mt-2 px-4">
-                    {errors.videos}
+                    {Array.isArray(errors.videos)
+                      ? errors.videos
+                      : errors.videos}
                   </p>
-                )}
+                )} */}
               </div>
             )}
           </div>

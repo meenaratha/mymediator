@@ -30,9 +30,8 @@ const DynamicInputs = ({
   const dispatch = useDispatch();
 
   // Append error class if needed
-  const inputClasses = `${className} ${
-    touched && error ? "border border-red-500" : ""
-  }`;
+  const inputClasses = `${className} ${touched && error ? "border border-red-500" : ""
+    }`;
 
   const inputRef = useRef(null);
 
@@ -61,9 +60,8 @@ const DynamicInputs = ({
       <>
         <div
           className={`w-full max-w-sm h-14 px-6 rounded-[10px] border border-[#bfbfbf] 
-          bg-white h-[100px] flex items-center justify-center space-x-4 ${
-            isDragging ? "border-blue-500 bg-blue-50" : ""
-          } ${touched && error ? "border-red-500" : ""}`}
+          bg-white h-[100px] flex items-center justify-center space-x-4 ${isDragging ? "border-blue-500 bg-blue-50" : ""
+            } ${touched && error ? "border-red-500" : ""}`}
           onDragOver={onDragOver}
           onDragLeave={onDragLeave}
           onDrop={onDrop}
@@ -87,9 +85,11 @@ const DynamicInputs = ({
           </label>
           <ImageIcon className="text-gray-700" />
         </div>
-       {touched && error && !isDragging && (
-          <p className="text-red-500 text-xs mt-2 px-4">{error}</p>
-        )} 
+        {touched && error && !isDragging && (
+          <p className="text-red-500 text-xs mt-2 px-4">
+            {Array.isArray(error) ? error : error}
+          </p>
+        )}
 
         {/* {touched &&
           error &&
@@ -112,9 +112,8 @@ const DynamicInputs = ({
       <>
         <div
           className={`w-full max-w-sm h-14 px-6 rounded-[10px] border border-[#bfbfbf] 
-          bg-white h-[100px] flex items-center justify-center space-x-4 ${
-            isDragging ? "border-blue-500 bg-blue-50" : ""
-          } ${touched && error ? "border-red-500" : ""}`}
+          bg-white h-[100px] flex items-center justify-center space-x-4 ${isDragging ? "border-blue-500 bg-blue-50" : ""
+            } ${touched && error ? "border-red-500" : ""}`}
           onDragOver={onDragOver}
           onDragLeave={onDragLeave}
           onDrop={onDrop}
@@ -136,7 +135,9 @@ const DynamicInputs = ({
           <VideoCameraBackIcon className="text-gray-700" />
         </div>
         {touched && error && !isDragging && (
-          <p className="text-red-500 text-xs mt-2 px-4">{error}</p>
+          <p className="text-red-500 text-xs mt-2 px-4">
+            {Array.isArray(error) ? error : error}
+          </p>
         )}
       </>
     );

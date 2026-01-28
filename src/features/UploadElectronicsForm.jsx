@@ -796,7 +796,7 @@ const UploadElectronicsForm = () => {
         toast.success(
           isEditMode
             ? `${formData.title} updated successfully!`
-            : `${formData.title} submitted successfully!`
+            : `${formData.title} submitted successfully. It will be reviewed and published after admin approval.`
         );
         if (!isEditMode) {
           dispatch(resetForm());
@@ -814,10 +814,42 @@ const UploadElectronicsForm = () => {
           toast.error(errorMessage);
         }
 
-        if (result.validationErrors) {
-          dispatch(setErrors(result.validationErrors));
+        if (result.validationErrors && Object.keys(result.validationErrors).length > 0) {
+          const formattedErrors = {};
 
-          const firstErrorField = Object.keys(result.validationErrors)[0];
+          Object.entries(result.validationErrors).forEach(([field, messages]) => {
+            // Flatten image.* errors into "images"
+            if (field.startsWith("images")) {
+              if (!formattedErrors["images"]) {
+                formattedErrors["images"] = [];
+              }
+              formattedErrors["images"].push(...messages);
+            }
+            // Flatten videos.* errors into "videos"
+            else if (field.startsWith("videos")) {
+              if (!formattedErrors["videos"]) {
+                formattedErrors["videos"] = [];
+              }
+              formattedErrors["videos"].push(...messages);
+            }
+            else {
+              formattedErrors[field] = Array.isArray(messages) ? messages : [messages];
+            }
+          });
+
+          dispatch(setErrors(formattedErrors));
+
+          // Mark all error fields as touched
+          const touchedFields = {};
+          Object.keys(formattedErrors).forEach((field) => {
+            touchedFields[field] = true;
+          });
+          dispatch({
+            type: "uploadelectronicsform/setAllTouched",
+            payload: touchedFields,
+          });
+
+          const firstErrorField = Object.keys(formattedErrors)[0];
           if (firstErrorField) {
             dispatch(setFocusedField(firstErrorField));
             setTimeout(() => {
@@ -1628,11 +1660,11 @@ const UploadElectronicsForm = () => {
                     </li>
                   ))}
                 </ul>
-                {touched.images && errors.images && (
+                {/* {touched.images && errors.images && (
                   <p className="text-red-500 text-xs mt-2 px-4">
                     {errors.images}
                   </p>
-                )}
+                )} */}
               </div>
             )}
           </div>
@@ -1695,11 +1727,11 @@ const UploadElectronicsForm = () => {
                     </li>
                   ))}
                 </ul>
-                {touched.videos && errors.videos && (
+                {/* {touched.videos && errors.videos && (
                   <p className="text-red-500 text-xs mt-2 px-4">
                     {errors.videos}
                   </p>
-                )}
+                )} */}
               </div>
             )}
           </div>

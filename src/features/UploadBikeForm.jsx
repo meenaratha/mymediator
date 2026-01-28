@@ -915,7 +915,7 @@ const UploadBikeForm = () => {
         toast.success(
           isEditMode
             ? `${formData.title} updated successfully!`
-            : `${formData.title} submitted successfully!`
+            : `${formData.title} submitted successfully. It will be reviewed and published after admin approval.`,
         );
         if (!isEditMode) {
           dispatch(resetForm());
@@ -950,7 +950,15 @@ const UploadBikeForm = () => {
                   formattedErrors["images"] = [];
                 }
                 formattedErrors["images"].push(...messages);
-              } else {
+              }
+              // Flatten videos.* errors into "videos"
+              else if (field.startsWith("videos")) {
+                if (!formattedErrors["videos"]) {
+                  formattedErrors["videos"] = [];
+                }
+                formattedErrors["videos"].push(...messages);
+              }
+              else {
                 formattedErrors[field] = Array.isArray(messages)
                   ? messages
                   : [messages];
@@ -959,6 +967,16 @@ const UploadBikeForm = () => {
           );
 
           dispatch(setErrors(formattedErrors));
+
+          // Mark all error fields as touched
+          const touchedFields = {};
+          Object.keys(formattedErrors).forEach((field) => {
+            touchedFields[field] = true;
+          });
+          dispatch({
+            type: "uploadbikeform/setAllTouched",
+            payload: touchedFields,
+          });
 
           const firstErrorField = Object.keys(formattedErrors)[0];
           if (firstErrorField) {
@@ -2071,11 +2089,11 @@ const UploadBikeForm = () => {
                       </li>
                     ))}
                   </ul>
-                  {touched.videos && errors.videos && (
+                  {/* {touched.videos && errors.videos && (
                     <p className="text-red-500 text-xs mt-2 px-4">
                       {errors.videos}
                     </p>
-                  )}
+                  )} */}
                 </div>
               )}
             </div>
