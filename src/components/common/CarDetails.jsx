@@ -18,6 +18,7 @@ import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import CloseIcon from "@mui/icons-material/Close";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import SpeedIcon from "@mui/icons-material/Speed";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import LocalGasStationIcon from "@mui/icons-material/LocalGasStation";
@@ -61,17 +62,19 @@ const CarDetails = ({ car }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [showZoom, setShowZoom] = useState(false);
   const [zoomedImageSrc, setZoomedImageSrc] = useState("");
+  const [zoomedMediaType, setZoomedMediaType] = useState("image");
   const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
   const [zoomLevel, setZoomLevel] = useState(2);
   const [showEnquiryPopup, setShowEnquiryPopup] = useState(false);
   const [loginFormModel, setLoginFormModel] = useState(false);
   const [signupFormModel, setSignupFormModel] = useState(false);
-   const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
-     const [otpVerificationModal, setOtpVerificationModal] = useState(false);
-      const [passwordResetModel, setPasswordResetModel] = useState(false);
-          const [forgotPhone, setForgotPhone] = useState("");
-      
-   const { isAuthenticated, user, logout, loading } = useAuth(); // Get auth state
+  const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
+  const [otpVerificationModal, setOtpVerificationModal] = useState(false);
+  const [passwordResetModel, setPasswordResetModel] = useState(false);
+  const [forgotPhone, setForgotPhone] = useState("");
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+
+  const { isAuthenticated, user, logout, loading } = useAuth(); // Get auth state
 
   // Default Chennai coordinates
   const defaultLocation = { lat: 13.0827, lng: 80.2707 };
@@ -88,9 +91,29 @@ const CarDetails = ({ car }) => {
   ];
 
   // Prepare images from API response
-  const images = car?.image_url 
-    ? (Array.isArray(car.image_url) ? car.image_url : [car.image_url])
-    : dummyImages;
+  // Combine images and videos into a single media array
+  const imageUrls = car?.image_url
+    ? Array.isArray(car.image_url)
+      ? car.image_url
+      : [car.image_url]
+    : [];
+
+  const videoUrls = car?.video_url
+    ? Array.isArray(car.video_url)
+      ? car.video_url
+      : [car.video_url]
+    : [];
+
+  // Create media array with type identification
+  const mediaItems = [
+    ...imageUrls.map(url => ({ type: 'image', url })),
+    ...videoUrls.map(url => ({ type: 'video', url }))
+  ];
+
+  // Use dummy images if no media available
+  const images = mediaItems.length > 0
+    ? mediaItems
+    : dummyImages.map(url => ({ type: 'image', url }));
 
   // Get map coordinates
   const mapCenter = {
@@ -124,29 +147,29 @@ const CarDetails = ({ car }) => {
     } catch (error) {
       console.error('Wishlist error:', error);
       // Check if it's an authentication error (401 Unauthorized)
-    if (error.response && error.response.status === 401) {
-      // User is not authenticated, show login modal
-      setSnackbar({ 
-        open: true, 
-        message: 'Please login to add items to wishlist', 
-        severity: 'warning' 
-      });
-      
-      // Show login modal
-      setLoginFormModel(true);
-      
-      // Optional: You can also close any other modals that might be open
-      // setSignupFormModel(false);
-      // setForgotPasswordModal(false);
-    } else {
-      // Other errors (network, server error, etc.)
-      const errorMessage = error.response?.data?.message || 'Failed to update wishlist';
-      setSnackbar({ 
-        open: true, 
-        message: errorMessage, 
-        severity: 'error' 
-      });
-    }
+      if (error.response && error.response.status === 401) {
+        // User is not authenticated, show login modal
+        setSnackbar({
+          open: true,
+          message: 'Please login to add items to wishlist',
+          severity: 'warning'
+        });
+
+        // Show login modal
+        setLoginFormModel(true);
+
+        // Optional: You can also close any other modals that might be open
+        // setSignupFormModel(false);
+        // setForgotPasswordModal(false);
+      } else {
+        // Other errors (network, server error, etc.)
+        const errorMessage = error.response?.data?.message || 'Failed to update wishlist';
+        setSnackbar({
+          open: true,
+          message: errorMessage,
+          severity: 'error'
+        });
+      }
     } finally {
       setIsWishlistLoading(false);
     }
@@ -178,10 +201,11 @@ const CarDetails = ({ car }) => {
   };
 
   // Zoom functionality
-  const handleZoomIn = (imageSrc, index) => {
-    setZoomedImageSrc(imageSrc);
+  const handleZoomIn = (mediaSrc, mediaType, index) => {
+    setZoomedImageSrc(mediaSrc);
+    setZoomedMediaType(mediaType);
     setShowZoom(true);
-    
+
     if (mainSwiper && !mainSwiper.destroyed) {
       mainSwiper.slideToLoop(index);
     }
@@ -193,13 +217,13 @@ const CarDetails = ({ car }) => {
 
   const handleZoomMouseMove = (e) => {
     if (!showZoom) return;
-    
+
     const container = e.currentTarget;
     const rect = container.getBoundingClientRect();
-    
+
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
-    
+
     setZoomPosition({ x, y });
   };
 
@@ -212,7 +236,30 @@ const CarDetails = ({ car }) => {
     }
 
     if (showZoom) {
-      setZoomedImageSrc(images[newIndex]);
+      setZoomedImageSrc(images[newIndex].url);
+      setZoomedMediaType(images[newIndex].type);
+    }
+  };
+
+  // Video event handlers to control autoplay
+  const handleVideoPlay = () => {
+    setIsVideoPlaying(true);
+    if (mainSwiper && mainSwiper.autoplay) {
+      mainSwiper.autoplay.stop();
+    }
+  };
+
+  const handleVideoPause = () => {
+    setIsVideoPlaying(false);
+    if (mainSwiper && mainSwiper.autoplay) {
+      mainSwiper.autoplay.start();
+    }
+  };
+
+  const handleVideoEnded = () => {
+    setIsVideoPlaying(false);
+    if (mainSwiper && mainSwiper.autoplay) {
+      mainSwiper.autoplay.start();
     }
   };
 
@@ -222,15 +269,15 @@ const CarDetails = ({ car }) => {
 
   return (
     <>
-    {loginFormModel && (
-  <LoginFormModel
-    setSignupFormModel={setSignupFormModel}
-    setLoginFormModel={setLoginFormModel}
-    setForgotPasswordModal={setForgotPasswordModal}
-  />
-)}
+      {loginFormModel && (
+        <LoginFormModel
+          setSignupFormModel={setSignupFormModel}
+          setLoginFormModel={setLoginFormModel}
+          setForgotPasswordModal={setForgotPasswordModal}
+        />
+      )}
 
-  {signupFormModel && (
+      {signupFormModel && (
         <SignupFormModel
           setSignupFormModel={setSignupFormModel}
           setLoginFormModel={setLoginFormModel}
@@ -238,12 +285,12 @@ const CarDetails = ({ car }) => {
         />
       )}
 
- {forgotPasswordModal && (
+      {forgotPasswordModal && (
         <ForgotPassword
           setForgotPasswordModal={setForgotPasswordModal}
           setLoginFormModel={setLoginFormModel}
           setOtpVerificationModal={setOtpVerificationModal}
-           setForgotPhone={setForgotPhone}
+          setForgotPhone={setForgotPhone}
         />
       )}
 
@@ -252,7 +299,7 @@ const CarDetails = ({ car }) => {
           setOtpVerificationModal={setOtpVerificationModal}
           setForgotPasswordModal={setForgotPasswordModal}
           setPasswordResetModel={setPasswordResetModel}
-           phone={forgotPhone} 
+          phone={forgotPhone}
         />
       )}
 
@@ -261,7 +308,7 @@ const CarDetails = ({ car }) => {
           setOtpVerificationModal={setOtpVerificationModal}
           setPasswordResetModel={setPasswordResetModel}
           setLoginFormModel={setLoginFormModel}
-           phone={forgotPhone} 
+          phone={forgotPhone}
         />
       )}
 
@@ -269,8 +316,8 @@ const CarDetails = ({ car }) => {
       {showEnquiryPopup && (
         <EnquiryForm onClose={() => setShowEnquiryPopup(false)}
           propertyData={car}
-    enquirableType={car.form_type}/>
-      
+          enquirableType={car.form_type} />
+
       )}
 
       <div className="">
@@ -290,23 +337,45 @@ const CarDetails = ({ car }) => {
                     modules={[Navigation, Thumbs]}
                     className="rounded-lg overflow-hidden max-h-[280px]"
                   >
-                    {images.map((thumb, index) => (
+                    {images.map((media, index) => (
                       <SwiperSlide
                         key={index}
-                        className={`w-24 h-16 rounded overflow-hidden cursor-pointer border-2 ${
-                          activeIndex === index ? "border-blue-500" : "border-gray-200"
-                        }`}
+                        className={`w-24 h-16 rounded overflow-hidden cursor-pointer border-2 ${activeIndex === index ? "border-blue-500" : "border-gray-200"
+                          }`}
                         onClick={() => {
                           if (mainSwiper) {
                             mainSwiper.slideToLoop(index);
                           }
                         }}
                       >
-                        <img
-                          src={thumb}
-                          alt={`Thumbnail ${index + 1}`}
-                          className="w-24 h-24 rounded object-cover"
-                        />
+                        <div className="relative w-full h-full">
+                          {media.type === 'video' ? (
+                            <>
+                              <video
+                                src={media.url}
+                                className="w-24 h-full rounded object-cover"
+                                muted
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <PlayArrowIcon
+                                  sx={{
+                                    fontSize: 30,
+                                    color: 'white',
+                                    backgroundColor: 'rgba(231, 229, 229, 0.6)',
+                                    borderRadius: '50%',
+                                    padding: '4px'
+                                  }}
+                                />
+                              </div>
+                            </>
+                          ) : (
+                            <img
+                              src={media.url}
+                              alt={`Thumbnail ${index + 1}`}
+                              className="w-24 h-full rounded object-cover"
+                            />
+                          )}
+                        </div>
                       </SwiperSlide>
                     ))}
                   </Swiper>
@@ -336,21 +405,33 @@ const CarDetails = ({ car }) => {
                     modules={[Autoplay, Pagination, Navigation, Thumbs]}
                     className="rounded-lg overflow-hidden"
                   >
-                    {images.map((image, index) => (
+                    {images.map((media, index) => (
                       <SwiperSlide key={index}>
                         <div className="relative">
-                          <img
-                            src={image}
-                            alt={`Car view ${index + 1}`}
-                            className="w-full h-[300px] object-cover"
-                          />
+                          {media.type === 'video' ? (
+                            <video
+                              src={media.url}
+                              controls
+                              className="w-full h-[300px] object-cover"
+                              preload="metadata"
+                              onPlay={handleVideoPlay}
+                              onPause={handleVideoPause}
+                              onEnded={handleVideoEnded}
+                            />
+                          ) : (
+                            <img
+                              src={media.url}
+                              alt={`Car view ${index + 1}`}
+                              className="w-full h-[300px] object-cover"
+                            />
+                          )}
                           <div className="absolute top-2 right-2 flex flex-col gap-2">
                             <IconButton
                               size="small"
                               onClick={handleShareClick}
                               className="bg-white bg-opacity-80 hover:bg-opacity-100"
-                              sx={{ 
-                                width: 36, 
+                              sx={{
+                                width: 36,
                                 height: 36,
                                 backgroundColor: 'rgba(255, 255, 255, 0.9)',
                                 '&:hover': {
@@ -366,8 +447,8 @@ const CarDetails = ({ car }) => {
                               onClick={handleWishlistClick}
                               disabled={isWishlistLoading}
                               className="bg-white bg-opacity-80 hover:bg-opacity-100"
-                              sx={{ 
-                                width: 36, 
+                              sx={{
+                                width: 36,
                                 height: 36,
                                 backgroundColor: 'rgba(255, 255, 255, 0.9)',
                                 '&:hover': {
@@ -375,29 +456,29 @@ const CarDetails = ({ car }) => {
                                 }
                               }}
                             >
-                             {isFavorite ? (
-                              <FavoriteIcon
-                                sx={{ 
-                                  fontSize: 20,
-                                  color: red[500]
-                                }}
-                              />
-                            ) : (
-                              <FavoriteBorderIcon
-                                sx={{ 
-                                  fontSize: 20,
-                                  color: 'gray'
-                                }}
-                              />
-                            )}
+                              {isFavorite ? (
+                                <FavoriteIcon
+                                  sx={{
+                                    fontSize: 20,
+                                    color: red[500]
+                                  }}
+                                />
+                              ) : (
+                                <FavoriteBorderIcon
+                                  sx={{
+                                    fontSize: 20,
+                                    color: 'gray'
+                                  }}
+                                />
+                              )}
                             </IconButton>
 
                             <IconButton
                               size="small"
-                              onClick={() => handleZoomIn(image, index)}
+                              onClick={() => handleZoomIn(media.url, media.type, index)}
                               className="bg-white bg-opacity-80 hover:bg-opacity-100"
-                              sx={{ 
-                                width: 36, 
+                              sx={{
+                                width: 36,
                                 height: 36,
                                 backgroundColor: 'rgba(255, 255, 255, 0.9)',
                                 '&:hover': {
@@ -446,17 +527,17 @@ const CarDetails = ({ car }) => {
                   <p className="text-sm text-gray-500">{car.listed_by}</p>
                 </div>
                 <div className="ml-auto">
-                  <Link 
-                //  to= {`/seller-profile/${car.vendor_id}`}
+                  <Link
+                    //  to= {`/seller-profile/${car.vendor_id}`}
 
-                onClick={() => {
-    if (!isAuthenticated) {
-      setLoginFormModel(true);
-    } else {
-      window.location.href = `/seller-profile/${car.vendor_id}`;
-    }
-  }}
-                  className="text-blue-600 text-sm font-medium cursor-pointer">
+                    onClick={() => {
+                      if (!isAuthenticated) {
+                        setLoginFormModel(true);
+                      } else {
+                        window.location.href = `/seller-profile/${car.vendor_id}`;
+                      }
+                    }}
+                    className="text-blue-600 text-sm font-medium cursor-pointer">
                     See Profile
                   </Link>
                 </div>
@@ -474,7 +555,7 @@ const CarDetails = ({ car }) => {
                     <p className="font-semibold text-xl">{car.state}</p>
                   </div>
                   <div className="ml-auto">
-                    <div 
+                    <div
                       className="w-[150px] h-[150px] rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity duration-200 relative group"
                       onClick={openGoogleMaps}
                       title="Click to open in Google Maps"
@@ -501,7 +582,7 @@ const CarDetails = ({ car }) => {
                       <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                         <div className="text-white text-center">
                           <svg className="w-8 h-8 mx-auto mb-1" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
                           </svg>
                           <span className="text-xs">Open in Google Maps</span>
                         </div>
@@ -510,7 +591,7 @@ const CarDetails = ({ car }) => {
                   </div>
                 </div>
 
-               
+
               </div>
             </div>
           </div>
@@ -532,11 +613,11 @@ const CarDetails = ({ car }) => {
 
               <div className="flex items-center mt-2 mb-2">
                 <p className="mr-4">
-                  { car.year} - {car.kilometers } km
+                  {car.year} - {car.kilometers} km
                 </p>
-                
 
-                 {car.total_ratings !== null ? (
+
+                {car.total_ratings !== null ? (
                   <div className="flex items-center">
                     <StarIcon className="text-orange-500" />
                     <span className="ml-1">{car.total_ratings}</span>
@@ -553,7 +634,7 @@ const CarDetails = ({ car }) => {
                 </p>
               </div>
             </div>
-            
+
             <div className="w-full md:w-1/2 flex flex-col md:items-center md:mt-[10px]">
               <div className="mt-1 md:mt-0">
                 <h3 className="md:text-2xl text-[20px] font-bold md:text-center text-black">
@@ -561,13 +642,13 @@ const CarDetails = ({ car }) => {
                 </h3>
                 <div className="flex mt-4 space-x-4 justify-center">
                   <button
-                      onClick={() => {
-    if (!isAuthenticated) {
-      setLoginFormModel(true);
-    } else {
-      setShowEnquiryPopup(true);
-    }
-  }}
+                    onClick={() => {
+                      if (!isAuthenticated) {
+                        setLoginFormModel(true);
+                      } else {
+                        setShowEnquiryPopup(true);
+                      }
+                    }}
                     className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] cursor-pointer flex items-center justify-center flex-1"
                   >
                     <QuestionAnswerIcon fontSize="small" className="mr-2" />
@@ -576,15 +657,15 @@ const CarDetails = ({ car }) => {
                   <button
                     className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] 
                   cursor-pointer flex items-center justify-center flex-1"
-                   
 
-                     onClick={() => {
-  if (!isAuthenticated) {
-    setLoginFormModel(true);
-  } else {
-    window.location.href = `tel:${car.mobile_number}`;
-  }
-}}
+
+                    onClick={() => {
+                      if (!isAuthenticated) {
+                        setLoginFormModel(true);
+                      } else {
+                        window.location.href = `tel:${car.mobile_number}`;
+                      }
+                    }}
                   >
                     <CallIcon fontSize="small" className="mr-2" />
                     Call
@@ -595,7 +676,7 @@ const CarDetails = ({ car }) => {
           </div>
         </div>
 
-       
+
       </div>
 
       {/* Reusable Share Modal */}
@@ -606,7 +687,7 @@ const CarDetails = ({ car }) => {
         title={`Check out this ${car.brand} ${car.model} - ₹${car.price ? parseFloat(car.price).toLocaleString() : "N/A"}`}
         description={car.description || `${car.subcategory || 'Car'} in excellent condition`}
         modalTitle="Share this car"
-        showPlatforms={['whatsapp', 'facebook', 'twitter', 'instagram', 'telegram', ]}
+        showPlatforms={['whatsapp', 'facebook', 'twitter', 'instagram', 'telegram',]}
       />
 
       {/* Snackbar for notifications */}
@@ -637,20 +718,31 @@ const CarDetails = ({ car }) => {
             </button>
             <div
               className="w-full h-full overflow-hidden"
-              onMouseMove={handleZoomMouseMove}
+              onMouseMove={zoomedMediaType === 'image' ? handleZoomMouseMove : undefined}
             >
-              <img
-                src={zoomedImageSrc}
-                alt="Zoomed car view"
-                className={`w-full h-full ${
-                  isMobile ? "object-contain" : "object-cover"
-                }`}
-                style={{
-                  transform: `scale(${zoomLevel})`,
-                  transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
-                  transition: "transform-origin 0.1s ease-out",
-                }}
-              />
+              {zoomedMediaType === 'video' ? (
+                <video
+                  src={zoomedImageSrc}
+                  controls
+                  autoPlay
+                  className="w-full h-full object-contain"
+                  onPlay={handleVideoPlay}
+                  onPause={handleVideoPause}
+                  onEnded={handleVideoEnded}
+                />
+              ) : (
+                <img
+                  src={zoomedImageSrc}
+                  alt="Zoomed car view"
+                  className={`w-full h-full ${isMobile ? "object-contain" : "object-cover"
+                    }`}
+                  style={{
+                    transform: `scale(${zoomLevel})`,
+                    transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
+                    transition: "transform-origin 0.1s ease-out",
+                  }}
+                />
+              )}
             </div>
 
             {/* Thumbnail navigation in zoom view */}
@@ -660,26 +752,49 @@ const CarDetails = ({ car }) => {
                   className="flex space-x-2 justify-center md:justify-center min-w-max mx-auto"
                   style={{ scrollbarWidth: "none" }}
                 >
-                  {images.map((img, idx) => (
+                  {images.map((media, idx) => (
                     <div
                       key={idx}
-                      className={`w-12 h-12 md:w-16 md:h-16 rounded-md overflow-hidden cursor-pointer border-2 flex-shrink-0 ${
-                        zoomedImageSrc === img
+                      className={`w-12 h-12 md:w-16 md:h-16 rounded-md overflow-hidden cursor-pointer border-2 flex-shrink-0 ${zoomedImageSrc === media.url
                           ? "border-blue-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                       onClick={() => {
-                        setZoomedImageSrc(img);
+                        setZoomedImageSrc(media.url);
+                        setZoomedMediaType(media.type);
                         if (mainSwiper && !mainSwiper.destroyed) {
                           mainSwiper.slideToLoop(idx);
                         }
                       }}
                     >
-                      <img
-                        src={img}
-                        alt={`Thumbnail ${idx}`}
-                        className="w-full h-full object-cover"
-                      />
+                      <div className="relative w-full h-full">
+                        {media.type === 'video' ? (
+                          <>
+                            <video
+                              src={media.url}
+                              className="w-24 h-24 object-cover"
+                              muted
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                              <PlayArrowIcon
+                                sx={{
+                                  fontSize: 24,
+                                  color: 'white',
+                                  backgroundColor: 'rgba(231, 229, 229, 0.6)',
+                                  borderRadius: '50%',
+                                  padding: '2px'
+                                }}
+                              />
+                            </div>
+                          </>
+                        ) : (
+                          <img
+                            src={media.url}
+                            alt={`Thumbnail ${idx}`}
+                            className="w-24 h-24 object-cover"
+                          />
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>

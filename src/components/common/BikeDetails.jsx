@@ -17,6 +17,7 @@ import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import CloseIcon from "@mui/icons-material/Close";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import SpeedIcon from "@mui/icons-material/Speed";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import LocalGasStationIcon from "@mui/icons-material/LocalGasStation";
@@ -50,8 +51,8 @@ L.Icon.Default.mergeOptions({
 });
 
 const BikeDetails = ({ bike }) => {
-     const { isAuthenticated, user, logout, loading } = useAuth(); // Get auth state
-  
+  const { isAuthenticated, user, logout, loading } = useAuth(); // Get auth state
+
   const isMobile = useMediaQuery({ maxWidth: 767 });
   const [isFavorite, setIsFavorite] = useState(bike?.wishlist || false);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
@@ -62,20 +63,22 @@ const BikeDetails = ({ bike }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [showZoom, setShowZoom] = useState(false);
   const [zoomedImageSrc, setZoomedImageSrc] = useState("");
+  const [zoomedMediaType, setZoomedMediaType] = useState("image");
   const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
   const [zoomLevel, setZoomLevel] = useState(2);
   const [showEnquiryPopup, setShowEnquiryPopup] = useState(false);
-const [loginFormModel, setLoginFormModel] = useState(false);
-const [signupFormModel, setSignupFormModel] = useState(false);
- const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
-   const [otpVerificationModal, setOtpVerificationModal] = useState(false);
-    const [passwordResetModel, setPasswordResetModel] = useState(false);
-        const [forgotPhone, setForgotPhone] = useState("");
-    
+  const [loginFormModel, setLoginFormModel] = useState(false);
+  const [signupFormModel, setSignupFormModel] = useState(false);
+  const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
+  const [otpVerificationModal, setOtpVerificationModal] = useState(false);
+  const [passwordResetModel, setPasswordResetModel] = useState(false);
+  const [forgotPhone, setForgotPhone] = useState("");
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+
   // Default Chennai coordinates
   const defaultLocation = { lat: 13.0827, lng: 80.2707 };
 
-   // Prepare images - handle both single image and array, fallback to dummy images
+  // Prepare images - handle both single image and array, fallback to dummy images
   const dummyImages = [
     IMAGES.placeholderimg,
     IMAGES.placeholderimg,
@@ -89,9 +92,29 @@ const [signupFormModel, setSignupFormModel] = useState(false);
 
 
   // Prepare images from API response
-  const images = bike?.image_url 
-    ? (Array.isArray(bike.image_url) ? bike.image_url : [bike.image_url])
-    : dummyImages;
+  // Combine images and videos into a single media array
+  const imageUrls = bike?.image_url
+    ? Array.isArray(bike.image_url)
+      ? bike.image_url
+      : [bike.image_url]
+    : [];
+
+  const videoUrls = bike?.video_url
+    ? Array.isArray(bike.video_url)
+      ? bike.video_url
+      : [bike.video_url]
+    : [];
+
+  // Create media array with type identification
+  const mediaItems = [
+    ...imageUrls.map(url => ({ type: 'image', url })),
+    ...videoUrls.map(url => ({ type: 'video', url }))
+  ];
+
+  // Use dummy images if no media available
+  const images = mediaItems.length > 0
+    ? mediaItems
+    : dummyImages.map(url => ({ type: 'image', url }));
 
   // Get map coordinates
   const mapCenter = {
@@ -124,30 +147,30 @@ const [signupFormModel, setSignupFormModel] = useState(false);
       }
     } catch (error) {
       console.error('Wishlist error:', error);
-       // Check if it's an authentication error (401 Unauthorized)
-    if (error.response && error.response.status === 401) {
-      // User is not authenticated, show login modal
-      setSnackbar({ 
-        open: true, 
-        message: 'Please login to add items to wishlist', 
-        severity: 'warning' 
-      });
-      
-      // Show login modal
-      setLoginFormModel(true);
-      
-      // Optional: You can also close any other modals that might be open
-      // setSignupFormModel(false);
-      // setForgotPasswordModal(false);
-    } else {
-      // Other errors (network, server error, etc.)
-      const errorMessage = error.response?.data?.message || 'Failed to update wishlist';
-      setSnackbar({ 
-        open: true, 
-        message: errorMessage, 
-        severity: 'error' 
-      });
-    }
+      // Check if it's an authentication error (401 Unauthorized)
+      if (error.response && error.response.status === 401) {
+        // User is not authenticated, show login modal
+        setSnackbar({
+          open: true,
+          message: 'Please login to add items to wishlist',
+          severity: 'warning'
+        });
+
+        // Show login modal
+        setLoginFormModel(true);
+
+        // Optional: You can also close any other modals that might be open
+        // setSignupFormModel(false);
+        // setForgotPasswordModal(false);
+      } else {
+        // Other errors (network, server error, etc.)
+        const errorMessage = error.response?.data?.message || 'Failed to update wishlist';
+        setSnackbar({
+          open: true,
+          message: errorMessage,
+          severity: 'error'
+        });
+      }
 
     } finally {
       setIsWishlistLoading(false);
@@ -180,10 +203,11 @@ const [signupFormModel, setSignupFormModel] = useState(false);
   };
 
   // Zoom functionality
-  const handleZoomIn = (imageSrc, index) => {
-    setZoomedImageSrc(imageSrc);
+  const handleZoomIn = (mediaSrc, mediaType, index) => {
+    setZoomedImageSrc(mediaSrc);
+    setZoomedMediaType(mediaType);
     setShowZoom(true);
-    
+
     if (mainSwiper && !mainSwiper.destroyed) {
       mainSwiper.slideToLoop(index);
     }
@@ -195,13 +219,13 @@ const [signupFormModel, setSignupFormModel] = useState(false);
 
   const handleZoomMouseMove = (e) => {
     if (!showZoom) return;
-    
+
     const container = e.currentTarget;
     const rect = container.getBoundingClientRect();
-    
+
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
-    
+
     setZoomPosition({ x, y });
   };
 
@@ -214,11 +238,34 @@ const [signupFormModel, setSignupFormModel] = useState(false);
     }
 
     if (showZoom) {
-      setZoomedImageSrc(images[newIndex]);
+      setZoomedImageSrc(images[newIndex].url);
+      setZoomedMediaType(images[newIndex].type);
     }
   };
 
- 
+  // Video event handlers to control autoplay
+  const handleVideoPlay = () => {
+    setIsVideoPlaying(true);
+    if (mainSwiper && mainSwiper.autoplay) {
+      mainSwiper.autoplay.stop();
+    }
+  };
+
+  const handleVideoPause = () => {
+    setIsVideoPlaying(false);
+    if (mainSwiper && mainSwiper.autoplay) {
+      mainSwiper.autoplay.start();
+    }
+  };
+
+  const handleVideoEnded = () => {
+    setIsVideoPlaying(false);
+    if (mainSwiper && mainSwiper.autoplay) {
+      mainSwiper.autoplay.start();
+    }
+  };
+
+
 
   if (!bike) {
     return <div className="text-center py-8">Bike not found</div>;
@@ -243,7 +290,7 @@ const [signupFormModel, setSignupFormModel] = useState(false);
         />
       )}
 
-       {signupFormModel && (
+      {signupFormModel && (
         <SignupFormModel
           setSignupFormModel={setSignupFormModel}
           setLoginFormModel={setLoginFormModel}
@@ -251,7 +298,7 @@ const [signupFormModel, setSignupFormModel] = useState(false);
         />
       )}
 
- {forgotPasswordModal && (
+      {forgotPasswordModal && (
         <ForgotPassword
           setForgotPasswordModal={setForgotPasswordModal}
           setLoginFormModel={setLoginFormModel}
@@ -265,7 +312,7 @@ const [signupFormModel, setSignupFormModel] = useState(false);
           setOtpVerificationModal={setOtpVerificationModal}
           setForgotPasswordModal={setForgotPasswordModal}
           setPasswordResetModel={setPasswordResetModel}
-           phone={forgotPhone} 
+          phone={forgotPhone}
         />
       )}
 
@@ -274,7 +321,7 @@ const [signupFormModel, setSignupFormModel] = useState(false);
           setOtpVerificationModal={setOtpVerificationModal}
           setPasswordResetModel={setPasswordResetModel}
           setLoginFormModel={setLoginFormModel}
-           phone={forgotPhone} 
+          phone={forgotPhone}
         />
       )}
 
@@ -296,25 +343,47 @@ const [signupFormModel, setSignupFormModel] = useState(false);
                     modules={[Navigation, Thumbs]}
                     className="rounded-lg overflow-hidden max-h-[280px]"
                   >
-                    {images.map((thumb, index) => (
+                    {images.map((media, index) => (
                       <SwiperSlide
                         key={index}
-                        className={`w-24 h-16 rounded overflow-hidden cursor-pointer border-2 ${
-                          activeIndex === index
-                            ? "border-blue-500"
-                            : "border-gray-200"
-                        }`}
+                        className={`w-24 h-16 rounded overflow-hidden cursor-pointer border-2 ${activeIndex === index
+                          ? "border-blue-500"
+                          : "border-gray-200"
+                          }`}
                         onClick={() => {
                           if (mainSwiper) {
                             mainSwiper.slideToLoop(index);
                           }
                         }}
                       >
-                        <img
-                          src={thumb}
-                          alt={`Thumbnail ${index + 1}`}
-                          className="w-24 h-24 rounded object-cover"
-                        />
+                        <div className="relative w-full h-full">
+                          {media.type === 'video' ? (
+                            <>
+                              <video
+                                src={media.url}
+                                className="w-24 h-full rounded object-cover"
+                                muted
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <PlayArrowIcon
+                                  sx={{
+                                    fontSize: 30,
+                                    color: 'white',
+                                    backgroundColor: 'rgba(231, 229, 229, 0.6)',
+                                    borderRadius: '50%',
+                                    padding: '4px'
+                                  }}
+                                />
+                              </div>
+                            </>
+                          ) : (
+                            <img
+                              src={media.url}
+                              alt={`Thumbnail ${index + 1}`}
+                              className="w-24 h-full rounded object-cover"
+                            />
+                          )}
+                        </div>
                       </SwiperSlide>
                     ))}
                   </Swiper>
@@ -347,14 +416,26 @@ const [signupFormModel, setSignupFormModel] = useState(false);
                     modules={[Autoplay, Pagination, Navigation, Thumbs]}
                     className="rounded-lg overflow-hidden"
                   >
-                    {images.map((image, index) => (
+                    {images.map((media, index) => (
                       <SwiperSlide key={index}>
                         <div className="relative">
-                          <img
-                            src={image}
-                            alt={`Bike view ${index + 1}`}
-                            className="w-full h-[300px] object-cover"
-                          />
+                          {media.type === 'video' ? (
+                            <video
+                              src={media.url}
+                              controls
+                              className="w-full h-[300px] object-cover"
+                              preload="metadata"
+                              onPlay={handleVideoPlay}
+                              onPause={handleVideoPause}
+                              onEnded={handleVideoEnded}
+                            />
+                          ) : (
+                            <img
+                              src={media.url}
+                              alt={`Bike view ${index + 1}`}
+                              className="w-full h-[300px] object-cover"
+                            />
+                          )}
                           <div className="absolute top-2 right-2 flex flex-col gap-2">
                             <IconButton
                               size="small"
@@ -405,7 +486,7 @@ const [signupFormModel, setSignupFormModel] = useState(false);
 
                             <IconButton
                               size="small"
-                              onClick={() => handleZoomIn(image, index)}
+                              onClick={() => handleZoomIn(media.url, media.type, index)}
                               className="bg-white bg-opacity-80 hover:bg-opacity-100"
                               sx={{
                                 width: 36,
@@ -462,13 +543,13 @@ const [signupFormModel, setSignupFormModel] = useState(false);
                   <div
                     // to={`/seller-profile/${bike.vendor_id}`}
 
-                     onClick={() => {
-    if (!isAuthenticated) {
-      setLoginFormModel(true);
-    } else {
-      window.location.href = `/seller-profile/${bike.vendor_id}`;
-    }
-  }}
+                    onClick={() => {
+                      if (!isAuthenticated) {
+                        setLoginFormModel(true);
+                      } else {
+                        window.location.href = `/seller-profile/${bike.vendor_id}`;
+                      }
+                    }}
                     className="text-blue-600 text-sm font-medium cursor-pointer"
                   >
                     See Profile
@@ -574,18 +655,18 @@ const [signupFormModel, setSignupFormModel] = useState(false);
               <div className="mt-1 md:mt-0">
                 <h3 className="md:text-2xl text-[20px] font-bold md:text-center text-black">
                   ₹{" "}
-                  {bike.price }
+                  {bike.price}
                 </h3>
                 <div className="flex mt-4 space-x-4 justify-center">
                   <button
 
-                     onClick={() => {
-    if (!isAuthenticated) {
-      setLoginFormModel(true);
-    } else {
-      setShowEnquiryPopup(true);
-    }
-  }}
+                    onClick={() => {
+                      if (!isAuthenticated) {
+                        setLoginFormModel(true);
+                      } else {
+                        setShowEnquiryPopup(true);
+                      }
+                    }}
                     className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] cursor-pointer flex items-center justify-center flex-1"
                     type="button" // Add explicit type
                   >
@@ -595,15 +676,15 @@ const [signupFormModel, setSignupFormModel] = useState(false);
                   <button
                     className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] 
                   cursor-pointer flex items-center justify-center flex-1"
-                   
 
-                     onClick={() => {
-  if (!isAuthenticated) {
-    setLoginFormModel(true);
-  } else {
-    window.location.href = `tel:${bike.mobile_number}`;
-  }
-}}
+
+                    onClick={() => {
+                      if (!isAuthenticated) {
+                        setLoginFormModel(true);
+                      } else {
+                        window.location.href = `tel:${bike.mobile_number}`;
+                      }
+                    }}
                   >
                     <CallIcon fontSize="small" className="mr-2" />
                     Call
@@ -620,9 +701,8 @@ const [signupFormModel, setSignupFormModel] = useState(false);
         isOpen={showShareModal}
         onClose={handleShareClose}
         url={getCurrentUrl()}
-        title={`Check out this ${bike.brand} ${bike.model} - ₹${
-          bike.price ? parseFloat(bike.price).toLocaleString() : "N/A"
-        }`}
+        title={`Check out this ${bike.brand} ${bike.model} - ₹${bike.price ? parseFloat(bike.price).toLocaleString() : "N/A"
+          }`}
         description={
           bike.description || `${bike.subcategory} in excellent condition`
         }
@@ -664,20 +744,31 @@ const [signupFormModel, setSignupFormModel] = useState(false);
             </button>
             <div
               className="w-full h-full overflow-hidden"
-              onMouseMove={handleZoomMouseMove}
+              onMouseMove={zoomedMediaType === 'image' ? handleZoomMouseMove : undefined}
             >
-              <img
-                src={zoomedImageSrc}
-                alt="Zoomed bike view"
-                className={`w-full h-full ${
-                  isMobile ? "object-contain" : "object-cover"
-                }`}
-                style={{
-                  transform: `scale(${zoomLevel})`,
-                  transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
-                  transition: "transform-origin 0.1s ease-out",
-                }}
-              />
+              {zoomedMediaType === 'video' ? (
+                <video
+                  src={zoomedImageSrc}
+                  controls
+                  autoPlay
+                  className="w-full h-full object-contain"
+                  onPlay={handleVideoPlay}
+                  onPause={handleVideoPause}
+                  onEnded={handleVideoEnded}
+                />
+              ) : (
+                <img
+                  src={zoomedImageSrc}
+                  alt="Zoomed bike view"
+                  className={`w-full h-full ${isMobile ? "object-contain" : "object-cover"
+                    }`}
+                  style={{
+                    transform: `scale(${zoomLevel})`,
+                    transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
+                    transition: "transform-origin 0.1s ease-out",
+                  }}
+                />
+              )}
             </div>
 
             {/* Thumbnail navigation in zoom view */}
@@ -687,26 +778,49 @@ const [signupFormModel, setSignupFormModel] = useState(false);
                   className="flex space-x-2 justify-center md:justify-center min-w-max mx-auto"
                   style={{ scrollbarWidth: "none" }}
                 >
-                  {images.map((img, idx) => (
+                  {images.map((media, idx) => (
                     <div
                       key={idx}
-                      className={`w-12 h-12 md:w-16 md:h-16 rounded-md overflow-hidden cursor-pointer border-2 flex-shrink-0 ${
-                        zoomedImageSrc === img
+                      className={`w-12 h-12 md:w-16 md:h-16 rounded-md overflow-hidden cursor-pointer border-2 flex-shrink-0 ${zoomedImageSrc === media.url
                           ? "border-blue-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                       onClick={() => {
-                        setZoomedImageSrc(img);
+                        setZoomedImageSrc(media.url);
+                        setZoomedMediaType(media.type);
                         if (mainSwiper && !mainSwiper.destroyed) {
                           mainSwiper.slideToLoop(idx);
                         }
                       }}
                     >
-                      <img
-                        src={img}
-                        alt={`Thumbnail ${idx}`}
-                        className="w-full h-full object-cover"
-                      />
+                      <div className="relative w-full h-full">
+                        {media.type === 'video' ? (
+                          <>
+                            <video
+                              src={media.url}
+                              className="w-24 h-24 object-cover"
+                              muted
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                              <PlayArrowIcon
+                                sx={{
+                                  fontSize: 24,
+                                  color: 'white',
+                                  backgroundColor: 'rgba(231, 229, 229, 0.6)',
+                                  borderRadius: '50%',
+                                  padding: '2px'
+                                }}
+                              />
+                            </div>
+                          </>
+                        ) : (
+                          <img
+                            src={media.url}
+                            alt={`Thumbnail ${idx}`}
+                            className="w-24 h-24 object-cover"
+                          />
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>

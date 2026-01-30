@@ -16,6 +16,7 @@ import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import CloseIcon from "@mui/icons-material/Close";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import { red } from "@mui/material/colors";
 import IMAGES from "../../utils/images.js";
 import { useMediaQuery } from "react-responsive";
@@ -33,8 +34,8 @@ import OTPVerificationModal from "../common/OTPVerificationModal.jsx";
 import PasswordResetModel from "../common/PasswordResetModel.jsx";
 
 const PropertyDetails = ({ property }) => {
-   const { isAuthenticated, user, logout, loading } = useAuth(); // Get auth state
-  
+  const { isAuthenticated, user, logout, loading } = useAuth(); // Get auth state
+
   const isMobile = useMediaQuery({ maxWidth: 767 });
   const [isFavorite, setIsFavorite] = useState(property.wishlist || false);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
@@ -49,6 +50,7 @@ const PropertyDetails = ({ property }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [showZoom, setShowZoom] = useState(false);
   const [zoomedImageSrc, setZoomedImageSrc] = useState("");
+  const [zoomedMediaType, setZoomedMediaType] = useState("image");
   const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
   const [zoomLevel, setZoomLevel] = useState(2);
   const mainImageRef = useRef(null);
@@ -57,9 +59,10 @@ const PropertyDetails = ({ property }) => {
   const [loginFormModel, setLoginFormModel] = useState(false);
   const [signupFormModel, setSignupFormModel] = useState(false);
   const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
-   const [otpVerificationModal, setOtpVerificationModal] = useState(false);
-    const [passwordResetModel, setPasswordResetModel] = useState(false);
-    const [forgotPhone, setForgotPhone] = useState("");
+  const [otpVerificationModal, setOtpVerificationModal] = useState(false);
+  const [passwordResetModel, setPasswordResetModel] = useState(false);
+  const [forgotPhone, setForgotPhone] = useState("");
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
 
   // Default Chennai coordinates
   const defaultLocation = { lat: 13.0827, lng: 80.2707 };
@@ -75,11 +78,29 @@ const PropertyDetails = ({ property }) => {
     IMAGES.placeholderimg,
   ];
 
-  const images = property.image_url
+  // Combine images and videos into a single media array
+  const imageUrls = property.image_url
     ? Array.isArray(property.image_url)
       ? property.image_url
       : [property.image_url]
-    : dummyImages;
+    : [];
+
+  const videoUrls = property.video_url
+    ? Array.isArray(property.video_url)
+      ? property.video_url
+      : [property.video_url]
+    : [];
+
+  // Create media array with type identification
+  const mediaItems = [
+    ...imageUrls.map(url => ({ type: 'image', url })),
+    ...videoUrls.map(url => ({ type: 'video', url }))
+  ];
+
+  // Use dummy images if no media available
+  const images = mediaItems.length > 0
+    ? mediaItems
+    : dummyImages.map(url => ({ type: 'image', url }));
 
   // Map coordinates
   const mapCenter = {
@@ -437,8 +458,9 @@ const PropertyDetails = ({ property }) => {
     setZoomPosition({ x, y });
   };
 
-  const handleZoomIn = (imageSrc, index) => {
-    setZoomedImageSrc(imageSrc);
+  const handleZoomIn = (mediaSrc, mediaType, index) => {
+    setZoomedImageSrc(mediaSrc);
+    setZoomedMediaType(mediaType);
     setShowZoom(true);
 
     if (mainSwiper && !mainSwiper.destroyed) {
@@ -471,7 +493,8 @@ const PropertyDetails = ({ property }) => {
     }
 
     if (showZoom) {
-      setZoomedImageSrc(images[newIndex]);
+      setZoomedImageSrc(images[newIndex].url);
+      setZoomedMediaType(images[newIndex].type);
     }
   };
 
@@ -480,6 +503,28 @@ const PropertyDetails = ({ property }) => {
     const { lat, lng } = mapCenter;
     const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lng}&z=15`;
     window.open(googleMapsUrl, "_blank");
+  };
+
+  // Video event handlers to control autoplay
+  const handleVideoPlay = () => {
+    setIsVideoPlaying(true);
+    if (mainSwiper && mainSwiper.autoplay) {
+      mainSwiper.autoplay.stop();
+    }
+  };
+
+  const handleVideoPause = () => {
+    setIsVideoPlaying(false);
+    if (mainSwiper && mainSwiper.autoplay) {
+      mainSwiper.autoplay.start();
+    }
+  };
+
+  const handleVideoEnded = () => {
+    setIsVideoPlaying(false);
+    if (mainSwiper && mainSwiper.autoplay) {
+      mainSwiper.autoplay.start();
+    }
   };
 
   return (
@@ -500,12 +545,12 @@ const PropertyDetails = ({ property }) => {
         />
       )}
 
- {forgotPasswordModal && (
+      {forgotPasswordModal && (
         <ForgotPassword
           setForgotPasswordModal={setForgotPasswordModal}
           setLoginFormModel={setLoginFormModel}
           setOtpVerificationModal={setOtpVerificationModal}
-           setForgotPhone={setForgotPhone}
+          setForgotPhone={setForgotPhone}
         />
       )}
 
@@ -514,7 +559,7 @@ const PropertyDetails = ({ property }) => {
           setOtpVerificationModal={setOtpVerificationModal}
           setForgotPasswordModal={setForgotPasswordModal}
           setPasswordResetModel={setPasswordResetModel}
-           phone={forgotPhone} 
+          phone={forgotPhone}
         />
       )}
 
@@ -523,7 +568,7 @@ const PropertyDetails = ({ property }) => {
           setOtpVerificationModal={setOtpVerificationModal}
           setPasswordResetModel={setPasswordResetModel}
           setLoginFormModel={setLoginFormModel}
-           phone={forgotPhone} // phone saved from ForgotPassword
+          phone={forgotPhone} // phone saved from ForgotPassword
         />
       )}
 
@@ -561,29 +606,51 @@ const PropertyDetails = ({ property }) => {
                   modules={[Navigation, Thumbs]}
                   className="rounded-lg overflow-hidden max-h-[280px]"
                 >
-                  {images.map((thumb, index) => (
+                  {images.map((media, index) => (
                     <SwiperSlide
                       key={index}
                       style={{
                         height: "40px !important",
                         maxHeight: "40px !important ",
                       }}
-                      className={`w-24 h-16 rounded overflow-hidden cursor-pointer  ${
-                        activeIndex === index
-                          ? "border-2 border-gray-200 rounded-[10px]"
-                          : "border-transparent"
-                      }`}
+                      className={`w-24 h-16 rounded overflow-hidden cursor-pointer  ${activeIndex === index
+                        ? "border-2 border-gray-200 rounded-[10px]"
+                        : "border-transparent"
+                        }`}
                       onClick={() => {
                         if (mainSwiper) {
                           mainSwiper.slideToLoop(index);
                         }
                       }}
                     >
-                      <img
-                        src={thumb}
-                        alt={`Thumbnail ${index + 1}`}
-                        className="w-24 h-full rounded object-cover"
-                      />
+                      <div className="relative w-full h-full">
+                        {media.type === 'video' ? (
+                          <>
+                            <video
+                              src={media.url}
+                              className="w-24 h-full rounded object-cover"
+                              muted
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                              <PlayArrowIcon
+                                sx={{
+                                  fontSize: 30,
+                                  color: 'white',
+                                  backgroundColor: 'rgba(231, 229, 229, 0.6)',
+                                  borderRadius: '50%',
+                                  padding: '4px'
+                                }}
+                              />
+                            </div>
+                          </>
+                        ) : (
+                          <img
+                            src={media.url}
+                            alt={`Thumbnail ${index + 1}`}
+                            className="w-24 h-full rounded object-cover"
+                          />
+                        )}
+                      </div>
                     </SwiperSlide>
                   ))}
                 </Swiper>
@@ -614,14 +681,26 @@ const PropertyDetails = ({ property }) => {
                   modules={[Autoplay, Pagination, Navigation, Thumbs]}
                   className="rounded-lg overflow-hidden"
                 >
-                  {images.map((image, index) => (
+                  {images.map((media, index) => (
                     <SwiperSlide key={index}>
                       <div className="relative">
-                        <img
-                          src={image}
-                          alt={`Property view ${index + 1}`}
-                          className="w-full h-[300px] object-cover"
-                        />
+                        {media.type === 'video' ? (
+                          <video
+                            src={media.url}
+                            controls
+                            className="w-full h-[300px] object-cover"
+                            preload="metadata"
+                            onPlay={handleVideoPlay}
+                            onPause={handleVideoPause}
+                            onEnded={handleVideoEnded}
+                          />
+                        ) : (
+                          <img
+                            src={media.url}
+                            alt={`Property view ${index + 1}`}
+                            className="w-full h-[300px] object-cover"
+                          />
+                        )}
                         <div className="absolute top-2 right-2 flex flex-col gap-2">
                           <IconButton
                             size="small"
@@ -672,7 +751,7 @@ const PropertyDetails = ({ property }) => {
 
                           <IconButton
                             size="small"
-                            onClick={() => handleZoomIn(image, index)}
+                            onClick={() => handleZoomIn(media.url, media.type, index)}
                             className="bg-white bg-opacity-80 hover:bg-opacity-100"
                             sx={{
                               width: 36,
@@ -715,13 +794,13 @@ const PropertyDetails = ({ property }) => {
                 <div className="ml-auto">
                   <div
                     // to={`/seller-profile/${property.vendor_id}`}
-                     onClick={() => {
-    if (!isAuthenticated) {
-      setLoginFormModel(true);
-    } else {
-      window.location.href = `/seller-profile/${property.vendor_id}`;
-    }
-  }}
+                    onClick={() => {
+                      if (!isAuthenticated) {
+                        setLoginFormModel(true);
+                      } else {
+                        window.location.href = `/seller-profile/${property.vendor_id}`;
+                      }
+                    }}
                     className="text-blue-600 text-sm font-medium cursor-pointer"
                   >
                     See Profile
@@ -815,32 +894,32 @@ const PropertyDetails = ({ property }) => {
                   </button> */}
 
 
-<button
-  onClick={() => {
-    if (!isAuthenticated) {
-      setLoginFormModel(true);
-    } else {
-      setShowEnquiryPopup(true);
-    }
-  }}
-  className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] cursor-pointer flex items-center justify-center flex-1"
->
-  <QuestionAnswerIcon fontSize="small" className="mr-2" />
-  Enquiry
-</button>
+                  <button
+                    onClick={() => {
+                      if (!isAuthenticated) {
+                        setLoginFormModel(true);
+                      } else {
+                        setShowEnquiryPopup(true);
+                      }
+                    }}
+                    className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] cursor-pointer flex items-center justify-center flex-1"
+                  >
+                    <QuestionAnswerIcon fontSize="small" className="mr-2" />
+                    Enquiry
+                  </button>
 
 
 
                   <button
                     className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] 
                   cursor-pointer flex items-center justify-center flex-1"
-                   onClick={() => {
-  if (!isAuthenticated) {
-    setLoginFormModel(true);
-  } else {
-    window.location.href = `tel:${property.mobile_number}`;
-  }
-}}
+                    onClick={() => {
+                      if (!isAuthenticated) {
+                        setLoginFormModel(true);
+                      } else {
+                        window.location.href = `tel:${property.mobile_number}`;
+                      }
+                    }}
 
                   >
                     <CallIcon fontSize="small" className="mr-2" />
@@ -871,7 +950,7 @@ const PropertyDetails = ({ property }) => {
           "instagram",
           "facebook",
           "telegram",
-          
+
         ]}
       />
 
@@ -903,20 +982,31 @@ const PropertyDetails = ({ property }) => {
             </button>
             <div
               className="w-full h-full overflow-hidden"
-              onMouseMove={handleZoomMouseMove}
+              onMouseMove={zoomedMediaType === 'image' ? handleZoomMouseMove : undefined}
             >
-              <img
-                src={zoomedImageSrc}
-                alt="Zoomed property view"
-                className={`w-full h-full ${
-                  isMobile ? "object-contain" : "object-cover"
-                }`}
-                style={{
-                  transform: `scale(${zoomLevel})`,
-                  transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
-                  transition: "transform-origin 0.1s ease-out",
-                }}
-              />
+              {zoomedMediaType === 'video' ? (
+                <video
+                  src={zoomedImageSrc}
+                  controls
+                  autoPlay
+                  className="w-full h-full object-contain"
+                  onPlay={handleVideoPlay}
+                  onPause={handleVideoPause}
+                  onEnded={handleVideoEnded}
+                />
+              ) : (
+                <img
+                  src={zoomedImageSrc}
+                  alt="Zoomed property view"
+                  className={`w-full h-full ${isMobile ? "object-contain" : "object-cover"
+                    }`}
+                  style={{
+                    transform: `scale(${zoomLevel})`,
+                    transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
+                    transition: "transform-origin 0.1s ease-out",
+                  }}
+                />
+              )}
             </div>
 
             {/* Thumbnail navigation in zoom view */}
@@ -926,26 +1016,49 @@ const PropertyDetails = ({ property }) => {
                   className="flex space-x-2 justify-center md:justify-center min-w-max mx-auto"
                   style={{ scrollbarWidth: "none" }}
                 >
-                  {images.map((img, idx) => (
+                  {images.map((media, idx) => (
                     <div
                       key={idx}
-                      className={`w-12 h-12 md:w-16 md:h-16 rounded-md overflow-hidden cursor-pointer border-2 flex-shrink-0 ${
-                        zoomedImageSrc === img
-                          ? "border-blue-500"
-                          : "border-gray-200"
-                      }`}
+                      className={`w-12 h-12 md:w-16 md:h-16 rounded-md overflow-hidden cursor-pointer border-2 flex-shrink-0 ${zoomedImageSrc === media.url
+                        ? "border-blue-500"
+                        : "border-gray-200"
+                        }`}
                       onClick={() => {
-                        setZoomedImageSrc(img);
+                        setZoomedImageSrc(media.url);
+                        setZoomedMediaType(media.type);
                         if (mainSwiper && !mainSwiper.destroyed) {
                           mainSwiper.slideToLoop(idx);
                         }
                       }}
                     >
-                      <img
-                        src={img}
-                        alt={`Thumbnail ${idx}`}
-                        className="w-24 h-24 object-cover"
-                      />
+                      <div className="relative w-full h-full">
+                        {media.type === 'video' ? (
+                          <>
+                            <video
+                              src={media.url}
+                              className="w-24 h-24 object-cover"
+                              muted
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                              <PlayArrowIcon
+                                sx={{
+                                  fontSize: 24,
+                                  color: 'white',
+                                  backgroundColor: 'rgba(231, 229, 229, 0.6)',
+                                  borderRadius: '50%',
+                                  padding: '2px'
+                                }}
+                              />
+                            </div>
+                          </>
+                        ) : (
+                          <img
+                            src={media.url}
+                            alt={`Thumbnail ${idx}`}
+                            className="w-24 h-24 object-cover"
+                          />
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>

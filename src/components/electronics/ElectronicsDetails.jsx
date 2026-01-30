@@ -16,6 +16,7 @@ import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import CloseIcon from "@mui/icons-material/Close";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import { red } from "@mui/material/colors";
 import IMAGES from "../../utils/images.js";
 import { useMediaQuery } from "react-responsive";
@@ -42,8 +43,8 @@ L.Icon.Default.mergeOptions({
 });
 
 const ElectronicsDetails = ({ electronics }) => {
-     const { isAuthenticated, user, logout, loading } = useAuth(); // Get auth state
-  
+  const { isAuthenticated, user, logout, loading } = useAuth(); // Get auth state
+
   const isMobile = useMediaQuery({ maxWidth: 767 });
   const [isFavorite, setIsFavorite] = useState(electronics.wishlist || false);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
@@ -54,22 +55,24 @@ const ElectronicsDetails = ({ electronics }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [showZoom, setShowZoom] = useState(false);
   const [zoomedImageSrc, setZoomedImageSrc] = useState("");
+  const [zoomedMediaType, setZoomedMediaType] = useState("image");
   const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
   const [zoomLevel, setZoomLevel] = useState(2);
   const mainImageRef = useRef(null);
   const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
   const [showEnquiryPopup, setShowEnquiryPopup] = useState(false);
   const [loginFormModel, setLoginFormModel] = useState(false);
-   const [signupFormModel, setSignupFormModel] = useState(false);
-   const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
-    const [otpVerificationModal, setOtpVerificationModal] = useState(false);
-     const [passwordResetModel, setPasswordResetModel] = useState(false);
-    const [forgotPhone, setForgotPhone] = useState("");
+  const [signupFormModel, setSignupFormModel] = useState(false);
+  const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
+  const [otpVerificationModal, setOtpVerificationModal] = useState(false);
+  const [passwordResetModel, setPasswordResetModel] = useState(false);
+  const [forgotPhone, setForgotPhone] = useState("");
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
 
   // Default Chennai coordinates
   const defaultLocation = { lat: 13.0827, lng: 80.2707 };
 
- // Prepare images - handle both single image and array, fallback to dummy images
+  // Prepare images - handle both single image and array, fallback to dummy images
   const dummyImages = [
     IMAGES.placeholderimg,
     IMAGES.placeholderimg,
@@ -80,9 +83,29 @@ const ElectronicsDetails = ({ electronics }) => {
     IMAGES.placeholderimg,
   ];
 
-  const images = electronics.image_url 
-    ? (Array.isArray(electronics.image_url) ? electronics.image_url : [electronics.image_url])
-    : dummyImages;
+  // Combine images and videos into a single media array
+  const imageUrls = electronics.image_url
+    ? Array.isArray(electronics.image_url)
+      ? electronics.image_url
+      : [electronics.image_url]
+    : [];
+
+  const videoUrls = electronics.video_url
+    ? Array.isArray(electronics.video_url)
+      ? electronics.video_url
+      : [electronics.video_url]
+    : [];
+
+  // Create media array with type identification
+  const mediaItems = [
+    ...imageUrls.map(url => ({ type: 'image', url })),
+    ...videoUrls.map(url => ({ type: 'video', url }))
+  ];
+
+  // Use dummy images if no media available
+  const images = mediaItems.length > 0
+    ? mediaItems
+    : dummyImages.map(url => ({ type: 'image', url }));
 
   // Get map coordinates - use Chennai as default if null
   const mapCenter = {
@@ -90,7 +113,7 @@ const ElectronicsDetails = ({ electronics }) => {
     lng: electronics.longitude || defaultLocation.lng,
   };
 
-  const wishType = electronics.form_type ;
+  const wishType = electronics.form_type;
   // Wishlist functionality
   const handleWishlistClick = async (e) => {
     e.stopPropagation();
@@ -121,29 +144,29 @@ const ElectronicsDetails = ({ electronics }) => {
     } catch (error) {
       console.error('Wishlist error:', error);
       // Check if it's an authentication error (401 Unauthorized)
-    if (error.response && error.response.status === 401) {
-      // User is not authenticated, show login modal
-      setSnackbar({ 
-        open: true, 
-        message: 'Please login to add items to wishlist', 
-        severity: 'warning' 
-      });
-      
-      // Show login modal
-      setLoginFormModel(true);
-      
-      // Optional: You can also close any other modals that might be open
-      // setSignupFormModel(false);
-      // setForgotPasswordModal(false);
-    } else {
-      // Other errors (network, server error, etc.)
-      const errorMessage = error.response?.data?.message || 'Failed to update wishlist';
-      setSnackbar({ 
-        open: true, 
-        message: errorMessage, 
-        severity: 'error' 
-      });
-    }
+      if (error.response && error.response.status === 401) {
+        // User is not authenticated, show login modal
+        setSnackbar({
+          open: true,
+          message: 'Please login to add items to wishlist',
+          severity: 'warning'
+        });
+
+        // Show login modal
+        setLoginFormModel(true);
+
+        // Optional: You can also close any other modals that might be open
+        // setSignupFormModel(false);
+        // setForgotPasswordModal(false);
+      } else {
+        // Other errors (network, server error, etc.)
+        const errorMessage = error.response?.data?.message || 'Failed to update wishlist';
+        setSnackbar({
+          open: true,
+          message: errorMessage,
+          severity: 'error'
+        });
+      }
 
     } finally {
       setIsWishlistLoading(false);
@@ -180,24 +203,25 @@ const ElectronicsDetails = ({ electronics }) => {
     const touch = e.touches[0];
     setTouchStart({ x: touch.clientX, y: touch.clientY });
   };
-  
+
   const handleTouchMove = (e) => {
     if (!showZoom) return;
-    
+
     const touch = e.touches[0];
     const container = e.currentTarget;
     const rect = container.getBoundingClientRect();
-    
+
     const x = ((touch.clientX - rect.left) / rect.width) * 100;
     const y = ((touch.clientY - rect.top) / rect.height) * 100;
-    
+
     setZoomPosition({ x, y });
   };
-  
-  const handleZoomIn = (imageSrc, index) => {
-    setZoomedImageSrc(imageSrc);
+
+  const handleZoomIn = (mediaSrc, mediaType, index) => {
+    setZoomedImageSrc(mediaSrc);
+    setZoomedMediaType(mediaType);
     setShowZoom(true);
-    
+
     if (mainSwiper && !mainSwiper.destroyed) {
       mainSwiper.slideToLoop(index);
     }
@@ -209,13 +233,13 @@ const ElectronicsDetails = ({ electronics }) => {
 
   const handleZoomMouseMove = (e) => {
     if (!showZoom) return;
-    
+
     const container = e.currentTarget;
     const rect = container.getBoundingClientRect();
-    
+
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
-    
+
     setZoomPosition({ x, y });
   };
 
@@ -228,7 +252,30 @@ const ElectronicsDetails = ({ electronics }) => {
     }
 
     if (showZoom) {
-      setZoomedImageSrc(images[newIndex]);
+      setZoomedImageSrc(images[newIndex].url);
+      setZoomedMediaType(images[newIndex].type);
+    }
+  };
+
+  // Video event handlers to control autoplay
+  const handleVideoPlay = () => {
+    setIsVideoPlaying(true);
+    if (mainSwiper && mainSwiper.autoplay) {
+      mainSwiper.autoplay.stop();
+    }
+  };
+
+  const handleVideoPause = () => {
+    setIsVideoPlaying(false);
+    if (mainSwiper && mainSwiper.autoplay) {
+      mainSwiper.autoplay.start();
+    }
+  };
+
+  const handleVideoEnded = () => {
+    setIsVideoPlaying(false);
+    if (mainSwiper && mainSwiper.autoplay) {
+      mainSwiper.autoplay.start();
     }
   };
 
@@ -264,7 +311,7 @@ const ElectronicsDetails = ({ electronics }) => {
           setOtpVerificationModal={setOtpVerificationModal}
           setForgotPasswordModal={setForgotPasswordModal}
           setPasswordResetModel={setPasswordResetModel}
-           phone={forgotPhone} 
+          phone={forgotPhone}
         />
       )}
 
@@ -273,7 +320,7 @@ const ElectronicsDetails = ({ electronics }) => {
           setOtpVerificationModal={setOtpVerificationModal}
           setPasswordResetModel={setPasswordResetModel}
           setLoginFormModel={setLoginFormModel}
-           phone={forgotPhone}
+          phone={forgotPhone}
         />
       )}
 
@@ -309,29 +356,51 @@ const ElectronicsDetails = ({ electronics }) => {
                   modules={[Navigation, Thumbs]}
                   className="rounded-lg overflow-hidden max-h-[280px] h-[100%]"
                 >
-                  {images.map((thumb, index) => (
+                  {images.map((media, index) => (
                     <SwiperSlide
                       key={index}
                       style={{
                         height: "40px !important",
                         maxHeight: "40px !important ",
                       }}
-                      className={`w-24 h-16 rounded overflow-hidden cursor-pointer  ${
-                        activeIndex === index
-                          ? "border-2 border-gray-200 rounded-[10px]"
-                          : "border-transparent"
-                      }`}
+                      className={`w-24 h-16 rounded overflow-hidden cursor-pointer  ${activeIndex === index
+                        ? "border-2 border-gray-200 rounded-[10px]"
+                        : "border-transparent"
+                        }`}
                       onClick={() => {
                         if (mainSwiper) {
                           mainSwiper.slideToLoop(index);
                         }
                       }}
                     >
-                      <img
-                        src={thumb}
-                        alt={`Thumbnail ${index + 1}`}
-                        className="w-24 h-24 rounded object-cover"
-                      />
+                      <div className="relative w-full h-full">
+                        {media.type === 'video' ? (
+                          <>
+                            <video
+                              src={media.url}
+                              className="w-24 h-full rounded object-cover"
+                              muted
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                              <PlayArrowIcon
+                                sx={{
+                                  fontSize: 30,
+                                  color: 'white',
+                                  backgroundColor: 'rgba(231, 229, 229, 0.6)',
+                                  borderRadius: '50%',
+                                  padding: '4px'
+                                }}
+                              />
+                            </div>
+                          </>
+                        ) : (
+                          <img
+                            src={media.url}
+                            alt={`Thumbnail ${index + 1}`}
+                            className="w-24 h-full rounded object-cover"
+                          />
+                        )}
+                      </div>
                     </SwiperSlide>
                   ))}
                 </Swiper>
@@ -362,14 +431,26 @@ const ElectronicsDetails = ({ electronics }) => {
                   modules={[Autoplay, Pagination, Navigation, Thumbs]}
                   className="rounded-lg overflow-hidden"
                 >
-                  {images.map((image, index) => (
+                  {images.map((media, index) => (
                     <SwiperSlide key={index}>
                       <div className="relative">
-                        <img
-                          src={image}
-                          alt={`Electronics view ${index + 1}`}
-                          className="w-full h-[300px] object-cover"
-                        />
+                        {media.type === 'video' ? (
+                          <video
+                            src={media.url}
+                            controls
+                            className="w-full h-[300px] object-cover"
+                            preload="metadata"
+                            onPlay={handleVideoPlay}
+                            onPause={handleVideoPause}
+                            onEnded={handleVideoEnded}
+                          />
+                        ) : (
+                          <img
+                            src={media.url}
+                            alt={`Electronics view ${index + 1}`}
+                            className="w-full h-[300px] object-cover"
+                          />
+                        )}
                         <div className="absolute top-2 right-2 flex flex-col gap-2">
                           <IconButton
                             size="small"
@@ -420,7 +501,7 @@ const ElectronicsDetails = ({ electronics }) => {
 
                           <IconButton
                             size="small"
-                            onClick={() => handleZoomIn(image, index)}
+                            onClick={() => handleZoomIn(media.url, media.type, index)}
                             className="bg-white bg-opacity-80 hover:bg-opacity-100"
                             sx={{
                               width: 36,
@@ -470,14 +551,14 @@ const ElectronicsDetails = ({ electronics }) => {
                     See Profile
                   </Link> */}
 
-                   <div
-                     onClick={() => {
-    if (!isAuthenticated) {
-      setLoginFormModel(true);
-    } else {
-      window.location.href = `/seller-profile/${electronics.vendor_id}`;
-    }
-  }}
+                  <div
+                    onClick={() => {
+                      if (!isAuthenticated) {
+                        setLoginFormModel(true);
+                      } else {
+                        window.location.href = `/seller-profile/${electronics.vendor_id}`;
+                      }
+                    }}
                     className="text-blue-600 text-sm font-medium cursor-pointer"
                   >
                     See Profile
@@ -595,12 +676,12 @@ const ElectronicsDetails = ({ electronics }) => {
                 <div className="flex mt-4 space-x-4 justify-center">
                   <button
                     onClick={() => {
-    if (!isAuthenticated) {
-      setLoginFormModel(true);
-    } else {
-      setShowEnquiryPopup(true);
-    }
-  }}
+                      if (!isAuthenticated) {
+                        setLoginFormModel(true);
+                      } else {
+                        setShowEnquiryPopup(true);
+                      }
+                    }}
                     className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] cursor-pointer flex items-center justify-center flex-1"
                   >
                     <QuestionAnswerIcon fontSize="small" className="mr-2" />
@@ -609,14 +690,14 @@ const ElectronicsDetails = ({ electronics }) => {
                   <button
                     className="bg-[#02487C] text-white px-6 py-3 rounded-[25px] 
                   cursor-pointer flex items-center justify-center flex-1"
-                  
-                     onClick={() => {
-  if (!isAuthenticated) {
-    setLoginFormModel(true);
-  } else {
-    window.location.href = `tel:${electronics.mobile_number}`;
-  }
-}}
+
+                    onClick={() => {
+                      if (!isAuthenticated) {
+                        setLoginFormModel(true);
+                      } else {
+                        window.location.href = `tel:${electronics.mobile_number}`;
+                      }
+                    }}
                   >
                     <CallIcon fontSize="small" className="mr-2" />
                     Call
@@ -633,11 +714,10 @@ const ElectronicsDetails = ({ electronics }) => {
         isOpen={showShareModal}
         onClose={handleShareClose}
         url={getCurrentUrl()}
-        title={`Check out this ${electronics.brand} ${electronics.model} - ₹${
-          electronics.price
-            ? parseFloat(electronics.price).toLocaleString()
-            : "N/A"
-        }`}
+        title={`Check out this ${electronics.brand} ${electronics.model} - ₹${electronics.price
+          ? parseFloat(electronics.price).toLocaleString()
+          : "N/A"
+          }`}
         description={
           electronics.description ||
           `${electronics.subcategory} in excellent condition`
@@ -680,22 +760,33 @@ const ElectronicsDetails = ({ electronics }) => {
             </button>
             <div
               className="w-full h-full overflow-hidden"
-              onMouseMove={handleZoomMouseMove}
+              onMouseMove={zoomedMediaType === 'image' ? handleZoomMouseMove : undefined}
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
             >
-              <img
-                src={zoomedImageSrc}
-                alt="Zoomed electronics view"
-                className={`w-full h-full ${
-                  isMobile ? "object-contain" : "object-cover"
-                }`}
-                style={{
-                  transform: `scale(${zoomLevel})`,
-                  transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
-                  transition: "transform-origin 0.1s ease-out",
-                }}
-              />
+              {zoomedMediaType === 'video' ? (
+                <video
+                  src={zoomedImageSrc}
+                  controls
+                  autoPlay
+                  className="w-full h-full object-contain"
+                  onPlay={handleVideoPlay}
+                  onPause={handleVideoPause}
+                  onEnded={handleVideoEnded}
+                />
+              ) : (
+                <img
+                  src={zoomedImageSrc}
+                  alt="Zoomed electronics view"
+                  className={`w-full h-full ${isMobile ? "object-contain" : "object-cover"
+                    }`}
+                  style={{
+                    transform: `scale(${zoomLevel})`,
+                    transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
+                    transition: "transform-origin 0.1s ease-out",
+                  }}
+                />
+              )}
             </div>
 
             {/* Thumbnail navigation in zoom view */}
@@ -705,26 +796,49 @@ const ElectronicsDetails = ({ electronics }) => {
                   className="flex space-x-2 justify-center md:justify-center min-w-max mx-auto"
                   style={{ scrollbarWidth: "none" }}
                 >
-                  {images.map((img, idx) => (
+                  {images.map((media, idx) => (
                     <div
                       key={idx}
-                      className={`w-12 h-12 md:w-16 md:h-16 rounded-md overflow-hidden cursor-pointer border-2 flex-shrink-0 ${
-                        zoomedImageSrc === img
+                      className={`w-12 h-12 md:w-16 md:h-16 rounded-md overflow-hidden cursor-pointer border-2 flex-shrink-0 ${zoomedImageSrc === media.url
                           ? "border-blue-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                       onClick={() => {
-                        setZoomedImageSrc(img);
+                        setZoomedImageSrc(media.url);
+                        setZoomedMediaType(media.type);
                         if (mainSwiper && !mainSwiper.destroyed) {
                           mainSwiper.slideToLoop(idx);
                         }
                       }}
                     >
-                      <img
-                        src={img}
-                        alt={`Thumbnail ${idx}`}
-                        className="w-full h-full object-cover"
-                      />
+                      <div className="relative w-full h-full">
+                        {media.type === 'video' ? (
+                          <>
+                            <video
+                              src={media.url}
+                              className="w-24 h-24 object-cover"
+                              muted
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                              <PlayArrowIcon
+                                sx={{
+                                  fontSize: 24,
+                                  color: 'white',
+                                  backgroundColor: 'rgba(231, 229, 229, 0.6)',
+                                  borderRadius: '50%',
+                                  padding: '2px'
+                                }}
+                              />
+                            </div>
+                          </>
+                        ) : (
+                          <img
+                            src={media.url}
+                            alt={`Thumbnail ${idx}`}
+                            className="w-24 h-24 object-cover"
+                          />
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>

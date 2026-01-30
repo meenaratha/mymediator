@@ -44,18 +44,18 @@ const SignupFormModel = ({ setLoginFormModel, setSignupFormModel }) => {
   const [resendDisabled, setResendDisabled] = useState(false);
   const [timer, setTimer] = useState(0); // seconds
 
-  // Autofocus on error fields (signup step)
-  useEffect(() => {
-    if (step !== "signup") return;
-    if (errors.name && nameInputRef.current) {
-      nameInputRef.current.focus();
-    } else if ((errors.mobileNumber || errors.phone) && phoneInputRef.current) {
-      const input = phoneInputRef.current.querySelector("input");
-      if (input) input.focus();
-    } else if (errors.password && passwordInputRef.current) {
-      passwordInputRef.current.focus();
-    }
-  }, [errors, step]);
+  // Autofocus on error fields (signup step) - DISABLED to prevent unwanted focus behavior
+  // useEffect(() => {
+  //   if (step !== "signup") return;
+  //   if (errors.name && nameInputRef.current) {
+  //     nameInputRef.current.focus();
+  //   } else if ((errors.mobileNumber || errors.phone) && phoneInputRef.current) {
+  //     const input = phoneInputRef.current.querySelector("input");
+  //     if (input) input.focus();
+  //   } else if (errors.password && passwordInputRef.current) {
+  //     passwordInputRef.current.focus();
+  //   }
+  // }, [errors, step]);
 
   // OTP: focus active input
   useEffect(() => {
@@ -103,13 +103,13 @@ const SignupFormModel = ({ setLoginFormModel, setSignupFormModel }) => {
         return null;
       case "password":
         if (!value) return "Password is required";
-          // at least 8 chars, one upper, one lower, one number, one special
-      const passwordRegex =
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{8,}$/;
+        // at least 8 chars, one upper, one lower, one number, one special
+        const passwordRegex =
+          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{8,}$/;
 
-      if (!passwordRegex.test(value)) {
-        return "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.";
-      }
+        if (!passwordRegex.test(value)) {
+          return "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.";
+        }
         return null;
       default:
         return null;
@@ -181,8 +181,8 @@ const SignupFormModel = ({ setLoginFormModel, setSignupFormModel }) => {
             newErrors[frontendField] = error.message || error.error;
           }
         });
-      } 
-      
+      }
+
       // else {
       //   Object.keys(errorData).forEach((field) => {
       //     if (field !== "message") {
@@ -194,19 +194,19 @@ const SignupFormModel = ({ setLoginFormModel, setSignupFormModel }) => {
 
 
       else {
-      // handle { message: "...", data: "Invalid OTP." }
-      if (typeof errorData.data === "string") {
-        // treat as OTP error
-        newErrors.otp = errorData.data;
-      }
-
-      Object.keys(errorData).forEach((field) => {
-        if (field !== "message" && field !== "data") {
-          const frontendField = mapBackendFieldToFrontend(field);
-          newErrors[frontendField] = errorData[field];
+        // handle { message: "...", data: "Invalid OTP." }
+        if (typeof errorData.data === "string") {
+          // treat as OTP error
+          newErrors.otp = errorData.data;
         }
-      });
-    }
+
+        Object.keys(errorData).forEach((field) => {
+          if (field !== "message" && field !== "data") {
+            const frontendField = mapBackendFieldToFrontend(field);
+            newErrors[frontendField] = errorData[field];
+          }
+        });
+      }
     }
     return newErrors;
   };
@@ -223,13 +223,13 @@ const SignupFormModel = ({ setLoginFormModel, setSignupFormModel }) => {
         name: formData.name.trim(),
         password: formData.password,
       });
-// SweetAlert success
-    await Swal.fire({
-      icon: "success",
-      title: "Registration Successful",
-      text: "Your account has been created. Please login to continue.",
-      confirmButtonColor: "#02487C",
-    });
+      // SweetAlert success
+      await Swal.fire({
+        icon: "success",
+        title: "Registration Successful",
+        text: "Your account has been created. Please login to continue.",
+        confirmButtonColor: "#02487C",
+      });
       setFormData({
         name: "",
         // email: "",
@@ -242,33 +242,33 @@ const SignupFormModel = ({ setLoginFormModel, setSignupFormModel }) => {
       setLoginFormModel(true);
       console.log("Registration successful:", res.data);
     } catch (error) {
-    
+
       console.error("Registration API error:", error);
       const errorData = error.response?.data || null;
-       
+
       const fieldErrors = handleBackendErrors(errorData);
       if (Object.keys(fieldErrors).length > 0) {
         setErrors(fieldErrors);
         const firstKey = Object.keys(fieldErrors)[0];
-  const firstFieldError = fieldErrors[firstKey];
+        const firstFieldError = fieldErrors[firstKey];
 
-  setAllError(
-    firstFieldError ||
-      errorData?.message ||
-      "Something went wrong. Please check the highlighted fields."
-  );
-      } 
-      
-    else {
-  const backendMessage = errorData?.message;
-  const backendData = errorData?.data;
-  const fullMessage =
-    typeof backendData === "string"
-      ? `${backendMessage || "Error"}: ${backendData}`
-      : backendMessage || "Registration failed. Please try again.";
-  setErrors({});
-  setAllError(fullMessage);
-}
+        setAllError(
+          firstFieldError ||
+          errorData?.message ||
+          "Something went wrong. Please check the highlighted fields."
+        );
+      }
+
+      else {
+        const backendMessage = errorData?.message;
+        const backendData = errorData?.data;
+        const fullMessage =
+          typeof backendData === "string"
+            ? `${backendMessage || "Error"}: ${backendData}`
+            : backendMessage || "Registration failed. Please try again.";
+        setErrors({});
+        setAllError(fullMessage);
+      }
       // stay on OTP step so user can retry
     } finally {
       setOtpSubmitting(false);
@@ -294,9 +294,9 @@ const SignupFormModel = ({ setLoginFormModel, setSignupFormModel }) => {
       // reset OTP UI
       setOtp(["", "", "", ""]);
       setActiveInput(0);
-     // ⛔ disable resend initially
-setResendDisabled(true);
-setTimer(60); // 1 second delay
+      // ⛔ disable resend initially
+      setResendDisabled(true);
+      setTimer(60); // 1 second delay
     } catch (error) {
       console.error("Send OTP error:", error);
       const msg =
@@ -323,7 +323,7 @@ setTimer(60); // 1 second delay
       setActiveInput(0);
       setResendDisabled(true);
       // setTimer(120); // 2 minutes
-        setTimer(60); // 1 minutes
+      setTimer(60); // 1 minutes
     } catch (error) {
       console.error("Resend OTP error:", error);
     }
@@ -382,11 +382,10 @@ setTimer(60); // 1 second delay
         style={{ backdropFilter: "blur(10px)", scrollbarWidth: "none" }}
       >
         <div
-          className={`bg-white rounded-xl overflow-hidden shadow-lg max-w-4xl mx-auto w-full md:flex relative ${
-            isMobile
+          className={`bg-white rounded-xl overflow-hidden shadow-lg max-w-4xl mx-auto w-full md:flex relative ${isMobile
               ? "fixed top-[2%] left-1/2 -translate-x-1/2"
               : "relative md:top-[16%]"
-          }`}
+            }`}
         >
           {/* Close / Back Button */}
           <button
@@ -417,8 +416,9 @@ setTimer(60); // 1 second delay
                 )}
 
                 {/* NAME */}
-                <div className="mb-4" ref={nameInputRef}>
+                <div className="mb-4">
                   <input
+                    ref={nameInputRef}
                     type="text"
                     name="name"
                     id="name"
@@ -427,13 +427,11 @@ setTimer(60); // 1 second delay
                     disabled={isSubmitting}
                     className={`w-full px-4 py-2 border rounded-md focus:outline-none bg-[#FCFCFC]
                      focus:border-blue-500 
-                     border-[#CCCBCB] box-shadow-[ 0px 0.84px 3.36px 0px #C6C6C640] ${
-                       errors.name ? "border-red-500" : "border-gray-300"
-                     } ${
-                       isSubmitting
-                         ? "opacity-50 cursor-not-allowed"
-                         : ""
-                     }`}
+                     border-[#CCCBCB] box-shadow-[ 0px 0.84px 3.36px 0px #C6C6C640] ${errors.name ? "border-red-500" : "border-gray-300"
+                      } ${isSubmitting
+                        ? "opacity-50 cursor-not-allowed"
+                        : ""
+                      }`}
                     placeholder="Full Name"
                   />
                   {errors.name && (
@@ -478,15 +476,13 @@ setTimer(60); // 1 second delay
                     onChange={handlePhoneChange}
                     placeholder="Mobile Number"
                     disabled={isSubmitting}
-                    className={`${
-                      errors.mobileNumber || errors.phone
+                    className={`${errors.mobileNumber || errors.phone
                         ? "border-red-500"
                         : ""
-                    } ${
-                      isSubmitting
+                      } ${isSubmitting
                         ? "opacity-50 pointer-events-none"
                         : ""
-                    }`}
+                      }`}
                   />
                   {(errors.mobileNumber || errors.phone) && (
                     <p className="text-red-500 text-xs mt-1">
@@ -500,11 +496,10 @@ setTimer(60); // 1 second delay
                   <div
                     className={`flex items-center border rounded-md p-2 bg-[#FCFCFC] 
                     border-[#CCCBCB] box-shadow-[ 0px 0.84px 3.36px 0px #C6C6C640]
-                    ${
-                      errors.password
+                    ${errors.password
                         ? "border-red-500"
                         : "border-gray-300"
-                    }
+                      }
                     ${isSubmitting ? "opacity-50" : ""}`}
                   >
                     <input
@@ -573,13 +568,13 @@ setTimer(60); // 1 second delay
               <div className="mb-6">
 
                 {/* General Error Message for OTP / register */}
- {allError && (
-  <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-    {allError}
-  </div>
-)}
+                {allError && (
+                  <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                    {allError}
+                  </div>
+                )}
 
- 
+
                 <h2 className="font-[700] text-[20px] py-2 text-gray-900">
                   OTP Verification
                 </h2>
@@ -635,11 +630,10 @@ setTimer(60); // 1 second delay
                 disabled={
                   otpSubmitting || otp.some((digit) => !digit)
                 }
-                className={`py-2 px-4 rounded-full ${
-                  otpSubmitting || otp.some((digit) => !digit)
+                className={`py-2 px-4 rounded-full ${otpSubmitting || otp.some((digit) => !digit)
                     ? "bg-[#004175a6] text-white w-[180px] py-3 px-4 rounded-full cursor-not-allowed"
                     : "bg-[#004175] text-white w-[180px] py-3 px-4 rounded-full cursor-pointer hover:bg-blue-900"
-                }`}
+                  }`}
               >
                 {otpSubmitting ? "Verifying..." : "Verify"}
               </button>

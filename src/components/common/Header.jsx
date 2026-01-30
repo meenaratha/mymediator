@@ -42,12 +42,12 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 
 const Header = () => {
-    const dispatch = useDispatch();
-    
-    // Get state from Redux
-    const { messages, unreadCount, error } = useSelector(
-      (state) => state.notifications
-    );
+  const dispatch = useDispatch();
+
+  // Get state from Redux
+  const { messages, unreadCount, error } = useSelector(
+    (state) => state.notifications
+  );
   const navigate = useNavigate();
   const { isAuthenticated, user, logout, loading } = useAuth(); // Get auth state
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
@@ -74,7 +74,7 @@ const Header = () => {
   const [recentLocations, setRecentLocations] = useState([]);
   const [popularLocations] = useState([
     "Chennai, Tamil Nadu",
-   
+
   ]);
   const [address, setAddress] = useState([]);
   const [autocomplete, setAutocomplete] = useState([]);
@@ -130,10 +130,10 @@ const Header = () => {
 
 
   useEffect(() => {
-  if (isAuthenticated) {
-    dispatch(fetchNotifications());
-  }
-}, [dispatch, isAuthenticated]);
+    if (isAuthenticated) {
+      dispatch(fetchNotifications());
+    }
+  }, [dispatch, isAuthenticated]);
 
   // Listen for profile update events from other components
   useEffect(() => {
@@ -470,8 +470,7 @@ const Header = () => {
           try {
             // Using Google Geocoding API instead of Nominatim for consistency
             const res = await fetch(
-              `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${
-                import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+              `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY
               }`
             );
             const data = await res.json();
@@ -637,11 +636,11 @@ const Header = () => {
   };
 
   const handleSellBtnClick = () => {
-    if(!isAuthenticated){
+    if (!isAuthenticated) {
       setLoginFormModel(true);
     }
-    else{
-    navigate("/sell");
+    else {
+      navigate("/sell");
 
     }
   };
@@ -651,7 +650,7 @@ const Header = () => {
   const [otpVerificationModal, setOtpVerificationModal] = useState(false);
   const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
   const [passwordResetModel, setPasswordResetModel] = useState(false);
-const [forgotPhone, setForgotPhone] = useState("");
+  const [forgotPhone, setForgotPhone] = useState("");
   const handleLoginClick = () => {
     setLoginFormModel(true);
   };
@@ -665,14 +664,14 @@ const [forgotPhone, setForgotPhone] = useState("");
   };
 
   const handleSearchKeyDown = (e) => {
-  if (e.key === "Enter") {
-    e.preventDefault();
-    const q = searchQuery.trim();
-    if (!q) return;
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const q = searchQuery.trim();
+      if (!q) return;
 
-    navigate(`/search?query=${encodeURIComponent(q)}`);
-  }
-};
+      navigate(`/search?query=${encodeURIComponent(q)}`);
+    }
+  };
 
   // Handle logout
   const handleLogout = async () => {
@@ -783,9 +782,8 @@ const [forgotPhone, setForgotPhone] = useState("");
 
       {/* Desktop Header */}
       <section
-        className={`${
-          isFixed ? "fixed" : "relative"
-        } top-0 w-full h-[140px] hidden md:block z-[999]`}
+        className={`${isFixed ? "fixed" : "relative"
+          } top-0 w-full h-[140px] hidden md:block z-[999]`}
       >
         {/* top bar */}
         <div className="w-full h-[70px] bg-[rgba(246,246,246,1)] border-b-[1px] border-b-solid border-b-[rgba(225,225,225,1)]">
@@ -841,7 +839,7 @@ const [forgotPhone, setForgotPhone] = useState("");
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                     onKeyDown={handleSearchKeyDown}
+                    onKeyDown={handleSearchKeyDown}
                     className="w-full text-sm text-gray-700 focus:outline-none bg-transparent search-input"
                   />
                 </div>
@@ -858,16 +856,16 @@ const [forgotPhone, setForgotPhone] = useState("");
                   </Tooltip>
                 )}
 
-                    {isAuthenticated && (
+                {isAuthenticated && (
                   <motion.div
                     animate={
                       isNotificationShaking
                         ? {
-                            rotate: [0, -10, 10, -10, 10, 0],
-                          }
+                          rotate: [0, -10, 10, -10, 10, 0],
+                        }
                         : {
-                            rotate: 0,
-                          }
+                          rotate: 0,
+                        }
                     }
                     transition={{
                       duration: 1,
@@ -893,7 +891,7 @@ const [forgotPhone, setForgotPhone] = useState("");
                       />
                     </Badge>
                   </motion.div>
-                    )}
+                )}
                 {/* Conditional Login/Profile Section */}
                 {loading ? (
                   // Show skeleton while loading auth state
@@ -928,9 +926,8 @@ const [forgotPhone, setForgotPhone] = useState("");
                         </p>
                       </div>
                       <KeyboardArrowDownIcon
-                        className={`w-5 h-5 text-gray-700 transition-transform duration-200 ${
-                          isProfileMenuOpen ? "rotate-180" : ""
-                        }`}
+                        className={`w-5 h-5 text-gray-700 transition-transform duration-200 ${isProfileMenuOpen ? "rotate-180" : ""
+                          }`}
                       />
                     </motion.div>
 
@@ -1049,7 +1046,7 @@ const [forgotPhone, setForgotPhone] = useState("");
                   ref={allcategorymenuRef}
                   onClick={() => setIsMegaMenuOpen(!isMegaMenuOpen)}
                 >
-                  <span className="tour-categories text-gray-700">All Categories</span>
+                  <span className="tour-categories text-gray-700 uppercase">All Categories</span>
                   <motion.div
                     animate={{ rotate: isMegaMenuOpen ? 180 : 0 }}
                     transition={{ duration: 0.3 }}
@@ -1131,7 +1128,7 @@ const [forgotPhone, setForgotPhone] = useState("");
                   <div key={category.id} variants={itemVariants}>
                     <Link
                       to={`/${category.slug}`}
-                      className="text-gray-700 hover:text-blue-600"
+                      className="text-gray-700 hover:text-blue-600 uppercase"
                     >
                       {category.name}
                     </Link>
@@ -1169,10 +1166,9 @@ const [forgotPhone, setForgotPhone] = useState("");
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.5 }}
               exit={{ opacity: 0 }}
-              className={`${
-                isLoading ? "" : "cursor-pointer"
-              } fixed inset-0 bg-black z-999`}
-              // ref={locationDropdownRef}
+              className={`${isLoading ? "" : "cursor-pointer"
+                } fixed inset-0 bg-black z-999`}
+            // ref={locationDropdownRef}
             />
             {/* Popup */}
             <motion.div
@@ -1340,7 +1336,7 @@ const [forgotPhone, setForgotPhone] = useState("");
           setForgotPasswordModal={setForgotPasswordModal}
           setLoginFormModel={setLoginFormModel}
           setOtpVerificationModal={setOtpVerificationModal}
-           setForgotPhone={setForgotPhone}
+          setForgotPhone={setForgotPhone}
         />
       )}
 
@@ -1349,15 +1345,15 @@ const [forgotPhone, setForgotPhone] = useState("");
           setOtpVerificationModal={setOtpVerificationModal}
           setForgotPasswordModal={setForgotPasswordModal}
           setPasswordResetModel={setPasswordResetModel}
-           phone={forgotPhone} 
+          phone={forgotPhone}
         />
       )}
 
       {passwordResetModel && (
         <PasswordResetModel
-           setPasswordResetModel={setPasswordResetModel}
-    setLoginFormModel={setLoginFormModel}
-    phone={forgotPhone} // phone saved from ForgotPassword
+          setPasswordResetModel={setPasswordResetModel}
+          setLoginFormModel={setLoginFormModel}
+          phone={forgotPhone} // phone saved from ForgotPassword
         />
       )}
     </>

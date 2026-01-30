@@ -3,10 +3,13 @@ import axios from "axios";
 import { STORAGE_KEYS } from "../utils/constants";
 
 // Define the API URL using Vite environment variable
-const apiUrl =
-  import.meta.env.VITE_API_BASE_URL ||
-  "https://www.mymediator.in/backend/api";
- 
+// const apiUrl =
+//   import.meta.env.VITE_API_BASE_URL ||
+//   "https://www.mymediator.in/backend/api";
+
+ const apiUrl =
+   import.meta.env.VITE_API_BASE_URL ||
+   "https://www.mymediator.amrithaa.net/backend/api";
 
 // Create Axios instances for different purposes
 const createAxiosInstance = (baseURL, headers = {}) => {
