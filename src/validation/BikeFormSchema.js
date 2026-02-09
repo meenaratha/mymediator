@@ -41,33 +41,43 @@ const baseFormSchema = {
     
   description: Yup.string().required("Short description is required"),
   
-  images: Yup.array()
-    .test("fileSize", "Each image must be less than 5MB", (value) => {
-      if (!value || value.length === 0) return true;
-      return value.every((file) => file.size <= 5 * 1024 * 1024);
-    })
-    .test(
-      "fileType",
-      "Only JPG, PNG, GIF, or WEBP images are allowed",
-      (value) => {
-        if (!value || value.length === 0) return true;
-        return value.every((file) =>
-          ["image/jpeg", "image/png", "image/gif", "image/webp"].includes(
-            file.type
-          )
-        );
-      }
+
+   images: Yup.array().required("images is required"),
+    videos: Yup.array().of(
+      Yup.mixed().test("fileType", "Only video files are allowed", (file) => {
+        if (!file) return true; // ✅ Skip validation if no file (not required)
+        return file && file.type.startsWith("video/");
+      })
     ),
+  // images: Yup.array()
+  //   .test("fileSize", "Each image must be less than 5MB", (value) => {
+  //     if (!value || value.length === 0) return true;
+  //     return value.every((file) => file.size <= 5 * 1024 * 1024);
+  //   })
+  //   .test(
+  //     "fileType",
+  //     "Only JPG, PNG, GIF, or WEBP images are allowed",
+  //     (value) => {
+  //       if (!value || value.length === 0) return true;
+  //       return value.every((file) =>
+  //         ["image/jpeg", "image/png", "image/gif", "image/webp"].includes(
+  //           file.type
+  //         )
+  //       );
+  //     }
+  //   ),
     
-  videos: Yup.array()
-    .test("fileSize", "Each video must be less than 50MB", (value) => {
-      if (!value || value.length === 0) return true;
-      return value.every((file) => file.size <= 50 * 1024 * 1024);
-    })
-    .test("fileType", "Only video files are allowed", (value) => {
-      if (!value || value.length === 0) return true;
-      return value.every((file) => file.type.startsWith("video/"));
-    }),
+  // videos: Yup.array()
+  //   .test("fileSize", "Each video must be less than 50MB", (value) => {
+  //     if (!value || value.length === 0) return true;
+  //     return value.every((file) => file.size <= 50 * 1024 * 1024);
+  //   })
+  //   .test("fileType", "Only video files are allowed", (value) => {
+  //     if (!value || value.length === 0) return true;
+  //     return value.every((file) => file.type.startsWith("video/"));
+  //   }),
+
+
 };
 
 // Motor bike specific fields (not for bicycles)

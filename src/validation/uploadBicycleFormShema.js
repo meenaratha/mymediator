@@ -23,29 +23,37 @@ export const uploadBicycleFormSchema = Yup.object().shape({
   amount: Yup.string()
     .required('Amount is required')
     .matches(/^[0-9]+(\.[0-9]{1,2})?$/, 'Amount must be a valid number'),
-  images: Yup.array()
-    .required('At least one image is required')
-    .min(1, 'Please upload at least one image')
-    .test('fileSize', 'Each image file should be less than 5MB', (value) => {
-      if (!value || value.length === 0) return true;
-      return value.every(file => file.size <= 5 * 1024 * 1024);
-    })
-    .test('fileType', 'Only image files are allowed', (value) => {
-      if (!value || value.length === 0) return true;
-      return value.every(file => 
-        ['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type)
-      );
-    }),
-  videos: Yup.array()
-    .test('fileSize', 'Each video file should be less than 50MB', (value) => {
-      if (!value || value.length === 0) return true;
-      return value.every(file => file.size <= 50 * 1024 * 1024);
-    })
-    .test('fileType', 'Only video files are allowed', (value) => {
-      if (!value || value.length === 0) return true;
-      return value.every(file => 
-        file.type.startsWith('video/')
-      );
-    }),
+
+     images: Yup.array().required("images is required"),
+      videos: Yup.array().of(
+        Yup.mixed().test("fileType", "Only video files are allowed", (file) => {
+          if (!file) return true; // ✅ Skip validation if no file (not required)
+          return file && file.type.startsWith("video/");
+        })
+      ),
+  // images: Yup.array()
+  //   .required('At least one image is required')
+  //   .min(1, 'Please upload at least one image')
+  //   .test('fileSize', 'Each image file should be less than 5MB', (value) => {
+  //     if (!value || value.length === 0) return true;
+  //     return value.every(file => file.size <= 5 * 1024 * 1024);
+  //   })
+  //   .test('fileType', 'Only image files are allowed', (value) => {
+  //     if (!value || value.length === 0) return true;
+  //     return value.every(file => 
+  //       ['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type)
+  //     );
+  //   }),
+  // videos: Yup.array()
+  //   .test('fileSize', 'Each video file should be less than 50MB', (value) => {
+  //     if (!value || value.length === 0) return true;
+  //     return value.every(file => file.size <= 50 * 1024 * 1024);
+  //   })
+  //   .test('fileType', 'Only video files are allowed', (value) => {
+  //     if (!value || value.length === 0) return true;
+  //     return value.every(file => 
+  //       file.type.startsWith('video/')
+  //     );
+  //   }),
   longdescription: Yup.string().required('Description is required'),
 });
