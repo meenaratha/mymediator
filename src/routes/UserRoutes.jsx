@@ -33,11 +33,13 @@ import BikeFormPage from "../Pages/UserFlow/BikeFormPage";
 import CarDetailPage from "../Pages/UserFlow/CarDetailPage";
 import SellerProfile from "../components/sell/SellerProfile";
 import SearchPage from "../Pages/UserFlow/SearchPage";
+import DeletePage from "../Pages/DeletePage";
 const UserRoutes = () => {
   return (
     <>
       <Route element={<MasterLayout />}>
         <Route path="/" element={<HomePage />} />
+        <Route path="/delete-account" element={<DeletePage />} />
         <Route path="/property" element={<PropertyFilterPage />} />
         <Route path="/properties/:slug" element={<ProductDetailPage />} />
         <Route path="/electronic/:slug" element={<LaptopDetailPage />} />
